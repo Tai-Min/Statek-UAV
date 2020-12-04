@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <arg name="statek_name" default="statek" />
-    <arg name="gamepad_name" default="statek_controller" />
+    <arg name="gamepad_name" default="controller" />
     <arg name="gamepad_addr" default="" />
 
     <!-- Run ds4 driver node -->
-    <group ns="$(arg gamepad_name)">
+    <group ns="$(arg statek_name)_$(arg gamepad_name)">
         <node pkg="ds4_driver" type="ds4_driver_node.py" name="ds4_driver" output="screen">
             <rosparam command="load" file="$(find ds4_driver)/config/params.yaml" />
             <param name="device_addr" value="$(arg gamepad_addr)" />
@@ -17,7 +17,7 @@
     <group ns="$(arg statek_name)_teleop">
         <node name="statek_teleop_raw_ds4" pkg="statek_teleop" type="statek_teleop_raw_ds4.py">
             <param name="statek_name" value="$(arg statek_name)" />
-            <param name="gamepad_name" value="$(arg gamepad_name)" />
+            <param name="gamepad_name" value="$(arg statek_name)_$(arg gamepad_name)" />
         </node>
     </group>
 </launch>
