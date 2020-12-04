@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="statek_name" default="statek"/>
+
+    <!-- Spawn Statek UAV with given name or default one -->
+    <group ns="$(arg statek_name)">
+        <node name="spawn_statek" pkg="gazebo_ros" type="spawn_model" args="-file $(find statek_sim)/models/statek/model.sdf -sdf -z 1 -model $(arg statek_name)"/>
+    </group>
+</launch>

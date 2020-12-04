@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name enkoder)(type Legacy)(uri D:/INZYNIERKA/elektronika/enkoder/enkoder.lib)(options "")(descr ""))
+  (lib (name enkoder-rescue)(type Legacy)(uri ${KIPRJMOD}/enkoder-rescue.lib)(options "")(descr ""))
+)
