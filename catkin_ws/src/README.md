@@ -5,11 +5,18 @@ Catkin packages for Statek UAV.
   * **launch files**
     * **simple_world_sim_raw_ds4.launch** - Control simulated Statek's motors in simple Gazebo world using Dualshock 4 joysticks. Left joy for left motor and right joy for right motor.
       * **args**
-        * **name** - Name of model to spawn. Used to create namespaces for control stack.
+        * **name** - Name of model to spawn. Used to create namespaces for control stack. Default is statek.
+      * **results** - Launch file will create controller nodes / topics under **\<name>_controller/** namespace,  teleop nodes / topics under **\<name>_teleop/** namespace and Statek's nodes / topics under **\<name>/** namespace.
 * **statek_sim** </br>
   Package with Statek's sim model / plugins and collection of Gazebo worlds.
   * **models**
     * **statek** Statek's Gazebo model.
+      * **subscribed topics** 
+        * **<statek_name>/vel_cmd_left** - Velocity setpoint for left motor.
+        * **<statek_name>/vel_cmd_right** - Velocity setpoint for right motor.
+      * **published topics**
+        * **<statek_name>/encoder_raw_left** - Position and velocity readings from left encoder.
+        * **<statek_name>/encoder_raw_right** - Position and velocity readings from right encoder.
   * **plugins**
     * **statek_motor_control** - Required to control Statek's model in Gazebo.
       * **params**
@@ -26,16 +33,16 @@ Catkin packages for Statek UAV.
         * **TODO: right_encoder_topic_name** - Name of ROS topic for encoder data. Default is encoder_raw_right.
         * **TODO: noise_power** - Noise power for encoder reading noise. Default is 0.
   * **worlds**
-    * **simple_world.world** - Simple world with some primitives placed around.
+    * **simple_world.world** - Open simple world with some primitives placed around.
   * **launch files**
     * **simple_world.launch** - Launch simple_world.world with Statek UAV spawned at origin.
     * **spawn_statek.launch** - Spawn statek in Gazebo.
       * **args** 
         * **name** - Name of the model to spawn. Used as namespace for topics, i.e statek_name/scan. Default is statek.
-        * **TODO: x** - X world coordinate.
-        * **TODO: y** - Y world coordinate.
-        * **TODO: z** - Z world coordinate.
-        
+        * **TODO: x** - X world coordinate. Default is 0.
+        * **TODO: y** - Y world coordinate. Default is 0.
+        * **TODO: z** - Z world coordinate. Default is 0.
+      * **results** - Launch file will spawn Statek uav with nodes / topics under **\<name>/** namespace.
 * **statek_teleop** </br>
   Package with nodes required for teleoperation.
   * **nodes**
@@ -44,4 +51,12 @@ Catkin packages for Statek UAV.
         * statek_name - Name of Statek UAV to control.
         * gamepad_name - Name of gamepad to listen to.
       * **subscribed topics**
+        * <gamepad_name>/status - Status of the gamepad.
       * **published topics**
+        * <statek_name>/vel_cmd_left - Velocity setpoint for left motor.
+        * <statek_name>/vel_cmd_right - Velocity setpoint for right motor.
+  * **launch files**
+    * **statek_teleop_raw_ds4.launch** - Launch nodes required for teleoperation using Dualshock 4 and raw velocity commands. 
+      * **args**
+        * **statek_name** - Name of Statek UAV to control. Also used to create namespaces for topics. Default is statek.
+      * **results** - Launch file will create nodes / topics for controller under **<statek_name>_controller/** namespace and teleop nodes / topics under **<statek_name>_teleop/** namespace.
