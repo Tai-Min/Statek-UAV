@@ -11,14 +11,18 @@ Catkin packages for Statek UAV.
   Package with Statek's sim model / plugins and collection of Gazebo worlds.
   * **models**
     * **statek** Statek's Gazebo model.
+      * **params**
+        * **TODO: <~stationary_velocity_threshold>** - Velocity threshold below which Statek is considered to be stationary. Fine tune this value to prevent noise from affecting some parts of the system.
+        * **TODO: <~brake_velocity_threshold>** - Velocity difference between velocity cmds and measured velocities which should turn on brake lights.
       * **subscribed topics** 
         * **<statek_name>/vel_cmd_left** - Velocity setpoint for left motor.
         * **<statek_name>/vel_cmd_right** - Velocity setpoint for right motor.
-        * **TODO: <statek_name>/front_lights** - Status of front lights.
-        * **TODO: <statek_name>/back_lights** - Status of back lights.
-        * **TODO: <statek_name>/left_blinker** - Status of left front and back blinkers.
-        * **TODO: <statek_name>/right_blinker** - Status of right front and back blinkers.
-        * **TODO: <statek_name>/reversing_lights** - Status of reversing lights.
+        * **TODO: <statek_name>/front_lights** - Status of front lights. On "AUTO" On.
+        * **TODO: <statek_name>/back_lights** - Status of back lights. On "AUTO" back lights mimics state of front lights.
+        * **TODO: <statek_name>/left_blinker** - Status of left front and back blinkers. On "AUTO" OFF.
+        * **TODO: <statek_name>/right_blinker** - Status of right front and back blinkers. On "Auto" OFF.
+        * **TODO: <statek_name>/reversing_lights** - Status of reversing lights. On "AUTO" On when both velocity cmds are negative.
+        * **TODO: <statek_name>/brake_lights** - Status of brake lights. On "AUTO" On when both velocity cmds are set to 0 and measured velocities are above <~stationary_velocity_threshold> or when difference between both velocity cmds and measured velocities are above <~brake_velocity_threshold>, Off otherwise.
       * **published topics**
         * **<statek_name>/encoder_raw_left** - Position and velocity readings from left encoder.
         * **<statek_name>/encoder_raw_right** - Position and velocity readings from right encoder.
