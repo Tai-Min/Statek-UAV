@@ -2,8 +2,6 @@ Catkin packages for Statek UAV.
 
 * **TODO: statek_config** </br>
   Package with config files for Statek UAV.
-* **TODO: statek_rt** </br>
-  Package with source code and launch files for Statek's real time hardware.
 * **statek_playground** </br>
   Package with various launch files to play with simulated or real UAV.
   * **launch files**
@@ -11,6 +9,8 @@ Catkin packages for Statek UAV.
       * **args**
         * **name** - Name of model to spawn. Used to create namespaces for control stack. Default is statek.
       * **results** - Launch file will create controller nodes / topics under **\<name>_controller/** namespace,  teleop nodes / topics under **\<name>_teleop/** namespace and Statek's nodes / topics under **\<name>/** namespace.
+* **TODO: statek_rt** </br>
+  Package with source code and launch files for Statek's real time hardware.
 * **statek_sim** </br>
   Package with Statek's sim model / plugins and collection of Gazebo worlds.
   * **models**
