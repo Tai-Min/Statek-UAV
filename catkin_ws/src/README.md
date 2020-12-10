@@ -14,6 +14,11 @@ Catkin packages for Statek UAV.
       * **subscribed topics** 
         * **<statek_name>/vel_cmd_left** - Velocity setpoint for left motor.
         * **<statek_name>/vel_cmd_right** - Velocity setpoint for right motor.
+        * **TODO: <statek_name>/front_lights** - Status of front lights.
+        * **TODO: <statek_name>/back_lights** - Status of back lights.
+        * **TODO: <statek_name>/left_blinker** - Status of left front and back blinkers.
+        * **TODO: <statek_name>/right_blinker** - Status of right front and back blinkers.
+        * **TODO: <statek_name>/reversing_lights** - Status of reversing lights.
       * **published topics**
         * **<statek_name>/encoder_raw_left** - Position and velocity readings from left encoder.
         * **<statek_name>/encoder_raw_right** - Position and velocity readings from right encoder.
@@ -32,6 +37,8 @@ Catkin packages for Statek UAV.
         * **TODO: left_encoder_topic_name** - Name of ROS topic for encoder data. Default is encoder_raw_left.
         * **TODO: right_encoder_topic_name** - Name of ROS topic for encoder data. Default is encoder_raw_right.
         * **TODO: noise_power** - Noise power for encoder reading noise. Default is 0.
+    * **TODO: statek_lights_control** - Required to control Statek's lights in Gazebo.
+      * **TODO: params**
   * **worlds**
     * **simple_world.world** - Open simple world with some primitives placed around.
   * **launch files**
