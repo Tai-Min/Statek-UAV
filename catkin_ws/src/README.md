@@ -10,3 +10,5 @@ Catkin packages for Statek UAV.
   Package with Statek's sim model / plugins and collection of Gazebo worlds.
 * **statek_teleop** </br>
   Package with nodes required for teleoperation.
+* **statek_tf** </br>
+  Static and dynamic transforms for Statek UAV.
