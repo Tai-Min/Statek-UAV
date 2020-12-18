@@ -14,3 +14,5 @@ Catkin packages for Statek UAV.
   Nodes and launch files required for teleoperation.
 * **statek_tf** </br>
   Static and dynamic transforms for Statek UAV.
+* **statek_tuner** </br>
+  Launch files that run some autotuning algorithms i.e wheel's state feedback lqr tuning
