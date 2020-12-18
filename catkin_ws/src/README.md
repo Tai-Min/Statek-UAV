@@ -6,6 +6,8 @@ Catkin packages for Statek UAV.
   Diagnostic nodes for various Statek's processes
 * **TODO: statek_hw** </br>
   Launch file to launch all attached sensors and actuators both real time and non real time.
+* **TODO: statek_msgs** </br>
+  Custom Statek's messages
 * **statek_playground** </br>
   Various launch files to play with simulated or real UAV.
 * **TODO: statek_rt** </br>
