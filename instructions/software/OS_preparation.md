@@ -17,7 +17,7 @@ udevadm info -a -p  $(udevadm info -q path -n /dev/ttyUSBn)
 
 Where /dev/ttyUSBn is the port to which your lidar is connected to.
 
-Add new rule to udev (as sudo):
+Add new rule to udev:
 ```
 sudo nano /etc/udev/rules.d/99-usb-serial.rules
 ```
