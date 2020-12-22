@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="statek_name" default="statek"/>
+    <arg name="lidar_frame_id" default="laser_link"/>
+
+    <!-- base link to lidar frame -->
+    <group ns="$(arg statek_name)">
+        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_$(arg lidar_frame_id)" args="1 0 0 0 0 0 1 base_link $(arg lidar_frame_id)"/>
+    </group>
+
+</launch>

@@ -7,16 +7,16 @@
     <group ns="$(arg statek_name)_controller">
         <node pkg="ds4_driver" type="ds4_driver_node.py" name="ds4_driver" output="screen">
             <rosparam command="load" file="$(find ds4_driver)/config/params.yaml" />
-            <param name="device_addr" value="$(arg gamepad_addr)" />
-            <param name="use_standard_msgs" value="false"/>
+            <param name="device_addr" type="string" value="$(arg gamepad_addr)" />
+            <param name="use_standard_msgs" type="bool" value="false"/>
         </node>
     </group>
 
     <!-- Run teleop node -->
     <group ns="$(arg statek_name)_teleop">
         <node name="statek_teleop_raw_ds4" pkg="statek_teleop" type="statek_teleop_raw_ds4.py">
-            <param name="statek_name" value="$(arg statek_name)" />
-            <param name="gamepad_name" value="$(arg statek_name)_controller" />
+            <param name="statek_name" type="string" value="$(arg statek_name)" />
+            <param name="gamepad_name" type="string" value="$(arg statek_name)_controller" />
         </node>
     </group>
 </launch>

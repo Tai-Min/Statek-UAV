@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find statek_rviz)/rviz/statek.rviz" />
+</launch>

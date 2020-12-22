@@ -3,6 +3,7 @@
 # OS preparation
 
 ## Serial device preparation
+Make sure that all serial devices are connected.
 ### Add yourself to dialout group
 ```
 sudo usermod -a -G dialout $USER

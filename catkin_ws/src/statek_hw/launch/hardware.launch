@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="statek_name" default="statek"/>
+    <arg name="lidar_frame_id" default="laser_link"/>
+
+    <!-- Launch static transform publisher -->
+    <include file="$(find statek_tf)/launch/static_transform_publisher.launch">
+        <arg name="statek_name" default="statek"/>
+        <arg name="lidar_frame_id" default="laser_link"/>
+    </include>
+
+    <group ns="$(arg statek_name)">
+
+        <!-- Launch lidar -->
+        <node name="ydlidar_node" pkg="ydlidar_ros" type="ydlidar_node" output="screen" respawn="false">
+            <param name="port" type="string" value="/dev/ydlidar"/>
+            <param name="baudrate" type="int" value="128000"/>
+            <param name="frame_id" type="string" value="$(arg lidar_frame_id)"/>
+            <param name="resolution_fixed" type="bool" value="true"/>
+            <param name="auto_reconnect" type="bool" value="true"/>
+            <param name="reversion" type="bool" value="false"/>
+            <param name="angle_min" type="double" value="-180" />
+            <param name="angle_max" type="double" value="180" />
+            <param name="range_min" type="double" value="0.1" />
+            <param name="range_max" type="double" value="12.0" />
+            <param name="ignore_array" type="string" value="" />
+            <param name="frequency" type="double" value="8"/>
+            <param name="samp_rate" type="int" value="5"/>
+        </node>
+
+        <!-- Launch real time hardware nodes -->
+    </group>
+
+</launch>
