@@ -140,34 +140,6 @@ Wire Wire Line
 Wire Wire Line
 	7850 3800 8400 3800
 Wire Wire Line
-	8350 2700 8350 2800
-Wire Wire Line
-	8350 2800 8400 2800
-Wire Wire Line
-	7850 2800 8300 2800
-Wire Wire Line
-	8300 2800 8300 2900
-Wire Wire Line
-	8300 2900 8400 2900
-Wire Wire Line
-	7850 2900 8250 2900
-Wire Wire Line
-	8250 2900 8250 3000
-Wire Wire Line
-	8250 3000 8400 3000
-Wire Wire Line
-	7850 3000 8200 3000
-Wire Wire Line
-	8200 3000 8200 3100
-Wire Wire Line
-	8200 3100 8400 3100
-Wire Wire Line
-	7850 3100 8150 3100
-Wire Wire Line
-	8150 3100 8150 3200
-Wire Wire Line
-	8150 3200 8400 3200
-Wire Wire Line
 	7850 3300 8400 3300
 Wire Wire Line
 	7850 3400 8400 3400
@@ -294,8 +266,6 @@ Wire Wire Line
 Wire Wire Line
 	5200 4550 5350 4550
 Wire Wire Line
-	7300 2700 8350 2700
-Wire Wire Line
 	7350 2800 7300 2800
 Wire Wire Line
 	7300 2800 7300 2700
@@ -341,7 +311,7 @@ U 1 1 5FBC20D0
 P 3300 4450
 F 0 "J17" H 3550 4350 50  0000 C CNN
 F 1 "Conn_01x03" H 3600 4450 50  0000 C CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_3-G-3.81_1x03_P3.81mm_Horizontal" H 3300 4450 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03403HBLC_1x03_P3.81mm_Horizontal" H 3300 4450 50  0001 C CNN
 F 3 "~" H 3300 4450 50  0001 C CNN
 	1    3300 4450
 	-1   0    0    -1  
@@ -352,7 +322,7 @@ U 1 1 5FBC323C
 P 3300 4150
 F 0 "J16" H 3550 4050 50  0000 C CNN
 F 1 "Conn_01x03" H 3600 4150 50  0000 C CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_3-G-3.81_1x03_P3.81mm_Horizontal" H 3300 4150 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03403HBLC_1x03_P3.81mm_Horizontal" H 3300 4150 50  0001 C CNN
 F 3 "~" H 3300 4150 50  0001 C CNN
 	1    3300 4150
 	-1   0    0    -1  
@@ -363,7 +333,7 @@ U 1 1 5FBC3699
 P 3300 3850
 F 0 "J15" H 3550 3750 50  0000 C CNN
 F 1 "Conn_01x03" H 3600 3850 50  0000 C CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_3-G-3.81_1x03_P3.81mm_Horizontal" H 3300 3850 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03403HBLC_1x03_P3.81mm_Horizontal" H 3300 3850 50  0001 C CNN
 F 3 "~" H 3300 3850 50  0001 C CNN
 	1    3300 3850
 	-1   0    0    -1  
@@ -374,7 +344,7 @@ U 1 1 5FBC3A54
 P 3300 3550
 F 0 "J14" H 3550 3450 50  0000 C CNN
 F 1 "Conn_01x03" H 3600 3550 50  0000 C CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_3-G-3.81_1x03_P3.81mm_Horizontal" H 3300 3550 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03403HBLC_1x03_P3.81mm_Horizontal" H 3300 3550 50  0001 C CNN
 F 3 "~" H 3300 3550 50  0001 C CNN
 	1    3300 3550
 	-1   0    0    -1  
@@ -385,7 +355,7 @@ U 1 1 5FBC401E
 P 3300 3250
 F 0 "J13" H 3550 3150 50  0000 C CNN
 F 1 "Conn_01x03" H 3600 3250 50  0000 C CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_3-G-3.81_1x03_P3.81mm_Horizontal" H 3300 3250 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03403HBLC_1x03_P3.81mm_Horizontal" H 3300 3250 50  0001 C CNN
 F 3 "~" H 3300 3250 50  0001 C CNN
 	1    3300 3250
 	-1   0    0    -1  
@@ -396,20 +366,9 @@ U 1 1 5FBC4518
 P 3300 2950
 F 0 "J8" H 3550 2850 50  0000 C CNN
 F 1 "Conn_01x03" H 3600 2950 50  0000 C CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_3-G-3.81_1x03_P3.81mm_Horizontal" H 3300 2950 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03403HBLC_1x03_P3.81mm_Horizontal" H 3300 2950 50  0001 C CNN
 F 3 "~" H 3300 2950 50  0001 C CNN
 	1    3300 2950
-	-1   0    0    -1  
-$EndComp
-$Comp
-L Connector_Generic:Conn_01x03 J1
-U 1 1 5FBC4A03
-P 3300 2650
-F 0 "J1" H 3550 2550 50  0000 C CNN
-F 1 "Conn_01x03" H 3600 2650 50  0000 C CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_3-G-3.81_1x03_P3.81mm_Horizontal" H 3300 2650 50  0001 C CNN
-F 3 "~" H 3300 2650 50  0001 C CNN
-	1    3300 2650
 	-1   0    0    -1  
 $EndComp
 $Comp
@@ -418,7 +377,7 @@ U 1 1 5FBC60E3
 P 8600 4300
 F 0 "J23" H 8850 4350 50  0000 C CNN
 F 1 "Conn_01x03" H 8900 4300 50  0000 C CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_3-G-3.81_1x03_P3.81mm_Horizontal" H 8600 4300 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03403HBLC_1x03_P3.81mm_Horizontal" H 8600 4300 50  0001 C CNN
 F 3 "~" H 8600 4300 50  0001 C CNN
 	1    8600 4300
 	1    0    0    1   
@@ -429,7 +388,7 @@ U 1 1 5FBC7309
 P 8600 4000
 F 0 "J22" H 8850 4050 50  0000 C CNN
 F 1 "Conn_01x03" H 8900 4000 50  0000 C CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_3-G-3.81_1x03_P3.81mm_Horizontal" H 8600 4000 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03403HBLC_1x03_P3.81mm_Horizontal" H 8600 4000 50  0001 C CNN
 F 3 "~" H 8600 4000 50  0001 C CNN
 	1    8600 4000
 	1    0    0    1   
@@ -440,7 +399,7 @@ U 1 1 5FBC78BC
 P 8600 3700
 F 0 "J21" H 8850 3750 50  0000 C CNN
 F 1 "Conn_01x03" H 8900 3700 50  0000 C CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_3-G-3.81_1x03_P3.81mm_Horizontal" H 8600 3700 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03403HBLC_1x03_P3.81mm_Horizontal" H 8600 3700 50  0001 C CNN
 F 3 "~" H 8600 3700 50  0001 C CNN
 	1    8600 3700
 	1    0    0    1   
@@ -451,7 +410,7 @@ U 1 1 5FBC7B47
 P 8600 3400
 F 0 "J20" H 8850 3450 50  0000 C CNN
 F 1 "Conn_01x03" H 8900 3400 50  0000 C CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_3-G-3.81_1x03_P3.81mm_Horizontal" H 8600 3400 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03403HBLC_1x03_P3.81mm_Horizontal" H 8600 3400 50  0001 C CNN
 F 3 "~" H 8600 3400 50  0001 C CNN
 	1    8600 3400
 	1    0    0    1   
@@ -462,7 +421,7 @@ U 1 1 5FBC7E7A
 P 8600 3100
 F 0 "J19" H 8850 3150 50  0000 C CNN
 F 1 "Conn_01x03" H 8900 3100 50  0000 C CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_3-G-3.81_1x03_P3.81mm_Horizontal" H 8600 3100 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03403HBLC_1x03_P3.81mm_Horizontal" H 8600 3100 50  0001 C CNN
 F 3 "~" H 8600 3100 50  0001 C CNN
 	1    8600 3100
 	1    0    0    1   
@@ -473,9 +432,160 @@ U 1 1 5FBC823F
 P 8600 2900
 F 0 "J18" H 8800 2900 50  0000 L CNN
 F 1 "Conn_01x02" H 8680 2801 50  0000 L CNN
-F 2 "Connector_Phoenix_MC:PhoenixContact_MC_1,5_2-G-3.81_1x02_P3.81mm_Horizontal" H 8600 2900 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03402HBLC_1x02_P3.81mm_Horizontal" H 8600 2900 50  0001 C CNN
 F 3 "~" H 8600 2900 50  0001 C CNN
 	1    8600 2900
 	1    0    0    1   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 J25
+U 1 1 5FD81114
+P 8600 2700
+F 0 "J25" H 8800 2700 50  0000 L CNN
+F 1 "Conn_01x02" H 8680 2601 50  0000 L CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03402HBLC_1x02_P3.81mm_Horizontal" H 8600 2700 50  0001 C CNN
+F 3 "~" H 8600 2700 50  0001 C CNN
+	1    8600 2700
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	7350 2900 7250 2900
+Wire Wire Line
+	7250 2900 7250 2650
+Wire Wire Line
+	7350 3000 7200 3000
+$Comp
+L Connector_Generic:Conn_01x02 J24
+U 1 1 5FD9A5EE
+P 3300 2650
+F 0 "J24" H 3500 2650 50  0000 L CNN
+F 1 "Conn_01x02" H 3380 2551 50  0000 L CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03402HBLC_1x02_P3.81mm_Horizontal" H 3300 2650 50  0001 C CNN
+F 3 "~" H 3300 2650 50  0001 C CNN
+	1    3300 2650
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	4450 3250 4700 3250
+Wire Wire Line
+	4700 3250 4700 2450
+Wire Wire Line
+	4700 2450 3500 2450
+$Comp
+L Connector_Generic:Conn_01x02 J1
+U 1 1 5FDA1D76
+P 3300 2450
+F 0 "J1" H 3500 2450 50  0000 L CNN
+F 1 "Conn_01x02" H 3380 2351 50  0000 L CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03402HBLC_1x02_P3.81mm_Horizontal" H 3300 2450 50  0001 C CNN
+F 3 "~" H 3300 2450 50  0001 C CNN
+	1    3300 2450
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	7850 3100 7950 3100
+Wire Wire Line
+	7950 3100 7950 3200
+Wire Wire Line
+	7950 3200 8400 3200
+Wire Wire Line
+	7850 3000 8000 3000
+Wire Wire Line
+	8000 3000 8000 3100
+Wire Wire Line
+	8000 3100 8400 3100
+Wire Wire Line
+	7850 2900 8050 2900
+Wire Wire Line
+	8050 2900 8050 3000
+Wire Wire Line
+	8050 3000 8400 3000
+Wire Wire Line
+	7850 2800 8100 2800
+Wire Wire Line
+	8100 2800 8100 2900
+Wire Wire Line
+	8100 2900 8400 2900
+Wire Wire Line
+	7300 2700 8150 2700
+Wire Wire Line
+	8150 2700 8150 2800
+Wire Wire Line
+	8150 2800 8400 2800
+Wire Wire Line
+	7250 2650 8200 2650
+Wire Wire Line
+	8200 2650 8200 2700
+Wire Wire Line
+	8200 2700 8400 2700
+Wire Wire Line
+	7200 2600 8400 2600
+Wire Wire Line
+	7200 2600 7200 3000
+$Comp
+L Connector_Generic:Conn_01x02 J26
+U 1 1 5FE1FDA0
+P 5000 1500
+F 0 "J26" H 5200 1500 50  0000 L CNN
+F 1 "Conn_01x02" H 5080 1401 50  0000 L CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03402HBLC_1x02_P3.81mm_Horizontal" H 5000 1500 50  0001 C CNN
+F 3 "~" H 5000 1500 50  0001 C CNN
+	1    5000 1500
+	0    1    -1   0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 J27
+U 1 1 5FE208CE
+P 5200 1500
+F 0 "J27" H 5400 1500 50  0000 L CNN
+F 1 "Conn_01x02" H 5280 1401 50  0000 L CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03402HBLC_1x02_P3.81mm_Horizontal" H 5200 1500 50  0001 C CNN
+F 3 "~" H 5200 1500 50  0001 C CNN
+	1    5200 1500
+	0    1    -1   0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 J28
+U 1 1 5FE20D07
+P 5400 1500
+F 0 "J28" H 5600 1500 50  0000 L CNN
+F 1 "Conn_01x02" H 5480 1401 50  0000 L CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03402HBLC_1x02_P3.81mm_Horizontal" H 5400 1500 50  0001 C CNN
+F 3 "~" H 5400 1500 50  0001 C CNN
+	1    5400 1500
+	0    1    -1   0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 J29
+U 1 1 5FE20FBF
+P 5600 1500
+F 0 "J29" H 5800 1500 50  0000 L CNN
+F 1 "Conn_01x02" H 5680 1401 50  0000 L CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03402HBLC_1x02_P3.81mm_Horizontal" H 5600 1500 50  0001 C CNN
+F 3 "~" H 5600 1500 50  0001 C CNN
+	1    5600 1500
+	0    1    -1   0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 J30
+U 1 1 5FE21231
+P 5800 1500
+F 0 "J30" H 6000 1500 50  0000 L CNN
+F 1 "Conn_01x02" H 5880 1401 50  0000 L CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03402HBLC_1x02_P3.81mm_Horizontal" H 5800 1500 50  0001 C CNN
+F 3 "~" H 5800 1500 50  0001 C CNN
+	1    5800 1500
+	0    1    -1   0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 J31
+U 1 1 5FE2152A
+P 6000 1500
+F 0 "J31" H 6200 1500 50  0000 L CNN
+F 1 "Conn_01x02" H 6080 1401 50  0000 L CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03402HBLC_1x02_P3.81mm_Horizontal" H 6000 1500 50  0001 C CNN
+F 3 "~" H 6000 1500 50  0001 C CNN
+	1    6000 1500
+	0    1    -1   0   
 $EndComp
 $EndSCHEMATC

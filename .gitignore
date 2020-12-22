@@ -38,10 +38,10 @@ catkin_ws/build
 catkin_ws/src/CMakeLists.txt
 
 # Not needed files
-CAD/thirdparty/*/*
+CAD/detailed/thirdparty/*/*
 !*.ipt
 
 # For stuff that's not mine
 # thirdparty/
 ds4_driver/
-
+ydlidar_ros/
