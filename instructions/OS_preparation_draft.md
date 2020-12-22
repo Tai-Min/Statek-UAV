@@ -1,3 +1,5 @@
+[Previous step - Third party packages](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/thirdparty_packages.md)
+
 # OS preparation
 
 ## Serial device preparation
