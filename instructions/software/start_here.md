@@ -3,7 +3,7 @@
 ## Jetson Nano OS preparation
 Install Jetson Nano OS as described [here](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-devkit).
 
-After that, follow [OS preparation]() part and when completed, return here to setup ROS environment.
+After that, follow [OS preparation](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/software/OS_preparation.md) part and when completed, return here to setup ROS environment.
 
 ## Setting up ROS 
 Install ROS Melodic Morenia as described [here](http://wiki.ros.org/melodic/Installation/Ubuntu).
