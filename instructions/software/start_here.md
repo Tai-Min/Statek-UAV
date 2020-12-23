@@ -17,3 +17,8 @@ Now, install third party packages:
 * [ds4_driver](http://wiki.ros.org/ds4_driver)
 * [ydlidar_ros](https://github.com/YDLIDAR/ydlidar_ros)
 
+Now, in your carkin_ws folder run:
+```
+find . -type f -name "*.py" -print0 | xargs -0 chmod +x
+```
+To make all python nodes executable.
