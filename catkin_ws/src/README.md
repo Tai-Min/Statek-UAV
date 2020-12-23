@@ -10,6 +10,8 @@ Catkin packages for Statek UAV.
   Custom Statek's messages
 * **statek_playground** </br>
   Various launch files to play with simulated or real UAV.
+* **statek_rviz** </br>
+  Statek sensor visualization. 
 * **TODO: statek_rt** </br>
   Source code and launch files for Statek's real time hardware.
 * **statek_sim** </br>
