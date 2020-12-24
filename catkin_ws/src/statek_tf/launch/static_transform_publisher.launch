@@ -5,7 +5,7 @@
 
     <!-- base link to lidar frame -->
     <group ns="$(arg statek_name)">
-        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_$(arg lidar_frame_id)" args="1 0 0 0 0 0 1 base_link $(arg lidar_frame_id)"/>
+        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_$(arg lidar_frame_id)" args="-0.025 0 0.15 3.08159265359 0 0 base_link $(arg lidar_frame_id)"/>
     </group>
 
 </launch>

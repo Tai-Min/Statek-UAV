@@ -1,0 +1,10 @@
+<robot name="statek" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <link name="base_link">
+        <visual>
+                <geometry>
+                    <mesh filename="file://$(find statek_rviz)/urdf/chassis.dae"/>
+                </geometry>
+                <origin rpy="0 0 1.5707"/>
+        </visual>
+    </link>
+</robot>
