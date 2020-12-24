@@ -26,4 +26,4 @@ Package with nodes required for teleoperation.
 
     | results |
     |-|
-    | Launch file will listen to status of firstly found gamepad and publish it's joystick info into **<statek_name>/right_vel_cmd** and **<statek_name>/left_vel_cmd** topics. |
+    | Launch file will listen to status of firstly found gamepad and publish it's joystick info into **<statek_name>/vel_cmd_left** and **<statek_name>/vel_cmd_right** topics. |
