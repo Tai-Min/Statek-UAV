@@ -2,6 +2,8 @@ Catkin packages for Statek UAV.
 
 * **TODO: statek_config** </br>
   Config files for Statek UAV.
+* **statek_description** </br>
+  URDF files for Statek UAV.
 * **TODO: statek_diag** </br>
   Diagnostic nodes for various Statek's processes
 * **statek_hw** </br>
@@ -15,7 +17,7 @@ Catkin packages for Statek UAV.
 * **TODO: statek_rt** </br>
   Source code and launch files for Statek's real time hardware.
 * **statek_sim** </br>
-  Statek's sim model, plugins and collection of Gazebo worlds.
+  Statek's plugins and collection of Gazebo worlds.
 * **statek_teleop** </br>
   Nodes and launch files required for teleoperation.
 * **statek_tf** </br>

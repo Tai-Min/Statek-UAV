@@ -5,8 +5,8 @@ Package with nodes required for teleoperation.
   
     | params | description |
     |-|-|
-    | statek_name | Name of Statek UAV to control. |
-    | gamepad_name | Name of gamepad to listen to. |
+    | statek_name | Namespace of Statek UAV to control. Defaults to statek |
+    | gamepad_name | Namespace of the gamepad to listen to. |
 
     | subscribed topics | description |
     |-|-|
@@ -15,13 +15,14 @@ Package with nodes required for teleoperation.
     | published topics | description |
     |-|-|
     | <statek_name>/vel_cmd_left | Velocity setpoint for left motor. |
-    | statek_name>/vel_cmd_right | Velocity setpoint for right motor. |
+    | <statek_name>/vel_cmd_right | Velocity setpoint for right motor. |
 
 * **launch files**
   * **statek_teleop_raw_ds4.launch** - Launch nodes required for teleoperation using Dualshock 4 and raw velocity commands. 
     | args | description |
     |-|-|
     | statek_name | Name of Statek UAV to control. Also used to create namespaces for topics. Default is statek. |
+    | gamepad_addr | Address of the gamepad. By default it connects to first found gamepad. |
 
     | results |
     |-|

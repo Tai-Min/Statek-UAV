@@ -1,12 +1,5 @@
 # statek_sim
 Package with Statek's sim model / plugins and collection of Gazebo worlds.
-* **models**
-  * **statek** Statek's Gazebo model.
-
-    | subscribed topics | |
-    |-|-|
-    | <statek_name>/vel_cmd_left | Velocity setpoint for left motor. |
-    | <statek_name>/vel_cmd_right | Velocity setpoint for right motor. |
 
 * **plugins**
   * **statek_motor_control** - Required to control Statek's model in Gazebo.
@@ -24,6 +17,10 @@ Package with Statek's sim model / plugins and collection of Gazebo worlds.
   * **simple_world.world** - Open simple world with some primitives placed around.
 * **launch files**
   * **simple_world.launch** - Launch simple_world.world with Statek UAV spawned at origin.
+    | results |
+    |-|
+    | Opens Gazebo with simple_world.world and Statek UAV at the origin. |
+
   * **spawn_statek.launch** - Spawn statek in Gazebo.
     | args | |
     |-|-|

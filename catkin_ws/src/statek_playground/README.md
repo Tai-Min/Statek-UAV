@@ -5,7 +5,8 @@ Package with various launch files to play with simulated or real UAV.
   
     | args | description |
     |-|-|
-    | name | Name of model to spawn. Used to create namespaces for control stack. Default is statek. |
+    | statek_name | Name of model to spawn. Used to create namespaces for control stack. Default is statek. |
+    | gamepad_addr | Address of the gamepad. By default connects to first found gamepad. |
 
     | result |
     |-|
