@@ -1,7 +1,7 @@
 # statek_teleop
 Package with nodes required for teleoperation.
 * **nodes**
-  * **statek_teleop_raw_ds4.py** - Translates Dualshock 4 joy inputs into raw velocity commands for motors of Statek UAV. Requires [ds4_driver](http://wiki.ros.org/ds4_driver).
+  * **statek_teleop_raw_ds4.py** - Translates Dualshock 4 joy inputs into raw velocity commands for motors of Statek UAV.
   
     | params | description |
     |-|-|
