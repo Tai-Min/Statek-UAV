@@ -31,4 +31,4 @@ Package with Statek's sim model / plugins and collection of Gazebo worlds.
 
     | results |
     |-|
-    | Launch file will spawn Statek uav with nodes / topics under **\<name>/** namespace. |
+    | Launch file will spawn Statek UAV with nodes / topics under **\<name>/** namespace. |
