@@ -6,7 +6,7 @@ Package with nodes required for teleoperation.
     | params | description |
     |-|-|
     | statek_name | Namespace of Statek UAV to control. Defaults to statek |
-    | gamepad_name | Namespace of the gamepad to listen to. |
+    | gamepad_name | Namespace of the gamepad to listen to. Defaults to ds4. |
 
     | subscribed topics | description |
     |-|-|
