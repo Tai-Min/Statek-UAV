@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <arg name="statek_name" default="statek"/>
-    <arg name="lidar_frame_id" default="laser_link"/>
 
     <!-- Launch static transform publisher -->
     <include file="$(find statek_tf)/launch/static_transform_publisher.launch">
-        <arg name="statek_name" default="statek"/>
-        <arg name="lidar_frame_id" default="laser_link"/>
+        <arg name="statek_name" value="$(arg statek_name)"/>
     </include>
 
     <group ns="$(arg statek_name)">
@@ -15,7 +13,7 @@
         <node name="ydlidar_node" pkg="ydlidar_ros" type="ydlidar_node" output="screen" respawn="false">
             <param name="port" type="string" value="/dev/ydlidar"/>
             <param name="baudrate" type="int" value="128000"/>
-            <param name="frame_id" type="string" value="$(arg lidar_frame_id)"/>
+            <param name="frame_id" type="string" value="$(arg statek_name)_laser_link"/>
             <param name="resolution_fixed" type="bool" value="true"/>
             <param name="auto_reconnect" type="bool" value="true"/>
             <param name="reversion" type="bool" value="false"/>

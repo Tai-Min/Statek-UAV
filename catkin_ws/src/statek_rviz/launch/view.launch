@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <param name="robot_description" command="$(find xacro)/xacro $(find statek_rviz)/urdf/statek.urdf"/>
+
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find statek_rviz)/rviz/statek.rviz"/>
 </launch>

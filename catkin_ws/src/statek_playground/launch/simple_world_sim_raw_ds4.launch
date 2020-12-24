@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
   <arg name="statek_name" default="statek"/>
+  <arg name="gamepad_addr" default="" />
+
   <!-- Launch world -->
   <include file="$(find statek_sim)/launch/simple_world.launch">
-    <arg name="statek_name" value="$(arg statek_name)"/>
+    <arg name="statek_name" value="$(arg statek_name)" />
   </include>
 
-  <!-- Launch controller -->
+  <!-- Launch teleop -->
   <include file="$(find statek_teleop)/launch/statek_teleop_raw_ds4.launch">
-    <arg name="statek_name" value="$(arg statek_name)"/>
+    <arg name="statek_name" value="$(arg statek_name)" />
+    <arg name="gamepad_addr" value="$(arg gamepad_addr)" />
   </include>
 
 </launch>
