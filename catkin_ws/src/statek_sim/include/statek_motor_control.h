@@ -37,6 +37,9 @@ namespace gazebo
         std::thread rosQueueThread;  //!< Thread for ROS communication.
         std::atomic_bool rosStop = {false};
         
+        std::atomic<double> leftTarget = {0};
+        std::atomic<double> rightTarget = {0};
+
         /**
         * @brief Initialize ROS, subscribers, publishers and start ROS thread.
         */

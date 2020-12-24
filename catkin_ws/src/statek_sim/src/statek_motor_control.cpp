@@ -27,7 +27,7 @@ namespace gazebo
 
     // prepare pid regulators
     SavePids(_sdf);
-    AttachPidsToJoints();
+    //AttachPidsToJoints();
 
     // initialize ROS
     InitializeRosSubscribersPublishers();
@@ -128,14 +128,18 @@ namespace gazebo
 
   void MotorControlPlugin::OnWorldUpdate()
   {
-    this->leftFrontWheel->SetVelocity(0, this->leftBackWheel->GetVelocity(0));
-    this->rightFrontWheel->SetVelocity(0, this->rightBackWheel->GetVelocity(0));
+
+    this->leftBackWheel->SetVelocity(0, this->leftTarget);
+    this->rightBackWheel->SetVelocity(0, this->rightTarget);
+  
+    this->leftFrontWheel->SetVelocity(0, this->leftTarget);
+    this->rightFrontWheel->SetVelocity(0, this->rightTarget);
   }
 
   void MotorControlPlugin::RosQueueThread()
   {
     static const double timeout = 0.01;
-    while (this->rosNode->ok() && !rosStop)
+    while (this->rosNode->ok() && !this->rosStop)
     {
       this->rosQueue.callAvailable(ros::WallDuration(timeout));
     }
@@ -143,14 +147,20 @@ namespace gazebo
 
   void MotorControlPlugin::OnVelCmdLeft(const std_msgs::Float32ConstPtr &_msg)
   {
-    this->model->GetJointController()->SetVelocityTarget(
-        this->leftBackWheel->GetScopedName(), _msg->data * MAX_RPM_IN_RAD);
+    /*this->model->GetJointController()->SetVelocityTarget(
+        this->leftBackWheel->GetScopedName(), -1 * _msg->data * MAX_RPM_IN_RAD);*/
+    //this->leftBackWheel->SetVelocity(0, -1 * _msg->data * MAX_RPM_IN_RAD);
+    //this->leftFrontWheel->SetVelocity(0, -1 * _msg->data * MAX_RPM_IN_RAD);
+    this->leftTarget = {-1 * _msg->data * MAX_RPM_IN_RAD};
   }
 
   void MotorControlPlugin::OnVelCmdRight(const std_msgs::Float32ConstPtr &_msg)
   {
-    this->model->GetJointController()->SetVelocityTarget(
-        this->rightBackWheel->GetScopedName(), -1 * _msg->data * MAX_RPM_IN_RAD);
+    /*this->model->GetJointController()->SetVelocityTarget(
+        this->rightBackWheel->GetScopedName(), _msg->data * MAX_RPM_IN_RAD);*/
+    //this->rightBackWheel->SetVelocity(0, _msg->data * MAX_RPM_IN_RAD);
+    //this->rightFrontWheel->SetVelocity(0, _msg->data * MAX_RPM_IN_RAD);
+    this->rightTarget = {_msg->data * MAX_RPM_IN_RAD};
   }
 
 } // namespace gazebo

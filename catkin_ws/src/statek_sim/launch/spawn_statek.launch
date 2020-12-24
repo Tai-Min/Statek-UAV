@@ -5,8 +5,15 @@
     <arg name="y" default="0"/>
     <arg name="z" default="0"/>
 
+
+    <!-- Launch static transform publisher -->
+    <include file="$(find statek_tf)/launch/static_transform_publisher.launch">
+        <arg name="statek_name" value="$(arg statek_name)"/>
+    </include>
+
     <!-- Spawn Statek UAV with given name or default one -->
-    <group ns="$(arg statek_name)">
-        <node name="spawn_statek" pkg="gazebo_ros" type="spawn_model" args="-file $(find statek_sim)/models/statek/model.sdf -sdf -model $(arg statek_name) -x $(arg x) -y $(arg y) -z $(arg z)"/>
-    </group>
+    <param name="$(arg statek_name)/robot_description" command="$(find xacro)/xacro $(find statek_description)/urdf/statek.urdf"/>
+
+    <node name="spawn_statek" pkg="gazebo_ros" type="spawn_model" args="-param $(arg statek_name)/robot_description -urdf -model $(arg statek_name) -x $(arg x) -y $(arg y) -z $(arg z)"/>
+
 </launch>
