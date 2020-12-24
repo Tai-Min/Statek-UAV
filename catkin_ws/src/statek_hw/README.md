@@ -6,7 +6,7 @@ Launch file to launch all attached sensors and actuators both real time and non 
   
     | args | description |
     |-|-|
-    | statek_name | Used to create namespaces for sensors and actuators, i.e **<statek_name>/scan**. |
+    | statek_name | Used to create namespaces for sensors, actuators and tfs, i.e **<statek_name>/scan**. |
 
     | result |
     |-|
