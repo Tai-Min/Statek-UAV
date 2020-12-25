@@ -27,7 +27,7 @@ namespace gazebo
 
     // prepare pid regulators
     SavePids(_sdf);
-    //AttachPidsToJoints();
+    AttachPidsToJoints();
 
     // initialize ROS
     InitializeRosSubscribersPublishers();
@@ -109,32 +109,50 @@ namespace gazebo
     if (_sdf->HasElement("kd"))
       kd = _sdf->Get<float>("kd");
 
-    this->leftMotorPid = common::PID(kp, ki, kd, MAX_RPM_IN_RAD, -MAX_RPM_IN_RAD, MAX_RPM_IN_RAD, -MAX_RPM_IN_RAD);
-    this->rightMotorPid = common::PID(kp, ki, kd, MAX_RPM_IN_RAD, -MAX_RPM_IN_RAD, MAX_RPM_IN_RAD, -MAX_RPM_IN_RAD);
+    this->leftBackWheelPid = common::PID(kp, ki, kd);
+    this->rightBackWheelPid = common::PID(kp, ki, kd);
+    this->leftFrontWheelPid = common::PID(kp, ki, kd);
+    this->rightFrontWheelPid = common::PID(kp, ki, kd);
   }
 
   void MotorControlPlugin::AttachPidsToJoints()
   {
     this->model->GetJointController()->SetVelocityPID(
-        this->leftBackWheel->GetScopedName(), this->leftMotorPid);
+        this->leftBackWheel->GetScopedName(), this->leftBackWheelPid);
     this->model->GetJointController()->SetVelocityPID(
-        this->rightBackWheel->GetScopedName(), this->rightMotorPid);
+        this->rightBackWheel->GetScopedName(), this->rightBackWheelPid);
+
+    this->model->GetJointController()->SetVelocityPID(
+        this->leftFrontWheel->GetScopedName(), this->leftFrontWheelPid);
+    this->model->GetJointController()->SetVelocityPID(
+        this->rightFrontWheel->GetScopedName(), this->rightFrontWheelPid);
+
 
     this->model->GetJointController()->SetVelocityTarget(
         this->leftBackWheel->GetScopedName(), 0);
     this->model->GetJointController()->SetVelocityTarget(
         this->rightBackWheel->GetScopedName(), 0);
+
+    this->model->GetJointController()->SetVelocityTarget(
+        this->leftFrontWheel->GetScopedName(), 0);
+    this->model->GetJointController()->SetVelocityTarget(
+        this->rightFrontWheel->GetScopedName(), 0);
   }
 
   void MotorControlPlugin::OnWorldUpdate()
   {
+    this->model->GetJointController()->SetVelocityTarget(
+        this->leftBackWheel->GetScopedName(), this->leftTarget);
 
-    this->leftBackWheel->SetVelocity(0, this->leftTarget);
-    this->rightBackWheel->SetVelocity(0, this->rightTarget);
-  
-    this->leftFrontWheel->SetVelocity(0, this->leftTarget);
-    this->rightFrontWheel->SetVelocity(0, this->rightTarget);
-  }
+    this->model->GetJointController()->SetVelocityTarget(
+        this->rightBackWheel->GetScopedName(), this->rightTarget);
+
+    this->model->GetJointController()->SetVelocityTarget(
+        this->leftFrontWheel->GetScopedName(), this->leftTarget);
+
+    this->model->GetJointController()->SetVelocityTarget(
+        this->rightFrontWheel->GetScopedName(), this->rightTarget);
+}
 
   void MotorControlPlugin::RosQueueThread()
   {
@@ -147,19 +165,11 @@ namespace gazebo
 
   void MotorControlPlugin::OnVelCmdLeft(const std_msgs::Float32ConstPtr &_msg)
   {
-    /*this->model->GetJointController()->SetVelocityTarget(
-        this->leftBackWheel->GetScopedName(), -1 * _msg->data * MAX_RPM_IN_RAD);*/
-    //this->leftBackWheel->SetVelocity(0, -1 * _msg->data * MAX_RPM_IN_RAD);
-    //this->leftFrontWheel->SetVelocity(0, -1 * _msg->data * MAX_RPM_IN_RAD);
     this->leftTarget = {-1 * _msg->data * MAX_RPM_IN_RAD};
   }
 
   void MotorControlPlugin::OnVelCmdRight(const std_msgs::Float32ConstPtr &_msg)
   {
-    /*this->model->GetJointController()->SetVelocityTarget(
-        this->rightBackWheel->GetScopedName(), _msg->data * MAX_RPM_IN_RAD);*/
-    //this->rightBackWheel->SetVelocity(0, _msg->data * MAX_RPM_IN_RAD);
-    //this->rightFrontWheel->SetVelocity(0, _msg->data * MAX_RPM_IN_RAD);
     this->rightTarget = {_msg->data * MAX_RPM_IN_RAD};
   }
 

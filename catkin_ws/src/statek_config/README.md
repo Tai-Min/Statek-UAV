@@ -1,5 +1,5 @@
-# statek_description
-Package with Statek's robot description files.
+# statek_config
+Package with Statek's config and robot description files.
 * **urdf**
   * **statek.urdf** Statek's robot description file used for Gazebo and Rviz.
 

@@ -2,7 +2,7 @@
 <launch>
     <arg name="statek_name" default="statek"/>
 
-    <param name="$(arg statek_name)/robot_description" command="$(find xacro)/xacro $(find statek_description)/urdf/statek.urdf"/>
+    <param name="$(arg statek_name)/robot_description" command="$(find xacro)/xacro $(find statek_config)/urdf/statek.urdf"/>
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find statek_rviz)/rviz/statek.rviz"/>
 

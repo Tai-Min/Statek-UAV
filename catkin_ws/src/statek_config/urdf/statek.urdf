@@ -3,6 +3,12 @@
   xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:arg name="statek_name" default="statek"/>
 
+  <xacro:arg name="mu1" default="0.00"/>
+  <xacro:arg name="mu2" default="0.00"/>
+  <xacro:arg name="kp" default="100000"/>
+  <xacro:arg name="kd" default="1"/>
+  <xacro:arg name="fdir1" default="0 0 1"/>
+
   <joint name="left_back_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
     <child link="$(arg statek_name)/left_back_wheel"/>
@@ -53,7 +59,7 @@
     <visual name="visual">
       <origin rpy="0  0  1.57" xyz="0  0  0"/>
       <geometry>
-        <mesh filename="file://$(find statek_description)/urdf/chassis.dae" scale="1.0 1.0 1.0"/>
+        <mesh filename="file://$(find statek_config)/urdf/chassis.dae" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
 
@@ -70,14 +76,14 @@
     <collision name="collision">
       <origin rpy="-1.57  0 1.57" xyz="0.012 0  0"/>
       <geometry>
-        <cylinder length="0.07" radius="0.12"/>
+        <sphere length="0.07" radius="0.12"/>
       </geometry>
     </collision>
 
     <visual name="visual">
       <origin rpy="0  0  1.57" xyz="0  0  0"/>
       <geometry>
-        <mesh filename="file://$(find statek_description)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
+        <mesh filename="file://$(find statek_config)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
 
@@ -94,14 +100,14 @@
     <collision name="collision">
       <origin rpy="1.57  0    1.57" xyz="0.012 0  0"/>
       <geometry>
-        <cylinder length="0.07" radius="0.12"/>
+        <sphere length="0.07" radius="0.12"/>
       </geometry>
     </collision>
 
     <visual name="visual">
       <origin rpy="0  0  1.57" xyz="0  0  0"/>
       <geometry>
-        <mesh filename="file://$(find statek_description)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
+        <mesh filename="file://$(find statek_config)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
 
@@ -118,14 +124,14 @@
     <collision name="collision">
       <origin rpy="-1.57  0    1.57" xyz="0.012 0  0"/>
       <geometry>
-        <cylinder length="0.07" radius="0.12"/>
+        <sphere length="0.07" radius="0.12"/>
       </geometry>
     </collision>
 
     <visual name="visual">
       <origin rpy="0  0  1.57" xyz="0  0  0"/>
       <geometry>
-        <mesh filename="file://$(find statek_description)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
+        <mesh filename="file://$(find statek_config)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
 
@@ -142,14 +148,14 @@
     <collision name="collision">
       <origin rpy="1.57  0    1.57" xyz="0.012 0 0"/>
       <geometry>
-        <cylinder length="0.07" radius="0.12"/>
+        <sphere length="0.07" radius="0.12"/>
       </geometry>
     </collision>
 
     <visual name="visual">
       <origin rpy="0  0  1.57" xyz="0  0  0"/>
       <geometry>
-        <mesh filename="file://$(find statek_description)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
+        <mesh filename="file://$(find statek_config)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
 
@@ -188,82 +194,36 @@
     </sensor>
   </gazebo>
 
-  <xacro:arg name="mu1" default="0.1"/>
-
-  <xacro:arg name="min_depth" default="0.005"/>
-  <xacro:arg name="kp" default="1e8"/>
-
-
   <gazebo reference="$(arg statek_name)/left_front_wheel">
-    <collision name="collision">
-      <surface>
-        <contact>
-          <ode>
-            <min_depth>$(arg min_depth)</min_depth>
-            <kp>$(arg kp)</kp>
-          </ode>
-        </contact>
-        <friction>
-          <ode>
-            <mu1>$(arg mu1)</mu1>
-          </ode>
-        </friction>
-      </surface>
-    </collision>
+    <kp>$(arg kp)</kp>
+    <kd>$(arg kd)</kd>
+    <mu1>$(arg mu1)</mu1>
+    <mu2>$(arg mu2)</mu2>
+    <fdir1>$(arg fdir1)</fdir1>
   </gazebo>
 
   <gazebo reference="$(arg statek_name)/right_front_wheel">
-    <collision name="collision">
-      <surface>
-        <contact>
-          <ode>
-            <min_depth>$(arg min_depth)</min_depth>
-            <kp>$(arg kp)</kp>
-          </ode>
-        </contact>
-        <friction>
-          <ode>
-            <mu1>$(arg mu1)</mu1>
-          </ode>
-        </friction>
-      </surface>
-    </collision>
+    <kp>$(arg kp)</kp>
+    <kd>$(arg kd)</kd>
+    <mu1>$(arg mu1)</mu1>
+    <mu2>$(arg mu2)</mu2>
+    <fdir1>$(arg fdir1)</fdir1>
   </gazebo>
 
   <gazebo reference="$(arg statek_name)/left_back_wheel">
-    <collision name="collision">
-      <surface>
-        <contact>
-          <ode>
-            <min_depth>$(arg min_depth)</min_depth>
-            <kp>$(arg kp)</kp>
-          </ode>
-        </contact>
-        <friction>
-          <ode>
-            <mu1>$(arg mu1)</mu1>
-          </ode>
-        </friction>
-      </surface>
-    </collision>
+    <kp>$(arg kp)</kp>
+    <kd>$(arg kd)</kd>
+    <mu1>$(arg mu1)</mu1>
+    <mu2>$(arg mu2)</mu2>
+    <fdir1>$(arg fdir1)</fdir1>
   </gazebo>
 
   <gazebo reference="$(arg statek_name)/right_back_wheel">
-    <collision name="collision">
-      <surface>
-        <contact>
-          <ode>
-            <min_depth>$(arg min_depth)</min_depth>
-            <kp>$(arg kp)</kp>
-          </ode>
-        </contact>
-        <friction>
-          <ode>
-            <mu1>$(arg mu1)</mu1>
-          </ode>
-        </friction>
-      </surface>
-    </collision>
+    <kp>$(arg kp)</kp>
+    <kd>$(arg kd)</kd>
+    <mu1>$(arg mu1)</mu1>
+    <mu2>$(arg mu2)</mu2>
+    <fdir1>$(arg fdir1)</fdir1>
   </gazebo>
 
   <gazebo>
@@ -272,8 +232,8 @@
       <right_back_joint>right_back_wheel_hinge</right_back_joint>
       <left_front_joint>left_front_wheel_hinge</left_front_joint>
       <right_front_joint>right_front_wheel_hinge</right_front_joint>
-      <kp>1</kp>
-      <ki>0.1</ki>
+      <kp>5</kp>
+      <ki>2.5</ki>
       <kd>0</kd>
     </plugin>
   </gazebo>

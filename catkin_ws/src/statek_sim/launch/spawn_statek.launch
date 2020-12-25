@@ -12,7 +12,7 @@
     </include>
 
     <!-- Spawn Statek UAV with given name or default one -->
-    <param name="$(arg statek_name)/robot_description" command="$(find xacro)/xacro $(find statek_description)/urdf/statek.urdf"/>
+    <param name="$(arg statek_name)/robot_description" command="$(find xacro)/xacro $(find statek_config)/urdf/statek.urdf"/>
 
     <node name="spawn_statek" pkg="gazebo_ros" type="spawn_model" args="-param $(arg statek_name)/robot_description -urdf -model $(arg statek_name) -x $(arg x) -y $(arg y) -z $(arg z)"/>
 

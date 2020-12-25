@@ -23,8 +23,11 @@ namespace gazebo
         physics::JointPtr rightBackWheel;  //!< Joint of right back wheel.
         physics::JointPtr leftFrontWheel;  //!< Joint of left front wheel.
         physics::JointPtr rightFrontWheel; //!< Joint of right front wheel.
-        common::PID leftMotorPid;          //!< Pid controller for left motor.
-        common::PID rightMotorPid;         //!< Pid controller for right motor.
+
+        common::PID leftBackWheelPid;          //!< Pid controller for left back wheel.
+        common::PID rightBackWheelPid;         //!< Pid controller for right back wheel.
+        common::PID leftFrontWheelPid;          //!< Pid controller for left front wheel.
+        common::PID rightFrontWheelPid;         //!< Pid controller for right front wheel.
 
         std::unique_ptr<ros::NodeHandle> rosNode; //!< Node to communicate with ROS.
         ros::Subscriber leftMotorCmdSubscriber;   //!< Subscriber that listens to <model_name>/left_vel_cmd and sets new velocity target based on it.
@@ -35,10 +38,10 @@ namespace gazebo
 
         ros::CallbackQueue rosQueue; //!< Callback manager for ROS.
         std::thread rosQueueThread;  //!< Thread for ROS communication.
-        std::atomic_bool rosStop = {false};
+        std::atomic_bool rosStop = {false}; //!< Flag to stop ROS thread.
         
-        std::atomic<double> leftTarget = {0};
-        std::atomic<double> rightTarget = {0};
+        std::atomic<double> leftTarget = {0}; //!< Setpoint for left wheels.
+        std::atomic<double> rightTarget = {0}; //!< Setpoint for right wheels.
 
         /**
         * @brief Initialize ROS, subscribers, publishers and start ROS thread.

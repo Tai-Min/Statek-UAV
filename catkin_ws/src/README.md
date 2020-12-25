@@ -1,6 +1,6 @@
 Catkin packages for Statek UAV.
 
-* **TODO: statek_config** </br>
+* **statek_config** </br>
   Config files for Statek UAV.
 * **TODO: statek_diag** </br>
   Diagnostic nodes for Statek's processes
