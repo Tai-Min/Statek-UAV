@@ -350,7 +350,7 @@ U 1 1 5D82C065
 P 7300 1950
 F 0 "J2" H 7380 1942 50  0000 L CNN
 F 1 "Conn_01x04" H 7380 1851 50  0000 L CNN
-F 2 "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_4-G-5,08_1x04_P5.08mm_Horizontal" H 7300 1950 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type059_RT06304HBWC_1x04_P3.50mm_Horizontal" H 7300 1950 50  0001 C CNN
 F 3 "~" H 7300 1950 50  0001 C CNN
 	1    7300 1950
 	1    0    0    1   
@@ -389,4 +389,95 @@ Wire Wire Line
 	7000 1850 7100 1850
 Wire Wire Line
 	7000 1950 7100 1950
+$Comp
+L Connector_Generic:Conn_01x04 J4
+U 1 1 5FE6E9FA
+P 3950 3650
+F 0 "J4" H 4030 3642 50  0000 L CNN
+F 1 "Conn_01x04" H 4030 3551 50  0000 L CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical" H 3950 3650 50  0001 C CNN
+F 3 "~" H 3950 3650 50  0001 C CNN
+	1    3950 3650
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4200 3450 4150 3450
+Wire Wire Line
+	4200 3550 4150 3550
+Wire Wire Line
+	4200 3650 4150 3650
+Wire Wire Line
+	4200 3750 4150 3750
+$Comp
+L Connector_Generic:Conn_01x03 J6
+U 1 1 5FE74BC2
+P 5650 3750
+F 0 "J6" H 5730 3792 50  0000 L CNN
+F 1 "Conn_01x03" H 5450 3550 50  0000 L CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x03_P2.54mm_Vertical" H 5650 3750 50  0001 C CNN
+F 3 "~" H 5650 3750 50  0001 C CNN
+	1    5650 3750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 J5
+U 1 1 5FE7540B
+P 5650 3050
+F 0 "J5" H 5730 3042 50  0000 L CNN
+F 1 "Conn_01x02" H 5400 3150 50  0000 L CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical" H 5650 3050 50  0001 C CNN
+F 3 "~" H 5650 3050 50  0001 C CNN
+	1    5650 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 J7
+U 1 1 5FE76B9E
+P 6050 4250
+F 0 "J7" H 6130 4242 50  0000 L CNN
+F 1 "Conn_01x02" H 5800 4350 50  0000 L CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical" H 6050 4250 50  0001 C CNN
+F 3 "~" H 6050 4250 50  0001 C CNN
+	1    6050 4250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x03 J3
+U 1 1 5FE77758
+P 3950 3150
+F 0 "J3" H 4030 3192 50  0000 L CNN
+F 1 "Conn_01x03" H 3750 2950 50  0000 L CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x03_P2.54mm_Vertical" H 3950 3150 50  0001 C CNN
+F 3 "~" H 3950 3150 50  0001 C CNN
+	1    3950 3150
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4150 3050 4200 3050
+Wire Wire Line
+	4150 3150 4200 3150
+Wire Wire Line
+	4150 3250 4200 3250
+Wire Wire Line
+	5450 3050 5400 3050
+Wire Wire Line
+	5450 3150 5400 3150
+Wire Wire Line
+	5450 3650 5400 3650
+Wire Wire Line
+	5450 3750 5400 3750
+Wire Wire Line
+	5450 3850 5400 3850
+Wire Wire Line
+	5400 4050 5750 4050
+Wire Wire Line
+	5750 4050 5750 4250
+Wire Wire Line
+	5750 4250 5850 4250
+Wire Wire Line
+	5400 4450 5750 4450
+Wire Wire Line
+	5750 4450 5750 4350
+Wire Wire Line
+	5750 4350 5850 4350
 $EndSCHEMATC
