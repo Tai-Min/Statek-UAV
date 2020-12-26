@@ -1,4 +1,5 @@
 #include "../include/statek_motor_control.h"
+#include "statek_msgs/Encoder.h"
 
 #include <math.h>
 
@@ -22,18 +23,21 @@ namespace gazebo
 
     this->model = _model;
 
-    // prepare joints
-    saveJoints(_sdf);
+    // create noise generator for sensors
+    CreateNoiseGenerator(_sdf);
 
-    // prepare pid regulators
-    SavePids(_sdf);
-    AttachPidsToJoints();
+    // save joints from sdf
+    SaveJoints(_sdf);
+
+    // create pid regulators with correct gains
+    CreatePids(_sdf);
+    AttachPidsToJoints(); // attach pids to correct joints
 
     // initialize ROS
-    InitializeRosSubscribersPublishers();
+    InitializeRos(_sdf);
   }
 
-  void MotorControlPlugin::InitializeRosSubscribersPublishers()
+  void MotorControlPlugin::InitializeRos(sdf::ElementPtr _sdf)
   {
     if (!ros::isInitialized())
     {
@@ -45,7 +49,21 @@ namespace gazebo
 
     this->rosNode.reset(new ros::NodeHandle("gazebo_client"));
 
+    int loopRate = 10;
+
+    if (_sdf->HasElement("sensor_publish_rate"))
+      loopRate = _sdf->Get<int>("sensor_publish_rate");
+
+    this->rosLoopRate = ros::Rate(loopRate);
+
+    if (_sdf->HasElement("left_motor_tf_frame"))
+      this->left_motor_tf = _sdf->Get<std::string>("left_motor_tf_frame");
+    if (_sdf->HasElement("right_motor_tf_frame"))
+      this->right_motor_tf = _sdf->Get<std::string>("right_motor_tf_frame");
+
     CreateSubscribers();
+    CreatePublishers();
+
     StartRosThread();
   }
 
@@ -68,13 +86,44 @@ namespace gazebo
     this->rightMotorCmdSubscriber = this->rosNode->subscribe(rightMotorOptions);
   }
 
+  void MotorControlPlugin::CreatePublishers()
+  {
+    this->leftMotorRawData =
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_raw_left", 10);
+    this->rightMotorRawData =
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_raw_right", 10);
+    this->leftMotorFilteredData =
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_filtered_left", 10);
+    this->rightMotorFilteredData =
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_filtered_right", 10);
+  }
+
   void MotorControlPlugin::StartRosThread()
   {
     this->rosQueueThread =
         std::thread(std::bind(&MotorControlPlugin::RosQueueThread, this));
   }
 
-  void MotorControlPlugin::saveJoints(sdf::ElementPtr _sdf)
+  void MotorControlPlugin::CreateNoiseGenerator(sdf::ElementPtr _sdf)
+  {
+    double dev = 0;
+    double mean = 0;
+
+    if (_sdf->HasElement("sensor_dev"))
+      dev = _sdf->Get<double>("sensor_dev");
+    if (_sdf->HasElement("sensor_mean"))
+      mean = _sdf->Get<double>("sensor_mean");
+
+    this->randomGen = std::mt19937(this->rd());
+    this->noise = std::normal_distribution<>(mean, dev);
+  }
+
+  double MotorControlPlugin::GenerateNoiseSample()
+  {
+    return this->noise(this->randomGen);
+  }
+
+  void MotorControlPlugin::SaveJoints(sdf::ElementPtr _sdf)
   {
     std::string leftBack = "left_back";
     std::string rightBack = "right_back";
@@ -96,7 +145,7 @@ namespace gazebo
     this->rightFrontWheel = this->model->GetJoint(rightFront);
   }
 
-  void MotorControlPlugin::SavePids(sdf::ElementPtr _sdf)
+  void MotorControlPlugin::CreatePids(sdf::ElementPtr _sdf)
   {
     double kp = 0.1;
     double ki = 0;
@@ -127,7 +176,6 @@ namespace gazebo
     this->model->GetJointController()->SetVelocityPID(
         this->rightFrontWheel->GetScopedName(), this->rightFrontWheelPid);
 
-
     this->model->GetJointController()->SetVelocityTarget(
         this->leftBackWheel->GetScopedName(), 0);
     this->model->GetJointController()->SetVelocityTarget(
@@ -141,6 +189,7 @@ namespace gazebo
 
   void MotorControlPlugin::OnWorldUpdate()
   {
+    // update PIDs with target velocities
     this->model->GetJointController()->SetVelocityTarget(
         this->leftBackWheel->GetScopedName(), this->leftTarget);
 
@@ -152,20 +201,70 @@ namespace gazebo
 
     this->model->GetJointController()->SetVelocityTarget(
         this->rightFrontWheel->GetScopedName(), this->rightTarget);
-}
+
+    // save current velocities and positions
+    leftVelocity = {this->leftFrontWheel->GetVelocity(0)};
+    rightVelocity = {this->rightFrontWheel->GetVelocity(0)};
+
+    if (this->leftFrontWheel->Position(0) < 0)
+      leftPosition = {2 * M_PI + fmod(this->leftFrontWheel->Position(0), 2 * M_PI)};
+    else
+      leftPosition = {fmod(this->leftFrontWheel->Position(0), 2 * M_PI)};
+
+    if (this->rightFrontWheel->Position(0) < 0)
+      rightPosition = {2 * M_PI + fmod(this->rightFrontWheel->Position(0), 2 * M_PI)};
+    else
+      rightPosition = {fmod(this->rightFrontWheel->Position(0), 2 * M_PI)};
+  }
 
   void MotorControlPlugin::RosQueueThread()
   {
-    static const double timeout = 0.01;
+    uint32_t cntr = 0;
     while (this->rosNode->ok() && !this->rosStop)
     {
-      this->rosQueue.callAvailable(ros::WallDuration(timeout));
+      statek_msgs::Encoder rawLeft;
+      rawLeft.header.seq = cntr;
+      rawLeft.header.stamp = ros::Time::now();
+      rawLeft.header.frame_id = this->left_motor_tf;
+      rawLeft.velocity = this->leftVelocity + GenerateNoiseSample();
+      rawLeft.position = this->leftPosition + GenerateNoiseSample();
+
+      statek_msgs::Encoder rawRight;
+      rawRight.header.seq = cntr;
+      rawRight.header.stamp = ros::Time::now();
+      rawRight.header.frame_id = this->right_motor_tf;
+      rawRight.velocity = this->rightVelocity + GenerateNoiseSample();
+      rawRight.position = this->rightPosition + GenerateNoiseSample();
+
+      statek_msgs::Encoder filteredLeft;
+      filteredLeft.header.seq = cntr;
+      filteredLeft.header.stamp = ros::Time::now();
+      filteredLeft.header.frame_id = this->left_motor_tf;
+      filteredLeft.velocity = this->leftVelocity;
+      filteredLeft.position = this->leftPosition;
+
+      statek_msgs::Encoder filteredRight;
+      filteredRight.header.seq = cntr;
+      filteredRight.header.stamp = ros::Time::now();
+      filteredRight.header.frame_id = this->right_motor_tf;
+      filteredRight.velocity = this->rightVelocity;
+      filteredRight.position = this->rightPosition;
+
+      this->leftMotorRawData.publish(rawLeft);
+      this->rightMotorRawData.publish(rawRight);
+      this->leftMotorFilteredData.publish(filteredLeft);
+      this->rightMotorFilteredData.publish(filteredRight);
+
+      this->rosQueue.callAvailable();
+
+      cntr++;
+      this->rosLoopRate.sleep();
     }
   }
 
   void MotorControlPlugin::OnVelCmdLeft(const std_msgs::Float32ConstPtr &_msg)
   {
-    this->leftTarget = {-1 * _msg->data * MAX_RPM_IN_RAD};
+    this->leftTarget = {_msg->data * MAX_RPM_IN_RAD};
   }
 
   void MotorControlPlugin::OnVelCmdRight(const std_msgs::Float32ConstPtr &_msg)

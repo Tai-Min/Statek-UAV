@@ -30,11 +30,17 @@ namespace gazebo
         common::PID rightFrontWheelPid;         //!< Pid controller for right front wheel.
 
         std::unique_ptr<ros::NodeHandle> rosNode; //!< Node to communicate with ROS.
+        ros::Rate rosLoopRate;
         ros::Subscriber leftMotorCmdSubscriber;   //!< Subscriber that listens to <model_name>/left_vel_cmd and sets new velocity target based on it.
         ros::Subscriber rightMotorCmdSubscriber;  //!< Subscriber that listens to <model_name/right_vel_cmd and sets new velocity target based on it.
-
         ros::Publisher leftMotorRawData;  //!< Publisher that publishes raw info from encoder that placed on left back wheel.
         ros::Publisher rightMotorRawData; //!< Publisher that publishes raw info from encoder that is placed on right back wheel.
+        ros::Publisher leftMotorFilteredData;  //!< Publisher that publishes filtered info from encoder that placed on left front wheel.
+        ros::Publisher rightMotorFilteredData; //!< Publisher that publishes diltered info from encoder that is placed on right front wheel.
+
+        std::random_device rd;
+        std::mt19937 randomGen;
+        std::normal_distribution<> noise;
 
         ros::CallbackQueue rosQueue; //!< Callback manager for ROS.
         std::thread rosQueueThread;  //!< Thread for ROS communication.
@@ -42,11 +48,18 @@ namespace gazebo
         
         std::atomic<double> leftTarget = {0}; //!< Setpoint for left wheels.
         std::atomic<double> rightTarget = {0}; //!< Setpoint for right wheels.
+        std::atomic<double> leftVelocity = {0}; //!< Angular velocity of left wheels.
+        std::atomic<double> rightVelocity = {0}; //!< Angular velocity of right wheels.
+        std::atomic<double> leftPosition = {0}; //!< Angular position of left wheels.
+        std::atomic<double> rightPosition = {0}; //!< Angular position of right wheels.
+
+        std::string left_motor_tf = "left_motor_link"; //!< For Encoder's header.
+        std::string right_motor_tf = "right_motor_link"; //!< For Encoder's header.
 
         /**
         * @brief Initialize ROS, subscribers, publishers and start ROS thread.
         */
-        void InitializeRosSubscribersPublishers();
+        void InitializeRos(sdf::ElementPtr _sdf);
 
         /**
         * @brief Create subscribers required to command both motors.
@@ -54,23 +67,40 @@ namespace gazebo
         void CreateSubscribers();
 
         /**
+         * @brieg Create publishers to send raw and filtered encoder data.
+         */
+        void CreatePublishers();
+
+        /**
         * @brief Start Thread to manage ROS communication.
         */
         void StartRosThread();
 
         /**
+         * @brief Create additive gaussian noise generator.
+         * 
+         * @param _sdf Pointer to sdf of the robot.
+         */
+        void CreateNoiseGenerator(sdf::ElementPtr _sdf);
+
+        /**
+         * @brief Generate gaussian noise sample using noise generator.
+         */
+        double GenerateNoiseSample();
+
+        /**
         * @brief Save joint pointers based on joint names from sdf file or default names.
         *
-        * @param _sdf Pointer to sdf pointer.
+        * @param _sdf Pointer to sdf of the robot.
         */
-        void saveJoints(sdf::ElementPtr _sdf);
+        void SaveJoints(sdf::ElementPtr _sdf);
 
         /**
         * @brief Save pid controllers with gains based on values from sdf file or default gains.
         *
-        * @param _sdf Pointer to sdf pointer.
+        * @param _sdf Pointer to sdf of the robot.
         */
-        void SavePids(sdf::ElementPtr _sdf);
+        void CreatePids(sdf::ElementPtr _sdf);
 
         /**
         * Set pids to joints and set target velocities to 0.
@@ -105,14 +135,14 @@ namespace gazebo
         /**
         * @brief Class constructor.
         */
-        MotorControlPlugin() : ModelPlugin() {}
+        MotorControlPlugin() : ModelPlugin(), rosLoopRate(10) {}
         ~MotorControlPlugin();
 
         /**
         * @brief The load function is called by Gazebo when the plugin is inserted into simulation
         *
         * @param _model A pointer to the model that this plugin is attached to.
-        * @param _sdf A pointer to the plugin's SDF element.
+        * @param _sdf Pointer to sdf of the robot.
         */
         void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
     };

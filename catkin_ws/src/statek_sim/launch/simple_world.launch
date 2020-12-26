@@ -3,18 +3,9 @@
   <arg name="statek_name" default="statek"/>
 
   <!-- Launch world -->
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  <include file="$(find statek_sim)/launch/world.launch">
     <arg name="world_name" value="$(find statek_sim)/worlds/simple_world.world"/>
-    <arg name="paused" value="false"/>
-    <arg name="use_sim_time" value="false"/>
-    <arg name="gui" value="true"/>
-    <arg name="recording" value="false"/>
-    <arg name="debug" value="false"/>
-    <arg name="verbose" value="false"/>
-  </include>
-
-  <!-- Spawn Statek UAV with given name or default one -->
-  <include file="$(find statek_sim)/launch/spawn_statek.launch">
     <arg name="statek_name" value="$(arg statek_name)"/>
   </include>
+
 </launch>

@@ -11,15 +11,15 @@
 
   <joint name="left_back_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
-    <child link="$(arg statek_name)/left_back_wheel"/>
-    <origin rpy="0      0     -1.5708" xyz="-0.252682 0.270467 -0.03126"/>
+    <child link="$(arg statek_name)/left_back_wheel_link"/>
+    <origin rpy="0      0     1.5708" xyz="-0.252682 0.270467 -0.03126"/>
     <axis xyz="1  0  0"/>
     <limit effort="-1" lower="-1e16" upper="1e16" velocity="-1"/>
   </joint>
 
   <joint name="right_back_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
-    <child link="$(arg statek_name)/right_back_wheel"/>
+    <child link="$(arg statek_name)/right_back_wheel_link"/>
     <origin rpy="0      0      1.5708" xyz="-0.252682 -0.264541 -0.03126"/>
     <axis xyz="1  0  0"/>
     <limit effort="-1" lower="-1e16" upper="1e16" velocity="-1"/>
@@ -27,15 +27,15 @@
 
   <joint name="left_front_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
-    <child link="$(arg statek_name)/left_front_wheel"/>
-    <origin rpy="0      0     -1.5708" xyz="0.167807 0.270467 -0.03126"/>
+    <child link="$(arg statek_name)/left_front_wheel_link"/>
+    <origin rpy="0      0     1.5708" xyz="0.167807 0.270467 -0.03126"/>
     <axis xyz="1  0  0"/>
     <limit effort="-1" lower="-1e16" upper="1e16" velocity="-1"/>
   </joint>
 
   <joint name="right_front_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
-    <child link="$(arg statek_name)/right_front_wheel"/>
+    <child link="$(arg statek_name)/right_front_wheel_link"/>
     <origin rpy="0      0      1.5708" xyz="0.167807 -0.264541 -0.03126"/>
     <axis xyz="1  0  0"/>
     <limit effort="-1" lower="-1e16" upper="1e16" velocity="-1"/>
@@ -65,7 +65,7 @@
 
   </link>
 
-  <link name="$(arg statek_name)/left_back_wheel">
+  <link name="$(arg statek_name)/left_back_wheel_link">
 
     <inertial>
       <mass value="1.3"/>
@@ -81,7 +81,7 @@
     </collision>
 
     <visual name="visual">
-      <origin rpy="0  0  1.57" xyz="0  0  0"/>
+      <origin rpy="0  0  -1.57" xyz="0  0  0"/>
       <geometry>
         <mesh filename="file://$(find statek_config)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
       </geometry>
@@ -89,7 +89,7 @@
 
   </link>
 
-  <link name="$(arg statek_name)/right_back_wheel">
+  <link name="$(arg statek_name)/right_back_wheel_link">
 
     <inertial>
       <mass value="1.3"/>
@@ -113,7 +113,7 @@
 
   </link>
 
-  <link name="$(arg statek_name)/left_front_wheel">
+  <link name="$(arg statek_name)/left_front_wheel_link">
 
     <inertial>
       <mass value="1.3"/>
@@ -129,7 +129,7 @@
     </collision>
 
     <visual name="visual">
-      <origin rpy="0  0  1.57" xyz="0  0  0"/>
+      <origin rpy="0  0  -1.57" xyz="0  0  0"/>
       <geometry>
         <mesh filename="file://$(find statek_config)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
       </geometry>
@@ -137,7 +137,7 @@
 
   </link>
 
-  <link name="$(arg statek_name)/right_front_wheel">
+  <link name="$(arg statek_name)/right_front_wheel_link">
 
     <inertial>
       <mass value="1.3"/>
@@ -166,7 +166,7 @@
       <always_on>true</always_on>
       <pose>-.025 0 .15 0 0 3.08159265359</pose>
       <visualize>false</visualize>
-      <update_rate>5</update_rate>
+      <update_rate>8</update_rate>
       <ray>
         <scan>
           <horizontal>
@@ -194,7 +194,7 @@
     </sensor>
   </gazebo>
 
-  <gazebo reference="$(arg statek_name)/left_front_wheel">
+  <gazebo reference="$(arg statek_name)/left_front_wheel_link">
     <kp value="$(arg kp)"/>
     <kd value="$(arg kd)"/>
     <mu1 value="$(arg mu1)"/>
@@ -202,7 +202,7 @@
     <fdir1 value="$(arg fdir1)"/>
   </gazebo>
 
-  <gazebo reference="$(arg statek_name)/right_front_wheel">
+  <gazebo reference="$(arg statek_name)/right_front_wheel_link">
     <kp>$(arg kp)</kp>
     <kd>$(arg kd)</kd>
     <mu1>$(arg mu1)</mu1>
@@ -210,7 +210,7 @@
     <fdir1>$(arg fdir1)</fdir1>
   </gazebo>
 
-  <gazebo reference="$(arg statek_name)/left_back_wheel">
+  <gazebo reference="$(arg statek_name)/left_back_wheel_link">
     <kp>$(arg kp)</kp>
     <kd>$(arg kd)</kd>
     <mu1>$(arg mu1)</mu1>
@@ -218,7 +218,7 @@
     <fdir1>$(arg fdir1)</fdir1>
   </gazebo>
 
-  <gazebo reference="$(arg statek_name)/right_back_wheel">
+  <gazebo reference="$(arg statek_name)/right_back_wheel_link">
     <kp>$(arg kp)</kp>
     <kd>$(arg kd)</kd>
     <mu1>$(arg mu1)</mu1>
@@ -235,6 +235,11 @@
       <kp>5</kp>
       <ki>2.5</ki>
       <kd>0</kd>
+      <sensor_dev>0.01</sensor_dev>
+      <sensor_mean>0</sensor_mean>
+      <sensor_publish_rate>50</sensor_publish_rate>
+      <left_motor_tf_frame>$(arg statek_name)/left_motor_link</left_motor_tf_frame>
+      <right_motor_tf_frame>$(arg statek_name)/right_motor_link</right_motor_tf_frame>
     </plugin>
   </gazebo>
 

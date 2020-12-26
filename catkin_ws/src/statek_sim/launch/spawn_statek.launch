@@ -7,7 +7,7 @@
 
 
     <!-- Launch static transform publisher -->
-    <include file="$(find statek_tf)/launch/static_transform_publisher.launch">
+    <include file="$(find statek_tf)/launch/transform_publishers.launch">
         <arg name="statek_name" value="$(arg statek_name)"/>
     </include>
 
