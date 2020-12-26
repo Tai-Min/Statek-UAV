@@ -44,7 +44,7 @@
   <link name="$(arg statek_name)/base_link">
 
     <inertial>
-      <mass value="14"/>
+      <mass value="9"/>
       <origin rpy="0  0  1.57" xyz="-0.04 0 0.012"/>
       <inertia ixx="0.97125" ixy="0" ixz="0" iyy="0.51916" iyz="0" izz="1.4379"/>
     </inertial>
@@ -195,11 +195,11 @@
   </gazebo>
 
   <gazebo reference="$(arg statek_name)/left_front_wheel">
-    <kp>$(arg kp)</kp>
-    <kd>$(arg kd)</kd>
-    <mu1>$(arg mu1)</mu1>
-    <mu2>$(arg mu2)</mu2>
-    <fdir1>$(arg fdir1)</fdir1>
+    <kp value="$(arg kp)"/>
+    <kd value="$(arg kd)"/>
+    <mu1 value="$(arg mu1)"/>
+    <mu2 value="$(arg mu2)"/>
+    <fdir1 value="$(arg fdir1)"/>
   </gazebo>
 
   <gazebo reference="$(arg statek_name)/right_front_wheel">

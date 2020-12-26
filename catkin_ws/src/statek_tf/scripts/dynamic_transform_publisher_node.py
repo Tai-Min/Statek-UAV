@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import rospy
-#import argparse
-from ds4_driver.msg import Status
-from std_msgs.msg import Float32
+
+from statek_msgs.msg import Encoder
 
 def encoder_callback(status, args):
     pass
