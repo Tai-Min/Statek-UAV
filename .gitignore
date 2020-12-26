@@ -28,9 +28,8 @@ fp-info-cache
 *.ses
 
 # Exported BOM files
-*.xml
-!catkin_ws/src/*/*.xml # except ROS packages
-*.csv
+electronics/**/*.xml
+electronics/**/*.csv
 
 # For Autodesk inventor 2020
 OldVersions/
