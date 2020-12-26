@@ -29,7 +29,7 @@ fp-info-cache
 
 # Exported BOM files
 *.xml
-!catkin_ws/src/package.xml # except ROS packages
+!catkin_ws/src/*/*.xml # except ROS packages
 *.csv
 
 # For Autodesk inventor 2020
