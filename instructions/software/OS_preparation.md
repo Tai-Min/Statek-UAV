@@ -1,7 +1,11 @@
 [Previous step - Third party packages](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/thirdparty_packages.md)
 
 # OS preparation
-
+## Misc
+reinstall libcanberra-gtk-module 
+```
+sudo apt-get install --reinstall libcanberra-gtk-module
+```
 ## Serial device preparation
 Make sure that all serial devices are connected.
 ### Add yourself to dialout group
