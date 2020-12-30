@@ -2,7 +2,7 @@
 
 # OS preparation
 ## Misc
-reinstall libcanberra-gtk-module 
+Reinstall libcanberra-gtk-module 
 ```
 sudo apt-get install --reinstall libcanberra-gtk-module
 ```
