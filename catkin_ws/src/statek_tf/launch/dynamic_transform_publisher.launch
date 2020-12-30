@@ -4,7 +4,7 @@
 
     <group ns="$(arg statek_name)">
         <!-- base link to encoder and wheel links  -->
-        <node pkg="statek_tf" type="encoders_wheels_transforms_publisher.py" name="encoders_wheels_transforms_publisher">
+        <node pkg="statek_tf" type="encoders_wheels_transforms_publisher.py" name="encoders_wheels_transforms_publisher" respawn="true">
             <param name="statek_name" type="string" value="$(arg statek_name)" />
         </node>
     </group>

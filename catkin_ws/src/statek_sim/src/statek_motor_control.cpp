@@ -89,13 +89,13 @@ namespace gazebo
   void MotorControlPlugin::CreatePublishers()
   {
     this->leftMotorRawData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_raw_left", 10);
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_left/raw", 10);
     this->rightMotorRawData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_raw_right", 10);
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_right/raw", 10);
     this->leftMotorFilteredData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_filtered_left", 10);
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_left/filtered", 10);
     this->rightMotorFilteredData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_filtered_right", 10);
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_right/filtered", 10);
   }
 
   void MotorControlPlugin::StartRosThread()

@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
    FILES
    Encoder.msg
+   Velocity.msg
 )
 
 generate_messages(

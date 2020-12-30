@@ -4,7 +4,11 @@
 
     <group ns="$(arg statek_name)">
         <!-- base link to lidar link -->
-        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_laser_link" args="-0.025 0 0.15 3.08159265359 0 0 $(arg statek_name)/base_link $(arg statek_name)/laser_link"/>
+        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_laser_link" args="-0.025 0 0.15 3.08159265359 0 0 $(arg statek_name)/base_link $(arg statek_name)/laser_link" respawn="true"/>
+        
+        <!-- base link to camera links -->
+        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_center_camera_link" args="0.405 0 0.073 0 0 0 $(arg statek_name)/base_link $(arg statek_name)/center_camera_link" respawn="true"/>
+        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_right_camera_link" args="0.405 -0.0625 0.073 0 0 0 $(arg statek_name)/base_link $(arg statek_name)/right_camera_link" respawn="true"/>
     </group>
 
 </launch>
