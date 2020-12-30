@@ -3,8 +3,11 @@ import cv2
 import numpy as np
 from threading import Thread, Lock
 import time
+import yaml
 import rospy
+import rospkg
 from sensor_msgs.msg import Image, CameraInfo
+from sensor_msgs.srv import SetCameraInfo, SetCameraInfoResponse
 from cv_bridge import CvBridge
 
 class Camera:
@@ -108,25 +111,87 @@ class Camera:
 		with self.frame_lock:
 			return self.frame
 
-def get_camera_info(namespace, tf_link):
-	info = CameraInfo()
-	info.header.frame_id = tf_link
-	info.distortion_model = rospy.get_param("~" + namespace + "distortion_model")
-	info.D = rospy.get_param("~" + namespace + "D")
-	info.K = rospy.get_param("~" + namespace + "K")
-	info.R = rospy.get_param("~" + namespace + "R")
-	info.P = rospy.get_param("~" + namespace + "P")
-	return info
-
 class RosCamera:
-	def __init__(self, position, width, height, framerate, flip):
-		pass
+	def __init__(self, namespace, position, width, height, framerate, flip):
+		# settings
+		self.cntr = 0 # for header.seq
+		self.namespace = namespace
+		self.position = position
+
+		self.tf_link = self.namespace + "/" + self.position + "_camera_link"
+		self.image_raw_topic = "/" + self.namespace + "/camera_" + self.position + "/image_raw"
+		self.camera_info_topic = "/" + self.namespace + "/camera_" + self.position + "/camera_info"
+		self.camera_info_service = "/" + self.namespace + "/camera_" + self.position + "/set_camera_info"
+		self.camera_param_namespace = "~" + self.namespace + "/camera_info_" + self.position + "/"
+
+		# ros stuff
+		self.raw_publisher = rospy.Publisher(self.image_raw_topic, Image, queue_size=10)
+		self.info_publisher = rospy.Publisher(self.camera_info_topic, CameraInfo, queue_size=10)
+		self.set_info_service = rospy.Service(self.camera_info_service, SetCameraInfo, self.set_camera_info)
+		self.info_msg = self.get_camera_info()
+
+		# camera driver
+		self.camera = Camera()
+		self.camera.open(0 if position == "center" else 1, width, height, framerate, flip)
+		if not self.camera.is_opened():
+			print("Failed to open /dev/video0")
+			exit()
 
 	def __del__(self):
-		pass
+		self.camera.release()
 
-def set_camera_info(info, camera):
-	pass
+	def get_camera_info(self):
+		info = CameraInfo()
+		info.header.frame_id = self.tf_link
+		info.distortion_model = rospy.get_param(self.camera_param_namespace + "distortion_model", "plump_bob")
+		info.D = rospy.get_param(self.camera_param_namespace + "D", [0,0,0,0,0])
+		info.K = rospy.get_param(self.camera_param_namespace + "K", [0,0,0,0,0,0,0,0,0])
+		info.R = rospy.get_param(self.camera_param_namespace + "R", [0,0,0,0,0,0,0,0,0])
+		info.P = rospy.get_param(self.camera_param_namespace + "P", [0,0,0,0,0,0,0,0,0,0,0,0])
+		return info
+
+	def set_camera_info(self, info):
+		# local save
+		self.info_msg.distortion_model = info.camera_info.distortion_model
+		self.info_msg.D = info.camera_info.D
+		self.info_msg.K = info.camera_info.K
+		self.info_msg.R = info.camera_info.R
+		self.info_msg.P = info.camera_info.P
+
+		# save to config
+		data = dict(
+			distortion_model = info.camera_info.distortion_model,
+			D = list(info.camera_info.D),
+			K = list(info.camera_info.K),
+			R = list(info.camera_info.R),
+			P = list(info.camera_info.P),
+		)
+		result = SetCameraInfoResponse()
+		try:
+			with open(rospkg.RosPack().get_path("statek_config") + "/yaml/camera_info_" + self.position + ".yaml", 'w') as conf:
+				yaml.dump(data, conf, default_flow_style=False)
+			result.success = True
+			result.status_message = "ok"
+		except Exception as e:
+			result.success = False
+			result.status_message = str(e)
+		return result
+
+	def publish(self):
+		frame = self.camera.get_frame()
+
+		frame_msg = cv_bridge.cv2_to_imgmsg(frame, "bgr8")
+		frame_msg.header.seq = self.cntr
+		frame_msg.header.stamp = rospy.Time.now()
+		frame_msg.header.frame_id = self.namespace + "/" + self.position + "_camera_link"
+
+		self.info_msg.header.seq = self.cntr
+		self.info_msg.header.stamp = frame_msg.header.stamp
+
+		self.raw_publisher.publish(frame_msg)
+		self.info_publisher.publish(self.info_msg)
+
+		self.cntr += 1
 
 rospy.init_node("vision_publisher", anonymous=True)
 
@@ -134,84 +199,25 @@ rospy.init_node("vision_publisher", anonymous=True)
 statek_name = rospy.get_param("~statek_name", "statek")
 
 # camera settings
-camera_width = rospy.get_param("~camera_width", 480)
-camera_height = rospy.get_param("~camera_height", 270)
-camera_framerate = rospy.get_param("~camera_framerate", 30)
-camera_flip = rospy.get_param("~camera_flip", 0)
-
-# camera info
-camera_info_center_msg = get_camera_info(statek_name + "/camera_center/", statek_name + "/center_camera_link")
-camera_info_right_msg = get_camera_info(statek_name + "/camera_right/", statek_name + "/right_camera_link")
+config_namespace = "~" + statek_name + "/camera_config/"
+camera_width = rospy.get_param(config_namespace + "width", 480)
+camera_height = rospy.get_param(config_namespace + "height", 270)
+camera_framerate = rospy.get_param(config_namespace + "framerate", 30)
+camera_flip = rospy.get_param(config_namespace + "flip", 0)
 
 # rate same as framerate
 rate = rospy.Rate(camera_framerate)
 
-# image_raw publishers
-center_camera_raw_publisher = rospy.Publisher("/" + statek_name + "/camera_center/image_raw", Image, queue_size=10)
-right_camera_raw_publisher = rospy.Publisher("/" + statek_name + "/camera_right/image_raw", Image, queue_size=10)
-
-# camera_info publishers
-center_camera_info_publisher = rospy.Publisher("/" + statek_name + "/camera_center/camera_info", CameraInfo, queue_size=10)
-right_camera_info_publisher = rospy.Publisher("/" + statek_name + "/camera_right/camera_info", CameraInfo, queue_size=10)
-
-# camera info services
-center_camera_info_service = rospy.Service("/" + statek_name + "/set_center_camera_info", CameraInfo, lambda info: set_camera_info(info, "center"))
-right_camera_info_service = rospy.Service("/" + statek_name + "/set_right_camera_info", CameraInfo, lambda info: set_camera_info(info, "right"))
-
-# center camera driver
-cam_center = Camera()
-cam_center.open(0, camera_width, camera_height, camera_framerate, camera_flip)
-if not cam_center.is_opened():
-	print("Failed to open /dev/video0")
-	exit()
-
-# right camera driver
-cam_right = Camera()
-cam_right.open(1, camera_width, camera_height, camera_framerate, camera_flip)
-if not cam_right.is_opened():
-	print("Failed to open /dev/video1")
-	exit()
+cam_center = RosCamera(statek_name, "center", camera_width, camera_height, camera_framerate, camera_flip)
+cam_right = RosCamera(statek_name, "right", camera_width, camera_height, camera_framerate, camera_flip)
 
 # cv::Mat to Image msg
 cv_bridge = CvBridge()
 
-# header seq
-cntr = 0
 while not rospy.is_shutdown():
-	frame_center = cam_center.get_frame()
-	frame_right = cam_right.get_frame()
 
-	# center camera stuff
-	frame_center_msg = cv_bridge.cv2_to_imgmsg(frame_center, "bgr8")
-	frame_center_msg.header.seq = cntr
-	frame_center_msg.header.stamp = rospy.Time.now()
-	frame_center_msg.header.frame_id = statek_name + "/center_camera_link"
-
-	camera_info_center_msg.header.seq = cntr
-	camera_info_center_msg.header.stamp = frame_center_msg.header.stamp
-
-	# right camera stuff
-	frame_right_msg = cv_bridge.cv2_to_imgmsg(frame_right, "bgr8")
-	frame_right_msg.header.seq = cntr
-	frame_right_msg.header.stamp = frame_center_msg.header.stamp
-	frame_right_msg.header.frame_id = statek_name + "/right_camera_link"
-
-	camera_info_right_msg.header.seq = cntr
-	camera_info_right_msg.header.stamp = frame_right_msg.header.stamp
-
-	# publish
-	center_camera_raw_publisher.publish(frame_center_msg)
-	center_camera_info_publisher.publish(camera_info_center_msg)
-
-	right_camera_raw_publisher.publish(frame_right_msg)
-	right_camera_info_publisher.publish(camera_info_right_msg)
-
-	cntr += 1
+	cam_center.publish()
+	cam_right.publish()
 
 	rate.sleep()
-	
-
-cam0.close()
-cam1.close()
-cv2.destroyAllWindows()
 

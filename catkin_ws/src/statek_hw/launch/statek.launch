@@ -7,7 +7,8 @@
         <arg name="statek_name" value="$(arg statek_name)"/>
     </include>
 
-    <!--<group ns="$(arg statek_name)/laser/">
+    <!-- Launch lidar -->
+    <group ns="$(arg statek_name)/laser/">
 
         <node name="ydlidar_node" pkg="ydlidar_ros" type="ydlidar_node" output="screen" respawn="true">
             <param name="port" type="string" value="/dev/ydlidar"/>
@@ -25,17 +26,15 @@
             <param name="samp_rate" type="int" value="5"/>
         </node>
 
-    </group>-->
+    </group>
 
-    <!-- Launch camera  -->
-    <node name="vision_node" pkg="statek_hw" type="vision_publisher_node.py" output="screen" respawn="true">
-        <param name="statek_name" type="string" value="$(arg statek_name)"/>
-        <param name="camera_flip" type="int" value="2"/>
-        <param name="camera_framerate" type="int" value="15"/>
-        <param name="camera_width" type="int" value="480"/>
-        <param name="camera_height" type="int" value="270"/>
-        <rosparam command="load" ns="$(arg statek_name)/camera_center/" file="$(find statek_config)/yaml/camera_center_config.yaml"/>
-        <rosparam command="load" ns="$(arg statek_name)/camera_right/" file="$(find statek_config)/yaml/camera_right_config.yaml"/>
-    </node>
+    <!-- Launch camera -->
+    <group ns="$(arg statek_name)/">
+        <node name="vision_node" pkg="statek_hw" type="vision_publisher_node.py" output="screen" respawn="true">
+            <rosparam command="load" ns="$(arg statek_name)/camera_config/" file="$(find statek_config)/yaml/camera_config.yaml"/>
+            <rosparam command="load" ns="$(arg statek_name)/camera_info_center/" file="$(find statek_config)/yaml/camera_info_center.yaml"/>
+            <rosparam command="load" ns="$(arg statek_name)/camera_info_right/" file="$(find statek_config)/yaml/camera_info_right.yaml"/>
+        </node>
+    </group>
 
 </launch>
