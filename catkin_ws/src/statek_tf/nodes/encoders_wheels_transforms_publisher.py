@@ -42,7 +42,7 @@ rospy.init_node("dynamic_transform_publisher", anonymous=True)
 
 statek_name = rospy.get_param("~statek_name", "statek")
 
-rospy.Subscriber("/" + statek_name + "/encoder_left/filtered", Encoder, encoder_callback, ("left", statek_name))
-rospy.Subscriber("/" + statek_name + "/encoder_right/filtered", Encoder, encoder_callback, ("right", statek_name))
+rospy.Subscriber("/" + statek_name + "/encoder/left/filtered", Encoder, encoder_callback, ("left", statek_name))
+rospy.Subscriber("/" + statek_name + "/encoder/right/filtered", Encoder, encoder_callback, ("right", statek_name))
 
 rospy.spin()

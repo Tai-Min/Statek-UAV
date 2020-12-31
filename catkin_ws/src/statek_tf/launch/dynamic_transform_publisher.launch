@@ -2,7 +2,7 @@
 <launch>
     <arg name="statek_name" default="statek"/>
 
-    <group ns="$(arg statek_name)">
+    <group ns="$(arg statek_name)/tf">
         <!-- base link to encoder and wheel links  -->
         <node pkg="statek_tf" type="encoders_wheels_transforms_publisher.py" name="encoders_wheels_transforms_publisher" respawn="true">
             <param name="statek_name" type="string" value="$(arg statek_name)" />

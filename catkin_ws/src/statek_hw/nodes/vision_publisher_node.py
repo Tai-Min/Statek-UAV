@@ -117,11 +117,13 @@ class RosCamera:
 		self.cntr = 0 # for header.seq
 		self.namespace = namespace
 		self.position = position
+		self.width = width
+		self.height = height
 
-		self.tf_link = self.namespace + "/" + self.position + "_camera_link"
-		self.image_raw_topic = "/" + self.namespace + "/camera_" + self.position + "/image_raw"
-		self.camera_info_topic = "/" + self.namespace + "/camera_" + self.position + "/camera_info"
-		self.camera_info_service = "/" + self.namespace + "/camera_" + self.position + "/set_camera_info"
+		self.tf_link = self.namespace + "/stereo/" + self.position + "_link"
+		self.image_raw_topic = "/" + self.namespace + "/stereo/" + self.position + "/image_raw"
+		self.camera_info_topic = "/" + self.namespace + "/stereo/" + self.position + "/camera_info"
+		self.camera_info_service = "/" + self.namespace + "/stereo/" + self.position + "/set_camera_info"
 		self.camera_param_namespace = "~" + self.namespace + "/camera_info_" + self.position + "/"
 
 		# ros stuff
@@ -129,10 +131,10 @@ class RosCamera:
 		self.info_publisher = rospy.Publisher(self.camera_info_topic, CameraInfo, queue_size=10)
 		self.set_info_service = rospy.Service(self.camera_info_service, SetCameraInfo, self.set_camera_info)
 		self.info_msg = self.get_camera_info()
-
+		
 		# camera driver
 		self.camera = Camera()
-		self.camera.open(0 if position == "center" else 1, width, height, framerate, flip)
+		self.camera.open(0 if position == "left" else 1, width, height, framerate, flip)
 		if not self.camera.is_opened():
 			print("Failed to open /dev/video0")
 			exit()
@@ -143,6 +145,8 @@ class RosCamera:
 	def get_camera_info(self):
 		info = CameraInfo()
 		info.header.frame_id = self.tf_link
+		info.width = self.width
+		info.height = self.height
 		info.distortion_model = rospy.get_param(self.camera_param_namespace + "distortion_model", "plump_bob")
 		info.D = rospy.get_param(self.camera_param_namespace + "D", [0,0,0,0,0])
 		info.K = rospy.get_param(self.camera_param_namespace + "K", [0,0,0,0,0,0,0,0,0])
@@ -177,16 +181,16 @@ class RosCamera:
 			result.status_message = str(e)
 		return result
 
-	def publish(self):
+	def publish(self, stamp):
 		frame = self.camera.get_frame()
 
 		frame_msg = cv_bridge.cv2_to_imgmsg(frame, "bgr8")
 		frame_msg.header.seq = self.cntr
-		frame_msg.header.stamp = rospy.Time.now()
-		frame_msg.header.frame_id = self.namespace + "/" + self.position + "_camera_link"
+		frame_msg.header.stamp = stamp
+		frame_msg.header.frame_id = self.tf_link
 
 		self.info_msg.header.seq = self.cntr
-		self.info_msg.header.stamp = frame_msg.header.stamp
+		self.info_msg.header.stamp = stamp
 
 		self.raw_publisher.publish(frame_msg)
 		self.info_publisher.publish(self.info_msg)
@@ -202,13 +206,13 @@ statek_name = rospy.get_param("~statek_name", "statek")
 config_namespace = "~" + statek_name + "/camera_config/"
 camera_width = rospy.get_param(config_namespace + "width", 480)
 camera_height = rospy.get_param(config_namespace + "height", 270)
-camera_framerate = rospy.get_param(config_namespace + "framerate", 30)
+camera_framerate = rospy.get_param(config_namespace + "framerate", 15)
 camera_flip = rospy.get_param(config_namespace + "flip", 0)
 
 # rate same as framerate
 rate = rospy.Rate(camera_framerate)
 
-cam_center = RosCamera(statek_name, "center", camera_width, camera_height, camera_framerate, camera_flip)
+cam_center = RosCamera(statek_name, "left", camera_width, camera_height, camera_framerate, camera_flip)
 cam_right = RosCamera(statek_name, "right", camera_width, camera_height, camera_framerate, camera_flip)
 
 # cv::Mat to Image msg
@@ -216,8 +220,9 @@ cv_bridge = CvBridge()
 
 while not rospy.is_shutdown():
 
-	cam_center.publish()
-	cam_right.publish()
+	stamp = rospy.Time.now()
+	cam_center.publish(stamp)
+	cam_right.publish(stamp)
 
 	rate.sleep()
 

@@ -3,7 +3,6 @@ project(statek_hw)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
-  rospkg
 )
 
 catkin_package()

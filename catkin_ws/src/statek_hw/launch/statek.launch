@@ -13,7 +13,7 @@
         <node name="ydlidar_node" pkg="ydlidar_ros" type="ydlidar_node" output="screen" respawn="true">
             <param name="port" type="string" value="/dev/ydlidar"/>
             <param name="baudrate" type="int" value="128000"/>
-            <param name="frame_id" type="string" value="$(arg statek_name)/laser_link"/>
+            <param name="frame_id" type="string" value="$(arg statek_name)/laser/laser_link"/>
             <param name="resolution_fixed" type="bool" value="true"/>
             <param name="auto_reconnect" type="bool" value="true"/>
             <param name="reversion" type="bool" value="false"/>
@@ -28,13 +28,16 @@
 
     </group>
 
-    <!-- Launch camera -->
-    <group ns="$(arg statek_name)/">
+    <group ns="$(arg statek_name)/stereo/">
+        <!-- Launch camera driver -->
         <node name="vision_node" pkg="statek_hw" type="vision_publisher_node.py" output="screen" respawn="true">
+            <param name="statek_name" value="$(arg statek_name)"/>
             <rosparam command="load" ns="$(arg statek_name)/camera_config/" file="$(find statek_config)/yaml/camera_config.yaml"/>
-            <rosparam command="load" ns="$(arg statek_name)/camera_info_center/" file="$(find statek_config)/yaml/camera_info_center.yaml"/>
+            <rosparam command="load" ns="$(arg statek_name)/camera_info_left/" file="$(find statek_config)/yaml/camera_info_left.yaml"/>
             <rosparam command="load" ns="$(arg statek_name)/camera_info_right/" file="$(find statek_config)/yaml/camera_info_right.yaml"/>
         </node>
+
+        <node name="stereo_image_proc" pkg="stereo_image_proc" type="stereo_image_proc" output="screen" respawn="true"/>
     </group>
 
 </launch>
