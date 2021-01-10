@@ -350,7 +350,7 @@ U 1 1 5D82C065
 P 7300 1950
 F 0 "J2" H 7380 1942 50  0000 L CNN
 F 1 "Conn_01x04" H 7380 1851 50  0000 L CNN
-F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type059_RT06304HBWC_1x04_P3.50mm_Horizontal" H 7300 1950 50  0001 C CNN
+F 2 "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type086_RT03404HBLC_1x04_P3.81mm_Horizontal" H 7300 1950 50  0001 C CNN
 F 3 "~" H 7300 1950 50  0001 C CNN
 	1    7300 1950
 	1    0    0    1   
