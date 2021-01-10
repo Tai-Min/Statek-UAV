@@ -9,9 +9,28 @@
   <xacro:arg name="kd" default="1"/>
   <xacro:arg name="fdir1" default="0 0 1"/>
 
+  <xacro:property name="physical_config" value="${load_yaml('$(find statek_config)/yaml/physical_config.yaml')}"/>
+  <xacro:property name="max_rpm" value="${physical_config['soft_max_rpm']}"/>
+
+  <xacro:property name="encoder_config" value="${load_yaml('$(find statek_config)/yaml/encoder_config.yaml')}"/>
+  <xacro:property name="encoder_update_rate" value="${encoder_config['update_rate']}"/>
+  <xacro:property name="encoder_std_dev" value="${encoder_config['std_dev']}"/>
+  <xacro:property name="encoder_mean" value="${encoder_config['mean']}"/>
+
+  <xacro:property name="camera_config" value="${load_yaml('$(find statek_config)/yaml/camera_config.yaml')}"/>
+  <xacro:property name="camera_width" value="${camera_config['width']}"/>
+  <xacro:property name="camera_height" value="${camera_config['height']}"/>
+  <xacro:property name="camera_framerate" value="${camera_config['framerate']}"/>
+  <xacro:property name="camera_hfov" value="${camera_config['horizontal_fov']}"/>
+  <xacro:property name="camera_vfov" value="${camera_config['vertical_fov']}"/>
+
+  <xacro:property name="camera_info_left" value="${load_yaml('$(find statek_config)/yaml/camera_info_left.yaml')}"/>
+  <xacro:property name="camera_info_D" value="${camera_info_left['D']}"/>
+  <xacro:property name="camera_info_K" value="${camera_info_left['K']}"/>
+
   <joint name="left_back_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
-    <child link="$(arg statek_name)/left_back_wheel_link"/>
+    <child link="$(arg statek_name)/wheels/left_back_link"/>
     <origin rpy="0      0     1.5708" xyz="-0.252682 0.270467 -0.03126"/>
     <axis xyz="1  0  0"/>
     <limit effort="-1" lower="-1e16" upper="1e16" velocity="-1"/>
@@ -19,7 +38,7 @@
 
   <joint name="right_back_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
-    <child link="$(arg statek_name)/right_back_wheel_link"/>
+    <child link="$(arg statek_name)/wheels/right_back_link"/>
     <origin rpy="0      0      1.5708" xyz="-0.252682 -0.264541 -0.03126"/>
     <axis xyz="1  0  0"/>
     <limit effort="-1" lower="-1e16" upper="1e16" velocity="-1"/>
@@ -27,7 +46,7 @@
 
   <joint name="left_front_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
-    <child link="$(arg statek_name)/left_front_wheel_link"/>
+    <child link="$(arg statek_name)/wheels/left_front_link"/>
     <origin rpy="0      0     1.5708" xyz="0.167807 0.270467 -0.03126"/>
     <axis xyz="1  0  0"/>
     <limit effort="-1" lower="-1e16" upper="1e16" velocity="-1"/>
@@ -35,7 +54,7 @@
 
   <joint name="right_front_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
-    <child link="$(arg statek_name)/right_front_wheel_link"/>
+    <child link="$(arg statek_name)/wheels/right_front_link"/>
     <origin rpy="0      0      1.5708" xyz="0.167807 -0.264541 -0.03126"/>
     <axis xyz="1  0  0"/>
     <limit effort="-1" lower="-1e16" upper="1e16" velocity="-1"/>
@@ -65,7 +84,7 @@
 
   </link>
 
-  <link name="$(arg statek_name)/left_back_wheel_link">
+  <link name="$(arg statek_name)/wheels/left_back_link">
 
     <inertial>
       <mass value="1.3"/>
@@ -89,7 +108,7 @@
 
   </link>
 
-  <link name="$(arg statek_name)/right_back_wheel_link">
+  <link name="$(arg statek_name)/wheels/right_back_link">
 
     <inertial>
       <mass value="1.3"/>
@@ -113,7 +132,7 @@
 
   </link>
 
-  <link name="$(arg statek_name)/left_front_wheel_link">
+  <link name="$(arg statek_name)/wheels/left_front_link">
 
     <inertial>
       <mass value="1.3"/>
@@ -137,7 +156,7 @@
 
   </link>
 
-  <link name="$(arg statek_name)/right_front_wheel_link">
+  <link name="$(arg statek_name)/wheels/right_front_link">
 
     <inertial>
       <mass value="1.3"/>
@@ -189,12 +208,71 @@
       </ray>
       <plugin name="sensor_plugin" filename="libgazebo_ros_laser.so">
         <topicName>$(arg statek_name)/laser/scan</topicName>
-        <frameName>$(arg statek_name)/laser_link</frameName>
+        <frameName>$(arg statek_name)/laser/laser_link</frameName>
+      </plugin>
+    </sensor>
+
+    <sensor type="multicamera" name="stereo_camera">
+      <update_rate>30.0</update_rate>
+      <camera name="left">
+        <pose>0.405 0 0 0 0 0</pose>
+        <horizontal_fov>${camera_hfov}</horizontal_fov>
+        <image>
+          <width>${camera_width}</width>
+          <height>${camera_height}</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.0</near>
+          <far>30000</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.015</stddev>
+        </noise>
+      </camera>
+      <camera name="right">
+        <pose>0.405 -0.0625 0.073 0 0 0</pose>
+        <horizontal_fov>${camera_hfov}</horizontal_fov>
+        <image>
+          <width>${camera_width}</width>
+          <height>${camera_height}</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.0</near>
+          <far>30000</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.015</stddev>
+        </noise>
+      </camera>
+      <plugin name="stereo_camera_controller" filename="libgazebo_ros_multicamera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>${camera_framerate}</updateRate>
+        <cameraName>$(arg statek_name)/stereo</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>$(arg statek_name)/stereo/left_link</frameName>
+        <rightFrameName>$(arg statek_name)/stereo/right_link</rightFrameName>
+        <focal_length>530.470062185</focal_length>
+        <hackBaseline>0.00</hackBaseline>
+        <distortionK1>${camera_info_D[0]}</distortionK1>
+        <distortionK2>${camera_info_D[1]}</distortionK2>
+        <distortionK3>${camera_info_D[2]}</distortionK3>
+        <distortionT1>${camera_info_D[3]}</distortionT1>
+        <distortionT2>${camera_info_D[4]}</distortionT2>
+        <CxPrime>0</CxPrime>
+        <Cx>${camera_info_K[2]}</Cx>
+        <Cy>${camera_info_K[5]}</Cy>
       </plugin>
     </sensor>
   </gazebo>
 
-  <gazebo reference="$(arg statek_name)/left_front_wheel_link">
+  <gazebo reference="$(arg statek_name)/wheels/left_front_link">
     <kp value="$(arg kp)"/>
     <kd value="$(arg kd)"/>
     <mu1 value="$(arg mu1)"/>
@@ -202,7 +280,7 @@
     <fdir1 value="$(arg fdir1)"/>
   </gazebo>
 
-  <gazebo reference="$(arg statek_name)/right_front_wheel_link">
+  <gazebo reference="$(arg statek_name)/wheels/right_front_link">
     <kp>$(arg kp)</kp>
     <kd>$(arg kd)</kd>
     <mu1>$(arg mu1)</mu1>
@@ -210,7 +288,7 @@
     <fdir1>$(arg fdir1)</fdir1>
   </gazebo>
 
-  <gazebo reference="$(arg statek_name)/left_back_wheel_link">
+  <gazebo reference="$(arg statek_name)/wheels/left_back_link">
     <kp>$(arg kp)</kp>
     <kd>$(arg kd)</kd>
     <mu1>$(arg mu1)</mu1>
@@ -218,7 +296,7 @@
     <fdir1>$(arg fdir1)</fdir1>
   </gazebo>
 
-  <gazebo reference="$(arg statek_name)/right_back_wheel_link">
+  <gazebo reference="$(arg statek_name)/wheels/right_back_link">
     <kp>$(arg kp)</kp>
     <kd>$(arg kd)</kd>
     <mu1>$(arg mu1)</mu1>
@@ -232,14 +310,17 @@
       <right_back_joint>right_back_wheel_hinge</right_back_joint>
       <left_front_joint>left_front_wheel_hinge</left_front_joint>
       <right_front_joint>right_front_wheel_hinge</right_front_joint>
+      <max_rpm>${max_rpm}</max_rpm>
       <kp>5</kp>
       <ki>2.5</ki>
       <kd>0</kd>
-      <sensor_dev>0.01</sensor_dev>
-      <sensor_mean>0</sensor_mean>
-      <sensor_publish_rate>50</sensor_publish_rate>
-      <left_motor_tf_frame>$(arg statek_name)/left_motor_link</left_motor_tf_frame>
-      <right_motor_tf_frame>$(arg statek_name)/right_motor_link</right_motor_tf_frame>
+      <motor_namespace>motors</motor_namespace>
+      <sensor_dev>${encoder_std_dev}</sensor_dev>
+      <sensor_mean>${encoder_mean}</sensor_mean>
+      <sensor_namespace>encoders</sensor_namespace>
+      <sensor_publish_rate>${encoder_update_rate}</sensor_publish_rate>
+      <left_motor_tf_frame>$(arg statek_name)/motors/left_link</left_motor_tf_frame>
+      <right_motor_tf_frame>$(arg statek_name)/motors/right_link</right_motor_tf_frame>
     </plugin>
   </gazebo>
 

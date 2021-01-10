@@ -6,8 +6,7 @@
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
 #include <ros/subscribe_options.h>
-#include <std_msgs/Float32.h>
-
+#include "statek_msgs/Velocity.h"
 namespace gazebo
 {
     /**
@@ -31,8 +30,7 @@ namespace gazebo
 
         std::unique_ptr<ros::NodeHandle> rosNode; //!< Node to communicate with ROS.
         ros::Rate rosLoopRate;
-        ros::Subscriber leftMotorCmdSubscriber;   //!< Subscriber that listens to <model_name>/left_vel_cmd and sets new velocity target based on it.
-        ros::Subscriber rightMotorCmdSubscriber;  //!< Subscriber that listens to <model_name/right_vel_cmd and sets new velocity target based on it.
+        ros::Subscriber motorCmdSubscriber;   //!< Subscriber that listens to <model_name>/left_vel_cmd and sets new velocity target based on it.
         ros::Publisher leftMotorRawData;  //!< Publisher that publishes raw info from encoder that placed on left back wheel.
         ros::Publisher rightMotorRawData; //!< Publisher that publishes raw info from encoder that is placed on right back wheel.
         ros::Publisher leftMotorFilteredData;  //!< Publisher that publishes filtered info from encoder that placed on left front wheel.
@@ -56,6 +54,8 @@ namespace gazebo
         std::string left_motor_tf = "left_motor_link"; //!< For Encoder's header.
         std::string right_motor_tf = "right_motor_link"; //!< For Encoder's header.
 
+        double maxRpmRads = 0;
+
         /**
         * @brief Initialize ROS, subscribers, publishers and start ROS thread.
         */
@@ -64,12 +64,12 @@ namespace gazebo
         /**
         * @brief Create subscribers required to command both motors.
         */
-        void CreateSubscribers();
+        void CreateSubscribers(sdf::ElementPtr _sdf);
 
         /**
          * @brieg Create publishers to send raw and filtered encoder data.
          */
-        void CreatePublishers();
+        void CreatePublishers(sdf::ElementPtr _sdf);
 
         /**
         * @brief Start Thread to manage ROS communication.
@@ -118,19 +118,11 @@ namespace gazebo
         void RosQueueThread();
 
         /**
-        * @brief Method invoked when something was published on vel_cmd_left topic.
+        * @brief Method invoked when something was published on vel_cmd topic.
         *
-        * @param _msg Target speed for left side normalized to <-1;1>.
+        * @param _msg Target speed for wheels in rad/s.
         */
-        void OnVelCmdLeft(const std_msgs::Float32ConstPtr &_msg);
-
-        /**
-        * @brief Method invoked when something was published on vel_cmd_right topic.
-        *
-        * @param _msg Target speed for right side normalized to <-1;1>.
-        */
-        void OnVelCmdRight(const std_msgs::Float32ConstPtr &_msg);
-
+        void OnVelCmd(const statek_msgs::Velocity::ConstPtr &_msg);
     public:
         /**
         * @brief Class constructor.

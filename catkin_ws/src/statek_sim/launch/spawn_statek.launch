@@ -16,4 +16,8 @@
 
     <node name="spawn_statek" pkg="gazebo_ros" type="spawn_model" args="-param $(arg statek_name)/robot_description -urdf -model $(arg statek_name) -x $(arg x) -y $(arg y) -z $(arg z)"/>
 
+    <group ns="$(arg statek_name)/stereo/">
+        <node name="stereo_image_proc" pkg="stereo_image_proc" type="stereo_image_proc" output="screen" respawn="true"/>
+    </group>
+
 </launch>

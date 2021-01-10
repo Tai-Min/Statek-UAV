@@ -1,3 +1,3 @@
 Header header
-float32 left # left linear velocity in m/s
-float32 right # right linear velocity in m/s
+float32 left # left wheel angular velocity in rad/s
+float32 right # right wheel angular velocity in rad/s

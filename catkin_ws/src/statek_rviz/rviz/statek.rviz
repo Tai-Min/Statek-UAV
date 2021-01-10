@@ -3,7 +3,9 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /TF1/Tree1
+        - /Camera1
       Splitter Ratio: 0.5
     Tree Height: 290
   - Class: rviz/Selection
@@ -24,7 +26,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Camera
+    SyncSource: LaserScan
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -89,28 +91,28 @@ Visualization Manager:
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
-        Link Tree Style: ""
+        Link Tree Style: Links in Alphabetic Order
         statek/base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        statek/left_back_wheel_link:
+        statek/wheels/left_back_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        statek/left_front_wheel_link:
+        statek/wheels/left_front_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        statek/right_back_wheel_link:
+        statek/wheels/right_back_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        statek/right_front_wheel_link:
+        statek/wheels/right_front_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -130,11 +132,23 @@ Visualization Manager:
           Value: true
         statek/laser/laser_link:
           Value: true
+        statek/motors/left_link:
+          Value: true
+        statek/motors/right_link:
+          Value: true
         statek/stereo/left_link:
           Value: true
         statek/stereo/right_link:
           Value: true
-      Marker Scale: 1
+        statek/wheels/left_back_link:
+          Value: true
+        statek/wheels/left_front_link:
+          Value: true
+        statek/wheels/right_back_link:
+          Value: true
+        statek/wheels/right_front_link:
+          Value: true
+      Marker Scale: 0.5
       Name: TF
       Show Arrows: true
       Show Axes: true
@@ -143,16 +157,28 @@ Visualization Manager:
         statek/base_link:
           statek/laser/laser_link:
             {}
+          statek/motors/left_link:
+            {}
+          statek/motors/right_link:
+            {}
           statek/stereo/left_link:
             {}
           statek/stereo/right_link:
+            {}
+          statek/wheels/left_back_link:
+            {}
+          statek/wheels/left_front_link:
+            {}
+          statek/wheels/right_back_link:
+            {}
+          statek/wheels/right_front_link:
             {}
       Update Interval: 0
       Value: true
     - Class: rviz/Camera
       Enabled: true
       Image Rendering: background and overlay
-      Image Topic: /statek/stereo/right/image_rect_color
+      Image Topic: /statek/stereo/left/image_raw
       Name: Camera
       Overlay Alpha: 0.10000000149011612
       Queue Size: 2
@@ -225,25 +251,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.682197332382202
+      Distance: 2.869739532470703
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.730356454849243
-        Y: 0.16107361018657684
-        Z: 0.08776483684778214
+        X: 0.0934862494468689
+        Y: -0.4126197397708893
+        Z: -0.3359910547733307
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4103979170322418
+      Pitch: 0.6003977656364441
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.9403975009918213
+      Yaw: 1.3840272426605225
     Saved: ~
 Window Geometry:
   Camera:

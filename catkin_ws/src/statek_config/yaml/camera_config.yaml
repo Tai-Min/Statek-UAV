@@ -2,3 +2,5 @@ width: 640
 height: 360
 framerate: 24
 flip: 2
+horizontal_fov: 1.0855947947
+vertical_fov: 0.85172067497

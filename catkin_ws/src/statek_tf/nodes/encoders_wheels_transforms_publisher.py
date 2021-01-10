@@ -6,7 +6,7 @@ import geometry_msgs.msg
 
 from statek_msgs.msg import Encoder
 
-def send_transform(encoder, link, x, y, z, rx):
+def send_transform(link, x, y, z, rx):
     br = tf2_ros.TransformBroadcaster()
     t = geometry_msgs.msg.TransformStamped()
 
@@ -25,24 +25,24 @@ def send_transform(encoder, link, x, y, z, rx):
     br.sendTransform(t)
 
 def encoder_callback(msg, args):
-    encoder = args[0]
+    side = args[0]
     statek_name = args[1]
 
-    motor_link = statek_name + "/" + encoder + "_motor_link"
-    front_wheel_link = statek_name + "/" + encoder + "_front_wheel_link"
-    back_wheel_link = statek_name + "/" + encoder + "_back_wheel_link"
+    motor_link = statek_name + "/motors/" + side + "_link"
+    front_wheel_link = statek_name + "/wheels/" + side + "_front_link"
+    back_wheel_link = statek_name + "/wheels/" + side + "_back_link"
 
-    y_offset = -0.252682 if encoder == "right" else 0.252682
+    y_offset = -0.252682 if side == "right" else 0.252682
 
-    send_transform(encoder, motor_link, -0.05, y_offset, 0.03826, msg.position)
-    send_transform(encoder, front_wheel_link, 0.167807, y_offset, -0.03126, msg.position)
-    send_transform(encoder, back_wheel_link, -0.252682, y_offset, -0.03126, msg.position)
+    send_transform(motor_link, -0.05, y_offset, 0.03826, msg.position)
+    send_transform(front_wheel_link, 0.167807, y_offset, -0.03126, msg.position)
+    send_transform(back_wheel_link, -0.252682, y_offset, -0.03126, msg.position)
 
 rospy.init_node("dynamic_transform_publisher", anonymous=True)
 
 statek_name = rospy.get_param("~statek_name", "statek")
 
-rospy.Subscriber("/" + statek_name + "/encoder/left/filtered", Encoder, encoder_callback, ("left", statek_name))
-rospy.Subscriber("/" + statek_name + "/encoder/right/filtered", Encoder, encoder_callback, ("right", statek_name))
+rospy.Subscriber("/" + statek_name + "/encoders/left/filtered", Encoder, encoder_callback, ("left", statek_name))
+rospy.Subscriber("/" + statek_name + "/encoders/right/filtered", Encoder, encoder_callback, ("right", statek_name))
 
 rospy.spin()

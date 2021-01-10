@@ -1,34 +1,32 @@
 #!/usr/bin/env python
 import rospy
+import math
 #import argparse
 from ds4_driver.msg import Status
-from std_msgs.msg import Float32
+from statek_msgs.msg import Velocity
 
 def ds4_callback(status, args):
 
-    left_vel = status.axis_left_y
-    right_vel = status.axis_right_y
+    max_rpm_rads = args[0]
 
-    left_cmd = Float32()
-    left_cmd.data = left_vel
+    left_vel = status.axis_left_y * max_rpm_rads
+    right_vel = status.axis_right_y * max_rpm_rads
 
-    right_cmd = Float32()
-    right_cmd.data = right_vel
+    cmd = Velocity()
+    cmd.left = left_vel
+    cmd.right = right_vel
 
-    left_cmd_publisher = args[0]
-    right_cmd_publisher = args[1]
-
-    left_cmd_publisher.publish(left_cmd)
-    right_cmd_publisher.publish(right_cmd)
+    vel_cmd_publisher = args[1]
+    vel_cmd_publisher.publish(cmd)
 
 rospy.init_node("statek_teleop_raw_ds4", anonymous=True)
 
 statek_name = rospy.get_param("~statek_name", "statek")
 gamepad_name = rospy.get_param("~gamepad_name", "ds4")
+max_rpm_rads = 2 * math.pi / 60 * rospy.get_param("~soft_max_rpm", 45)
 
-left_cmd_publisher = rospy.Publisher("/" + statek_name + "/vel_cmd_left", Float32, queue_size=10)
-right_cmd_publisher = rospy.Publisher("/" + statek_name + "/vel_cmd_right", Float32, queue_size=10)
+vel_cmd_publisher = rospy.Publisher("/" + statek_name + "/motors/vel_cmd", Velocity, queue_size=10)
 
-rospy.Subscriber("/" + gamepad_name + "/status", Status, ds4_callback, (left_cmd_publisher, right_cmd_publisher))
+rospy.Subscriber("/" + gamepad_name + "/status", Status, ds4_callback, (max_rpm_rads, vel_cmd_publisher))
 
 rospy.spin()

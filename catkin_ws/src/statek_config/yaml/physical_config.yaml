@@ -4,14 +4,14 @@ soft_max_rpm: 45 # software limit
 distance_between_wheels: 0.62 # in [m]
 
 wheel_radius: 0.12 # in m
-wheel_max_angular_velocity:  # in [rad/s] defined as motor_max_rpm/60*2*pi
-wheel_soft_max_angular_velocity:  # in [rad/s] defined as soft_max_rpm/60*2*pi
+wheel_max_angular_velocity: 0 # in [rad/s] defined as motor_max_rpm/60*2*pi
+wheel_soft_max_angular_velocity: 0 # in [rad/s] defined as soft_max_rpm/60*2*pi
 
-max_linear_velocity:  # in m/s defined as wheel_radius*wheel_max_angular_velocity
-soft_max_linear_velocity:  # in [m/s] defined as wheel_radius*wheel_soft_max_angular_velocity
+max_linear_velocity: 0 # in m/s defined as wheel_radius*wheel_max_angular_velocity
+soft_max_linear_velocity: 0 # in [m/s] defined as wheel_radius*wheel_soft_max_angular_velocity
 
-max_angular_velocity: # in [rad/s] defined as max_linear_velocity / (distance_between_wheels / 2)
-soft_max_angular_velocity: # in [rad/s] defined as soft_max_linear_velocity / (distance_between_wheels / 2)
+max_angular_velocity: 0 # in [rad/s] defined as max_linear_velocity / (distance_between_wheels / 2)
+soft_max_angular_velocity: 0 # in [rad/s] defined as soft_max_linear_velocity / (distance_between_wheels / 2)
 
 wheel_weight: 1.3 # in [kg]
 frame_weight: 14 # in [kg]

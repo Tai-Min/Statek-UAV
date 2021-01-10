@@ -1,10 +1,6 @@
 #include "../include/statek_motor_control.h"
 #include "statek_msgs/Encoder.h"
-
 #include <math.h>
-
-#define MAX_RPM 50
-#define MAX_RPM_IN_RAD 2 * M_PI / 60 * MAX_RPM
 
 namespace gazebo
 {
@@ -43,7 +39,7 @@ namespace gazebo
     {
       int argc = 0;
       char **argv = NULL;
-      ros::init(argc, argv, "gazebo_client",
+      ros::init(argc, argv, this->model->GetName() + "_gazebo",
                 ros::init_options::NoSigintHandler);
     }
 
@@ -56,46 +52,49 @@ namespace gazebo
 
     this->rosLoopRate = ros::Rate(loopRate);
 
+    if (_sdf->HasElement("max_rpm"))
+      this->maxRpmRads = 2 * M_PI / 60 * _sdf->Get<int>("max_rpm");
+
     if (_sdf->HasElement("left_motor_tf_frame"))
       this->left_motor_tf = _sdf->Get<std::string>("left_motor_tf_frame");
     if (_sdf->HasElement("right_motor_tf_frame"))
       this->right_motor_tf = _sdf->Get<std::string>("right_motor_tf_frame");
 
-    CreateSubscribers();
-    CreatePublishers();
+    CreateSubscribers(_sdf);
+    CreatePublishers(_sdf);
 
     StartRosThread();
   }
 
-  void MotorControlPlugin::CreateSubscribers()
+  void MotorControlPlugin::CreateSubscribers(sdf::ElementPtr _sdf)
   {
-    ros::SubscribeOptions leftMotorOptions =
-        ros::SubscribeOptions::create<std_msgs::Float32>(
-            "/" + this->model->GetName() + "/vel_cmd_left",
-            10,
-            boost::bind(&MotorControlPlugin::OnVelCmdLeft, this, _1),
-            ros::VoidPtr(), &this->rosQueue);
-    this->leftMotorCmdSubscriber = this->rosNode->subscribe(leftMotorOptions);
+    std::string ns = "";
+    if (_sdf->HasElement("motor_namespace"))
+      ns = _sdf->Get<std::string>("motor_namespace");
 
-    ros::SubscribeOptions rightMotorOptions =
-        ros::SubscribeOptions::create<std_msgs::Float32>(
-            "/" + this->model->GetName() + "/vel_cmd_right",
+    ros::SubscribeOptions motorOptions =
+        ros::SubscribeOptions::create<statek_msgs::Velocity>(
+            "/" + this->model->GetName() + "/" + ns + "/vel_cmd",
             10,
-            boost::bind(&MotorControlPlugin::OnVelCmdRight, this, _1),
+            boost::bind(&MotorControlPlugin::OnVelCmd, this, _1),
             ros::VoidPtr(), &this->rosQueue);
-    this->rightMotorCmdSubscriber = this->rosNode->subscribe(rightMotorOptions);
-  }
+    this->motorCmdSubscriber = this->rosNode->subscribe(motorOptions);
+}
 
-  void MotorControlPlugin::CreatePublishers()
+  void MotorControlPlugin::CreatePublishers(sdf::ElementPtr _sdf)
   {
+    std::string ns = "";
+    if (_sdf->HasElement("sensor_namespace"))
+      ns = _sdf->Get<std::string>("sensor_namespace");
+
     this->leftMotorRawData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_left/raw", 10);
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/left/raw", 10);
     this->rightMotorRawData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_right/raw", 10);
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/right/raw", 10);
     this->leftMotorFilteredData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_left/filtered", 10);
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/left/filtered", 10);
     this->rightMotorFilteredData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/encoder_right/filtered", 10);
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/right/filtered", 10);
   }
 
   void MotorControlPlugin::StartRosThread()
@@ -262,14 +261,25 @@ namespace gazebo
     }
   }
 
-  void MotorControlPlugin::OnVelCmdLeft(const std_msgs::Float32ConstPtr &_msg)
+  void MotorControlPlugin::OnVelCmd(const statek_msgs::Velocity::ConstPtr &_msg)
   {
-    this->leftTarget = {_msg->data * MAX_RPM_IN_RAD};
-  }
+    float left = _msg->left;
+    float right = _msg->right;
 
-  void MotorControlPlugin::OnVelCmdRight(const std_msgs::Float32ConstPtr &_msg)
-  {
-    this->rightTarget = {_msg->data * MAX_RPM_IN_RAD};
+    // saturation left
+    if(left > this->maxRpmRads)
+      left = this->maxRpmRads;
+    if(left < -this->maxRpmRads)
+      left = -this->maxRpmRads;
+
+    // saturation right
+    if(right > this->maxRpmRads)
+      right = this->maxRpmRads;
+    if(right < -this->maxRpmRads)
+      right = -this->maxRpmRads;
+
+    this->leftTarget = {left};
+    this->rightTarget = {right};
   }
 
 } // namespace gazebo
