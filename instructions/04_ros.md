@@ -5,11 +5,7 @@ Install ROS Melodic Morenia as described [here](http://wiki.ros.org/melodic/Inst
 After that, setup your catkin workspace as described in [here](http://wiki.ros.org/catkin/Tutorials/create_a_workspace).
 
 ## Setting up ROS packages
-Copy content of this repository's catkin_ws/src content into your catkin_ws/src folder and run :
-```
-catkin_make 
-```
-inside you catkin workspace.
+Copy content of this repository's catkin_ws/src content into your catkin_ws/src folder.
 
 Now, install third party packages:
 * [ds4_driver](http://wiki.ros.org/ds4_driver)
@@ -21,6 +17,11 @@ find . -type f -name "*.py" -print0 | xargs -0 chmod +x
 ```
 To make all python nodes executable.
 
+Lastly, run:
+```
+catkin_make 
+```
+inside you catkin workspace.
 
 Previous: []() </br>
 Next: []()
