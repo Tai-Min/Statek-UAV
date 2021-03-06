@@ -23,11 +23,22 @@ Enable it:
 ```
 ifconfig <your wifi card/dongle>
 ```
-Connect:
+Add it to interfaces:
 ```
-iwconfig <your wifi card/dongle> essid <ssid> key <password>
-dhclient <your wifi card/dongle>
+sudo nano /etc/network/interfaces
 ```
+And insert this:
+```
+auto <your wifi card/dongle>
+iface <your wifi card/dongle> inet dhcp
+  wpa-ssid <ssid>
+  wpa-psk <password>
+```
+Save file.
 
+Connect to wifi:
+```
+sudo dhclient <your wifi card/dongle>
+```
 
 Next: []()
