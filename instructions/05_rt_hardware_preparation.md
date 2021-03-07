@@ -34,5 +34,5 @@ udisksctl mount -b /dev/sda
 
 **Again, on WLS 2:** Upload compiled code:
 ```
-scp rt.bin <UAV's username>@<UAV's ip>:/media/statek/NODE_F103RB
+scp NUCLEO_F103RB/rt.bin <UAV's username>@<UAV's ip>:/media/statek/NODE_F103RB
 ```
