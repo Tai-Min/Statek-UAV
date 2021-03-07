@@ -18,4 +18,8 @@ in your WSL terminal every time you start it. </br>
 
 You can add this line to your .bashrc file after "OS preparation" step has been completed.
 
+## VS Code setup
+Instal Remote - SSH and PlatformIO IDE extensions
+
+
 Next: []()
