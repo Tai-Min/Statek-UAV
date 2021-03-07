@@ -1,8 +1,8 @@
 # OS preparation
 ## Jetson Nano OS preparation
-Install Jetson Nano OS as described [here](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-devkit).
-
-Reinstall libcanberra-gtk-module
+Install Jetson Nano OS as described [here](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-devkit). </br>
+**Note:** Name user "statek".</br></br>
+Reinstall libcanberra-gtk-module:
 ```
 sudo apt-get install --reinstall libcanberra-gtk-module
 ```
