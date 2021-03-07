@@ -6,7 +6,37 @@ Reinstall libcanberra-gtk-module
 ```
 sudo apt-get install --reinstall libcanberra-gtk-module
 ```
-## Serial device preparation
+## Configure wifi
+Find name of your wifi device:
+```
+ifconfig
+```
+Enable it:
+```
+ifconfig <your wifi card/dongle>
+```
+Add it to interfaces:
+```
+sudo nano /etc/network/interfaces
+```
+And insert this:
+```
+auto <your wifi card/dongle>
+iface <your wifi card/dongle> inet dhcp
+  wpa-ssid <ssid>
+  wpa-psk <password>
+```
+Save file.
+
+Connect to wifi:
+```
+sudo dhclient <your wifi card/dongle>
+```
+Now, you should be able to connect to the UAV and control it without wired connection.
+
+## Configure access point
+TODO
+## Configure serial devices
 Make sure that all serial devices are connected.
 ### Add yourself to dialout group
 ```
@@ -30,8 +60,6 @@ Then add this line:
 ```
 SUBSYSTEM=="tty", ATTRS{idVendor}=="<YOUR ID>", ATTRS{idProduct}=="<YOUR ID>", ATTRS{serial}=="<YOUR SERIAL>", SYMLINK+="ydlidar"
 ```
-
-## Access point preparation
 
 ## Finishing up
 ### Reboot machine 
