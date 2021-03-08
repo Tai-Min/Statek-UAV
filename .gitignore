@@ -50,6 +50,7 @@ CAD/detailed/thirdparty/*/*
 # For stuff that's not mine
 # thirdparty/
 ds4_driver/
+ds4drv/
 ydlidar_ros/
 rosserial/
 ros_lib/
