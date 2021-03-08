@@ -46,6 +46,7 @@ CAD/detailed/thirdparty/*/*
 !*.ipt
 !*.iam
 .vscode/
+NUCLEO_F103RB/
 
 # For stuff that's not mine
 # thirdparty/
