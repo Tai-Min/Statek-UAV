@@ -5,7 +5,7 @@ Catkin packages for Statek UAV.
 * **statek_config** </br>
   Config files.
 * **statek_hw** </br>
-  High level hardware nodes and launch file to run all high level and real time hardware nodes along with tf.
+  High level hardware nodes and launch file to launch nodes for all sensors and acutators (both high level and real time) along with static and dynamic tfs.
 * **statek_msgs** </br>
   Custom messages.
 * **statek_playground** </br>
