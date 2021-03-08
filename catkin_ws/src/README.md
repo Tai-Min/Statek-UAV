@@ -1,24 +1,25 @@
 Catkin packages for Statek UAV.
 
+* **statek_calibrate** </br>
+  Calibration algorithms.
 * **statek_config** </br>
-  Config files for Statek UAV.
-* **TODO: statek_diag** </br>
-  Diagnostic nodes for Statek's processes
+  Config files.
 * **statek_hw** </br>
-  Launch file that will launch all required stuff for Statek to operate. Launches high level and real time sensors / actuators and tf.
+  High level hardware nodes and launch file to run all high level and real time hardware nodes along with tf.
 * **statek_msgs** </br>
-  Custom Statek's messages
+  Custom messages.
 * **statek_playground** </br>
-  Launch files to play with simulated or real Statek UAV.
+  Launch files to play with simulated or real UAV.
+* **statek_rt** </br>
+  Source code for real time software on STM microcontroller.
 * **statek_rviz** </br>
-  Statek's sensor visualization. 
-* **TODO: statek_rt** </br>
-  Source code and launch files for Statek's real time hardware.
+  UAV visualization. 
 * **statek_sim** </br>
-  Statek's custom plugins and Gazebo worlds.
+  Custom plugins and Gazebo worlds.
 * **statek_teleop** </br>
   Nodes and launch files for teleoperation.
 * **statek_tf** </br>
   Static and dynamic transforms for Statek UAV.
-* **TODO: statek_tuner** </br>
-  Launch files for autotuning algorithms i.e wheel's state feedback lqr tuning
+----
+* **TODO: statek_diag** </br>
+  Diagnostic nodes for Statek's processes
