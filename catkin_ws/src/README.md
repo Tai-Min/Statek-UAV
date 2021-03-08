@@ -11,7 +11,7 @@ Catkin packages for Statek UAV.
 * **statek_playground** </br>
   Launch files to play with simulated or real UAV.
 * **statek_rt** </br>
-  Source code for real time software on STM microcontroller.
+  Source code for real time software for STM microcontroller.
 * **statek_rviz** </br>
   UAV visualization. 
 * **statek_sim** </br>
