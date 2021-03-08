@@ -18,6 +18,24 @@ find . -type f -name "*.py" -print0 | xargs -0 chmod +x
 ```
 To make all python nodes executable.
 
+Edit cv_bridge's config:
+```
+sudo nano /opt/ros/melodic/share/cv_bridge/cmake/cv_bridgeConfig.cmake
+```
+Search for lines:
+```
+if(NOT "include;/usr/include;/urs/include/opencv " STREQUAL " ")
+...
+set(_include_dirs "include;/usr/include;/urs/include/opencv")
+```
+And replace them with:
+```
+if(NOT "include;/usr/include;/usr/include/opencv4 " STREQUAL " ")
+...
+set(_include_dirs "include;/usr/include;/usr/include/opencv4")
+```
+Save file.
+
 Lastly, run:
 ```
 catkin_make 
