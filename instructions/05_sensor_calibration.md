@@ -4,8 +4,6 @@ Print </br>
 ![Chessboard](chessboard.png) </br> 
 and measure width of one black square.
 
-Make sure that statek_hw/statek.launch is running.
-
 On WSL 2 run:
 ```
 rosdep install camera_calibration
