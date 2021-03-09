@@ -14,7 +14,7 @@
 
   <xacro:property name="encoder_config" value="${load_yaml('$(find statek_config)/yaml/encoder_config.yaml')}"/>
   <xacro:property name="encoder_update_rate" value="${encoder_config['update_rate']}"/>
-  <xacro:property name="encoder_std_dev" value="${encoder_config['std_dev']}"/>
+  <xacro:property name="encoder_std_dev" value="${encoder_config['standard_deviation']}"/>
   <xacro:property name="encoder_mean" value="${encoder_config['mean']}"/>
 
   <xacro:property name="camera_config" value="${load_yaml('$(find statek_config)/yaml/camera_config.yaml')}"/>

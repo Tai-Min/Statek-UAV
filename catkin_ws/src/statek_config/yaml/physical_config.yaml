@@ -1,17 +1,16 @@
-motor_max_rpm: 50 # maximum rpm motor can handle without overheating
-soft_max_rpm: 45 # software limit
+# motor config
+motor_max_rpm: 50 # Maximum rpm motor can handle without overheating
+soft_max_rpm: 45 # Software limit
 
-distance_between_wheels: 0.62 # in [m]
+# wheel config
+wheel_radius: 0.12 # In [m]
+wheel_max_angular_velocity: 0 # How fast wheels can rotate in [rad/s] defined as soft_max_rpm/60*2*pi
 
-wheel_radius: 0.12 # in m
-wheel_max_angular_velocity: 0 # in [rad/s] defined as motor_max_rpm/60*2*pi
-wheel_soft_max_angular_velocity: 0 # in [rad/s] defined as soft_max_rpm/60*2*pi
+# kinematic config
+distance_between_wheels: 0.62 # In [m]
+max_linear_velocity: 0 # How fast UAV can move forward in m/s defined as wheel_radius*wheel_max_angular_velocity
+max_angular_velocity: 0 # How fast UAV can rotate around it's center in [rad/s] defined as max_linear_velocity / (distance_between_wheels / 2)
 
-max_linear_velocity: 0 # in m/s defined as wheel_radius*wheel_max_angular_velocity
-soft_max_linear_velocity: 0 # in [m/s] defined as wheel_radius*wheel_soft_max_angular_velocity
-
-max_angular_velocity: 0 # in [rad/s] defined as max_linear_velocity / (distance_between_wheels / 2)
-soft_max_angular_velocity: 0 # in [rad/s] defined as soft_max_linear_velocity / (distance_between_wheels / 2)
-
-wheel_weight: 1.3 # in [kg]
-frame_weight: 14 # in [kg]
+# physical config
+wheel_weight: 1.3 # In [kg]
+frame_weight: 14 # In [kg]

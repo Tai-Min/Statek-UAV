@@ -1,0 +1,7 @@
+absolute_max_battery_level: 28.8 # In [V]
+soft_max_battery_level: 25.0 # Typical battery's somewhat stable value in [V]
+
+absolute_min_battery_level: 23.2 # In [V]
+soft_max_battery_level: 23.4 # When UAV should shutdown in [V]
+
+battery_capacity: 9 # in [Ah]

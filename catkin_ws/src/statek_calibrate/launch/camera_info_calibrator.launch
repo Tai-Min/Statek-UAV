@@ -4,7 +4,7 @@
     <arg name="size" default="0.0252"/>
 
     <!-- Launch camera -->
-    <node name="vision_node" pkg="statek_hw" type="vision_publisher_node.py" output="screen" respawn="true">
+    <node name="vision_node" pkg="statek_hw" type="vision_publisher_node" output="screen" respawn="true">
         <param name="statek_name" value="$(arg statek_name)"/>
         <rosparam command="load" ns="$(arg statek_name)/camera_config/" file="$(find statek_config)/yaml/camera_config.yaml"/>
         <rosparam command="load" ns="$(arg statek_name)/camera_info_left/" file="$(find statek_config)/yaml/camera_info_left.yaml"/>
