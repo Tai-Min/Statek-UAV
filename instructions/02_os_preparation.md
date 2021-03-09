@@ -65,5 +65,5 @@ SUBSYSTEM=="tty", ATTRS{idVendor}=="<YOUR ID>", ATTRS{idProduct}=="<YOUR ID>", A
 ```
 sudo reboot
 ```
-Previous: []() </br>
-Next: []()
+Previous: [Electronics connections](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/01_electronics_connections.md) </br>
+Next: [ROS](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/03_ros.md)
