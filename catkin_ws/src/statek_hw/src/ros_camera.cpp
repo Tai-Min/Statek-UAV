@@ -46,19 +46,19 @@ std::string RosCamera::getCameraInfoYamlString(const sensor_msgs::CameraInfo &in
 
     ss << "D:\n";
     for (auto d : info.D)
-        ss << "- " << d << "\n";
+        ss << "- " << std::setprecision(std::numeric_limits<double>::digits10) << d << "\n";
 
     ss << "K:\n";
     for (auto k : info.K)
-        ss << "- " << k << "\n";
+        ss << "- " << std::setprecision(std::numeric_limits<double>::digits10) << k << "\n";
 
     ss << "P:\n";
     for (auto p : info.P)
-        ss << "- " << p << "\n";
+        ss << "- " << std::setprecision(std::numeric_limits<double>::digits10) << p << "\n";
 
     ss << "R:\n";
     for (auto r : info.R)
-        ss << "- " << r << "\n";
+        ss << "- " << std::setprecision(std::numeric_limits<double>::digits10) << r << "\n";
 
     ss << "distortion_model: " << info.distortion_model;
 
@@ -90,8 +90,6 @@ sensor_msgs::CameraInfo RosCamera::getCameraInfo()
 
 bool RosCamera::setCameraInfo(sensor_msgs::SetCameraInfo::Request &req, sensor_msgs::SetCameraInfo::Response &res)
 {
-    ROS_WARN("set_camera info called for s camera");
-
     // local save
     this->infoMsg.distortion_model = req.camera_info.distortion_model;
     std::copy(req.camera_info.D.begin(), req.camera_info.D.end(), this->infoMsg.D.begin());
