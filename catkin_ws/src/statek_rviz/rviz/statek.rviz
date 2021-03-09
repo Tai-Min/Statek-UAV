@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /TF1/Tree1
         - /Camera1
-        - /Camera1/Status1
       Splitter Ratio: 0.5
     Tree Height: 183
   - Class: rviz/Selection
@@ -154,10 +153,10 @@ Visualization Manager:
       Value: true
     - Class: rviz/Camera
       Enabled: true
-      Image Rendering: background and overlay
-      Image Topic: /statek/stereo/left/image_rect_color
+      Image Rendering: overlay
+      Image Topic: /statek/stereo/right/image_color
       Name: Camera
-      Overlay Alpha: 0.10000000149011612
+      Overlay Alpha: 1
       Queue Size: 2
       Transport Hint: compressed
       Unreliable: false
@@ -228,25 +227,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.251457691192627
+      Distance: 2.869414806365967
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.8478432893753052
-        Y: -0.5250646471977234
-        Z: -0.290732741355896
+        X: 0.855946958065033
+        Y: 0.08878406882286072
+        Z: 0.025016963481903076
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7553977966308594
+      Pitch: 0.7053977251052856
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.0590269565582275
+      Yaw: 4.259034156799316
     Saved: ~
 Window Geometry:
   Camera:
@@ -266,5 +265,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1920
-  X: 1920
+  X: 1928
   Y: 63
