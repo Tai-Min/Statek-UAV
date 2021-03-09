@@ -16,7 +16,7 @@ export ROS_MASTER_URI=http://<ip of the vehicle>:11311
 ```
 in your WSL terminal every time you start it. </br>
 
-You can add this line to your .bashrc file after "OS preparation" step has been completed.
+You can add this line to your .bashrc file.
 
 ## VS Code setup
 Instal Remote - SSH and PlatformIO IDE extensions
