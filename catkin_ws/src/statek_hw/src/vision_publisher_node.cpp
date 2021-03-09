@@ -36,6 +36,7 @@ int main(int argc, char **argv){
         cam_center.publish(stamp);
         cam_right.publish(stamp);
 
+        ros::spinOnce();
         rate.sleep();
     }
 }
