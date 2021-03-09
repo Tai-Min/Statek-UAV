@@ -27,5 +27,8 @@ In rqt reconfigure window navigate to statek/stereo/stereo_image_proc and tune p
 Run statek_hw/statek.launch and statek_rviz/view.launch.
 Open static_transform_publisher.launch from statek_tf package in text editor and find node with name "base_link_to_laser_link". Edit fourth parameter from args so PointCloud2 and LaserScan match in Rviz window.
 
+## Troubleshooting
+If something in real UAV does not match Rviz's visualization, try to play with static transforms located in statek_tf/static_transform_publisher.launch as all the transforms can vary, depending on your print quality and assembly. You should edit your Gazebo poses located in statek_config/urdf/statek.urdf.</br>
+
 Previous: [Real time hardware](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/05_rt_hardware_preparation.md) </br>
 Next: []()
