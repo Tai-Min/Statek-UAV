@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <arg name="statek_name" default="statek"/>
-    <arg name="size" default="0.0252"/>
-
-    <!-- Launch camera -->
-    <node name="vision_node" pkg="statek_hw" type="vision_publisher_node" output="screen" respawn="true">
-        <param name="statek_name" value="$(arg statek_name)"/>
-        <rosparam command="load" ns="$(arg statek_name)/camera_config/" file="$(find statek_config)/yaml/camera_config.yaml"/>
-        <rosparam command="load" ns="$(arg statek_name)/camera_info_left/" file="$(find statek_config)/yaml/camera_info_left.yaml"/>
-        <rosparam command="load" ns="$(arg statek_name)/camera_info_right/" file="$(find statek_config)/yaml/camera_info_right.yaml"/>
-    </node>
+    <arg name="square_size" default="0.0252"/>
 
     <!-- Launch calibration tool -->
-    <node name="camera_calibration_node" pkg="camera_calibration" type="cameracalibrator.py" output="screen" respawn="false" args="--approximate 0.1 --size 9x6 --square $(arg size) left:=$(arg statek_name)/stereo/left/image_raw right:=$(arg statek_name)/stereo/right/image_raw left_camera:=$(arg statek_name)/stereo/left/ right_camera:=$(arg statek_name)/stereo/right/" />
+    <node name="camera_calibration_node" pkg="camera_calibration" type="cameracalibrator.py" output="screen" respawn="false" args="--approximate 0.1 --size 9x6 --square $(arg square_size) left:=$(arg statek_name)/stereo/left/image_raw right:=$(arg statek_name)/stereo/right/image_raw left_camera:=$(arg statek_name)/stereo/left/ right_camera:=$(arg statek_name)/stereo/right/" />
 
 </launch>
