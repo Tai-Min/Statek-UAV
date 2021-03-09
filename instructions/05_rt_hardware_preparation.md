@@ -36,3 +36,6 @@ udisksctl mount -b /dev/sda
 ```
 scp NUCLEO_F103RB/rt.bin <UAV's username>@<UAV's ip>:/media/statek/NODE_F103RB
 ```
+
+Previous: [Remote environment setup](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/04_remote_environment_setup.md)</br>
+Next: [Sensor calibration](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/06_sensor_calibration.md)
