@@ -42,5 +42,5 @@ catkin_make
 ```
 inside you catkin workspace.
 
-Previous: []() </br>
-Next: []()
+Previous: [OS preparation](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/02_os_preparation.md) </br>
+Next: [Remote environment setup](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/04_remote_environment_setup.md)
