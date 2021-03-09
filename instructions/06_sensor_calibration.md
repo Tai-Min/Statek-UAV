@@ -27,5 +27,5 @@ In rqt reconfigure window navigate to statek/stereo/stereo_image_proc and tune p
 Run statek_hw/statek.launch and statek_rviz/view.launch.
 Open static_transform_publisher.launch from statek_tf package in text editor and find node with name "base_link_to_laser_link". Edit fourth parameter from args so PointCloud2 and LaserScan match in Rviz window.
 
-Previous: []() </br>
+Previous: [Real time hardware](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/05_rt_hardware_preparation.md) </br>
 Next: []()
