@@ -21,5 +21,5 @@ You can add this line to your .bashrc file for convenience.
 ## VS Code setup
 Instal Remote - SSH extension.
 
-Previous: [ROS](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/03_ros.md)
+Previous: [ROS](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/03_ros.md)</br>
 Next: [Real time hardware](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/05_rt_hardware_preparation.md)
