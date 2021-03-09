@@ -34,7 +34,7 @@ udisksctl mount -b /dev/sda
 
 **Again, on WLS 2:** Upload compiled code:
 ```
-scp NUCLEO_F103RB/rt.bin <UAV's username>@<UAV's ip>:/media/statek/NODE_F103RB
+scp NUCLEO_F103RB/rt.bin <UAV's username>@<UAV's ip>:/media/<UAV's username>/NODE_F103RB
 ```
 
 Previous: [Remote environment setup](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/04_remote_environment_setup.md)</br>
