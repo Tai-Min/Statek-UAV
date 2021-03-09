@@ -12,6 +12,19 @@ Now, install third party packages:
 * [ydlidar_ros](https://github.com/YDLIDAR/ydlidar_ros)
 * [rosserial](http://wiki.ros.org/rosserial_mbed/Tutorials/rosserial_mbed%20Setup) (Skip gcc4mbed part as it does not work on Jetson Nano)
 
+Cd into rosserial:
+```
+roscd rosserial_python/src/rosserial_python
+```
+and repleace:
+```
+import queue
+```
+inside SerialClient.py with:
+```
+import Queue as queue
+```
+
 Now, in your catkin_ws folder run:
 ```
 find . -type f -name "*.py" -print0 | xargs -0 chmod +x
