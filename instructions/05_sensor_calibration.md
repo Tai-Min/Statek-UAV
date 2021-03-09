@@ -4,14 +4,12 @@ Print </br>
 ![Chessboard](chessboard.png) </br> 
 and measure width of one black square
 
-On WSL run:
+Make sure that statek_hw/statek.launch is running.
+
+On WSL 2 run:
 ```
 rosdep install camera_calibration
 rosmake camera_calibration
-```
-
-Then run:
-```
 roslaunch statek_calibrate camera_info_calibrator.launch square_size:=<SIZE OF BLACK SQUARE IN METERS> machine_address:=<UAV's IP>
 ```
 Follow [camera_calibration](http://wiki.ros.org/camera_calibration/Tutorials/StereoCalibration) from point 4.
