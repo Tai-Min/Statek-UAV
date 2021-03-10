@@ -60,6 +60,16 @@ Then add this line:
 SUBSYSTEM=="tty", ATTRS{idVendor}=="<YOUR ID>", ATTRS{idProduct}=="<YOUR ID>", ATTRS{serial}=="<YOUR SERIAL>", SYMLINK+="ydlidar"
 ```
 
+### Add STM board to udev rules
+Repeat steps from "Add your lidar info to udev rules", find device with:
+```
+ATTRS{manufacturer}=="STMicroelectronics"
+```
+And add it to udev under lidar as:
+```
+SUBSYSTEM=="tty", ATTRS{idVendor}=="<YOUR ID>", ATTRS{idProduct}=="<YOUR ID>", ATTRS{serial}=="<YOUR SERIAL>", SYMLINK+="stm"
+```
+
 ## Finishing up
 ### Reboot machine 
 ```
