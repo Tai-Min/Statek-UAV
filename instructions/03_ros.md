@@ -16,11 +16,11 @@ cd into rosserial:
 ```
 roscd rosserial_python/src/rosserial_python
 ```
-and repleace:
+open SerialClient.py and repleace:
 ```
 import queue
 ```
-inside SerialClient.py with:
+with:
 ```
 import Queue as queue
 ```
