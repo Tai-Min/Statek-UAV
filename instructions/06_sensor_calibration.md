@@ -16,7 +16,7 @@ roslaunch statek_calibrate encoder_calibrator.launch
 On Jetson nano edit your statek_calibrate/yaml/battery_config.yaml to match your battery.
 
 ## Camera calibration
-Before anything, check statek_config/yaml/camera_config.yaml and set parameters to match your camera (default are for original raspi cam 2).
+Before anything, check statek_config/yaml/camera_config.yaml and set parameters to match your camera (default are for original raspi cam 2) (Dont' touch width and height parameters!).
 
 Print </br> 
 ![Chessboard](chessboard.png) </br> 
