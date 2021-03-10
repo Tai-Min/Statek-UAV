@@ -76,7 +76,7 @@
     </collision>
 
     <visual name="visual">
-      <origin rpy="0  0  1.57" xyz="0  0  0"/>
+      <origin rpy="0  0  1.57" xyz="0  -0.0035  0"/>
       <geometry>
         <mesh filename="file://$(find statek_config)/urdf/chassis.dae" scale="1.0 1.0 1.0"/>
       </geometry>

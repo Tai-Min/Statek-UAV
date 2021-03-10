@@ -88,13 +88,13 @@ namespace gazebo
       ns = _sdf->Get<std::string>("sensor_namespace");
 
     this->leftMotorRawData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/left/raw", 10);
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/motors/left/encoder/raw", 10);
     this->rightMotorRawData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/right/raw", 10);
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/motors/right/encoder/raw", 10);
     this->leftMotorFilteredData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/left/filtered", 10);
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/motors/left/encoder/filtered", 10);
     this->rightMotorFilteredData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/right/filtered", 10);
+        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/motors/right/encoder/filtered", 10);
   }
 
   void MotorControlPlugin::StartRosThread()

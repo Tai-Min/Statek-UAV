@@ -182,7 +182,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: RGB8
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -199,7 +199,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -228,25 +228,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.8308143615722656
+      Distance: 1.84697687625885
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.4454704523086548
-        Y: 0.040747299790382385
-        Z: -0.39298874139785767
+        X: 0.13484801352024078
+        Y: 0.2734053134918213
+        Z: -0.3680555522441864
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6047962307929993
+      Pitch: 0.724795937538147
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.629034519195557
+      Yaw: 4.579034805297852
     Saved: ~
 Window Geometry:
   Camera:
@@ -266,5 +266,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1920
-  X: 0
+  X: 8
   Y: 63
