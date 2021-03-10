@@ -9,7 +9,6 @@
 
     <!-- Launch lidar -->
     <group ns="$(arg statek_name)/laser/">
-
         <node name="ydlidar_node" pkg="ydlidar_ros" type="ydlidar_node" output="screen" respawn="true">
             <param name="port" type="string" value="/dev/ydlidar"/>
             <param name="baudrate" type="int" value="128000"/>
@@ -44,5 +43,12 @@
 
     <!-- Reconfigure depth vision  -->
     <node name="depth_reconfigure" pkg="dynamic_reconfigure" type="dynparam" args="load $(arg statek_name)/stereo/stereo_image_proc $(find statek_config)/yaml/depth_config.yaml -t 8"/>
+
+    <!-- Real time hardware -->
+    <group ns="$(arg statek_name)/">
+        <node name="rosserial" pkg="rosserial_python" type="serial_node.py" output="screen" respawn="true">
+            <param name="port" value="/dev/stm"/>
+        </node>
+    </group>
 
 </launch>

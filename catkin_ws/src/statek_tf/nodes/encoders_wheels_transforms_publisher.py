@@ -32,17 +32,18 @@ def encoder_callback(msg, args):
     front_wheel_link = statek_name + "/wheels/" + side + "_front_link"
     back_wheel_link = statek_name + "/wheels/" + side + "_back_link"
 
-    y_offset = -0.252682 if side == "right" else 0.252682
+    y_offset_motor = -0.262682 if side == "right" else 0.262682
+    y_offset_wheel = -0.317682 if side == "right" else 0.317682
 
-    send_transform(motor_link, -0.05, y_offset, 0.03826, msg.position)
-    send_transform(front_wheel_link, 0.167807, y_offset, -0.03126, msg.position)
-    send_transform(back_wheel_link, -0.252682, y_offset, -0.03126, msg.position)
+    send_transform(motor_link, -0.057, y_offset_motor, 0.0, msg.position)
+    send_transform(front_wheel_link, 0.167807, y_offset_wheel, -0.03126, msg.position)
+    send_transform(back_wheel_link, -0.252682, y_offset_wheel, -0.03126, msg.position)
 
 rospy.init_node("dynamic_transform_publisher", anonymous=True)
 
 statek_name = rospy.get_param("~statek_name", "statek")
 
-rospy.Subscriber("/" + statek_name + "/encoders/left/filtered", Encoder, encoder_callback, ("left", statek_name))
-rospy.Subscriber("/" + statek_name + "/encoders/right/filtered", Encoder, encoder_callback, ("right", statek_name))
+rospy.Subscriber("/" + statek_name + "/motors/left/encoder/filtered", Encoder, encoder_callback, ("left", statek_name))
+rospy.Subscriber("/" + statek_name + "/motors/right/encoder/filtered", Encoder, encoder_callback, ("right", statek_name))
 
 rospy.spin()
