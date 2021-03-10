@@ -1,5 +1,23 @@
 # Sensor calibration
+## Kinematic calibration
+On WSL 2 run:
+```
+roslaunch statek_calibrate kinematic_calibrator.launch
+```
+And follow instructions.
+
+## Encoder calibration
+On WSL 2 run:
+```
+roslaunch statek_calibrate encoder_calibrator.launch
+```
+
+## Battery calibration
+On Jetson nano edit your statek_calibrate/yaml/battery_config.yaml to match your battery.
+
 ## Camera calibration
+Before anything, check statek_config/yaml/camera_config.yaml and set parameters to match your camera (default are for original raspi cam 2).
+
 Print </br> 
 ![Chessboard](chessboard.png) </br> 
 and measure width of one black square.
