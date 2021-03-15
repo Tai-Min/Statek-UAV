@@ -18,6 +18,19 @@ in your WSL terminal every time you start it. </br>
 
 You can add this line to your .bashrc file for convenience.
 
+### ~/.bashrc
+Make sure you have all of these lines added to the end of your ~/.bashrc file:
+```
+export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}'):0.0
+export LIBGL_ALWAYS_INDIRECT=
+/etc/init.d/dbus start &> /dev/null
+source /opt/ros/melodic/setup.bash
+source <path to catkin_ws folder>/devel/setup.bash
+export ROS_MASTER_URI=http://<ip of the vehicle>:11311
+export GCC4MBED_DIR=~/gcc4mbed
+export ROS_LIB_DIR=~/ros/lib/ros_lib
+```
+
 ## VS Code setup
 Instal Remote - SSH extension.
 
