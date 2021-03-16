@@ -16,5 +16,7 @@ $EndDescr
 Text HLabel 5950 2950 0    50   Input ~ 0
 USB_com
 Text HLabel 5950 3050 0    50   Input ~ 0
-USB_pwr
++USB_pwr
+Text HLabel 5950 3150 0    50   Input ~ 0
+-USB_pwr
 $EndSCHEMATC
