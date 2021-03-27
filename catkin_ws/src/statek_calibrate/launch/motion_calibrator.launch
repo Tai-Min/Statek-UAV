@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="statek_name" default="statek"/>
+    <arg name="square_size" default="0.0252"/>
+
+    <!-- Launch calibration tool -->
+    <node name="motion_calibration_node" pkg="statek_calibrate" type="motion_calibration_node.py" output="screen" respawn="false">
+        <param name="statek_name" value="$(arg statek_name)"/>
+    </node>
+
+</launch>
