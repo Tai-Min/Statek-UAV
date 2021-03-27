@@ -2,15 +2,18 @@
 
 #include <mbed.h>
 
-#define AM4096_ABSOLUTE_ANGLE_ADDR 33
-#define AM4096_ANGLE_RESOLUTION 4096
-#define AM4096_ANGLE_BITMASK 0b0000111111111111
-#define AM4096_ANGLE_MAX 2 * M_PI // in [rad]
+namespace
+{
+    const uint8_t AM4096_ABSOLUTE_ANGLE_ADDR = 33;
+    const uint16_t AM4096_ANGLE_RESOLUTION = 4096;
+    const uint16_t AM4096_ANGLE_BITMASK = 0b0000111111111111;
+    const double AM4096_ANGLE_MAX = 2 * M_PI; // in [rad]
 
-#define AM4096_TACHO_ADDR 35
-#define AM4096_TACHO_RESOLUTION 1024
-#define AM4096_TACHO_BITMASK 0b0000001111111111
-#define AM4096_TACHO_MEASURING_RANGE 960 / 60.0 * 2 * M_PI // in [rad/s]
+    const uint8_t AM4096_TACHO_ADDR = 35;
+    const uint16_t AM4096_TACHO_RESOLUTION = 1024;
+    const uint16_t AM4096_TACHO_BITMASK = 0b0000001111111111;
+    const double AM4096_TACHO_MEASURING_RANGE = (960 / 60.0) * 2 * M_PI; // in [rad/s]
+}
 
 class AM4096
 {
@@ -20,13 +23,13 @@ private:
     bool readZero = true;
     double zeroPosition;
 
-    double readEncoder(uint8_t register_addr, uint16_t resolution, uint16_t bitmask, uint16_t range)
+    double readMeasurement(uint8_t register_addr, uint16_t resolution, uint16_t bitmask, double range)
     {
         char data[2];
         data[0] = register_addr;
 
-        i2c.write(addr, data, 1, true);
-        i2c.read(addr, data, 2);
+        this->i2c.write(this->addr, data, 1, true);
+        this->i2c.read(this->addr, data, 2);
 
         uint16_t val = bitmask & (data[0] << 8 | data[1]);
 
@@ -35,29 +38,24 @@ private:
 
     double readAngle(uint8_t register_addr)
     {
-        return readEncoder(register_addr, AM4096_ANGLE_RESOLUTION, AM4096_ANGLE_BITMASK, AM4096_ANGLE_MAX);
+        return readMeasurement(register_addr, AM4096_ANGLE_RESOLUTION, AM4096_ANGLE_BITMASK, AM4096_ANGLE_MAX);
     }
 
 public:
     AM4096(I2C &_i2c, uint8_t _addr) : i2c(_i2c), addr(_addr << 1) {}
 
-    double angle()
+    double position()
     {
-        double reading = readAngle(AM4096_ABSOLUTE_ANGLE_ADDR);
-
-        // treat first reading as zero position
-        if (readZero)
-        {
-            readZero = false;
-            zeroPosition = reading;
-            return 0.0;
+        if(this->readZero){
+            this->readZero = false;
+            this->zeroPosition = readAngle(AM4096_ABSOLUTE_ANGLE_ADDR);
+            return 0;
         }
-
-        return zeroPosition - reading;
+        return this->zeroPosition - readAngle(AM4096_ABSOLUTE_ANGLE_ADDR);
     }
 
     double velocity()
     {
-        return readEncoder(AM4096_TACHO_ADDR, AM4096_TACHO_RESOLUTION, AM4096_TACHO_BITMASK, AM4096_TACHO_MEASURING_RANGE);
+        return readMeasurement(AM4096_TACHO_ADDR, AM4096_TACHO_RESOLUTION, AM4096_TACHO_BITMASK, AM4096_TACHO_MEASURING_RANGE);
     }
 };

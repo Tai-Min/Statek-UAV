@@ -1,58 +1,54 @@
 #include "motor_controller.hpp"
 
 #include "../ros_handlers/ros_handlers.hpp"
-#include "statek_msgs/Encoder.h"
 
-MotorController::MotorController(const MotorGpio &motorGPIO, I2C &encoderI2C, uint8_t encoderAddr, Side _side, bool _reverseEncoder)
-    : motor(motorGPIO.en, motorGPIO.cw, motorGPIO.ccw, motorGPIO.pwm), encoder(encoderI2C, encoderAddr), reverseEncoder(_reverseEncoder), side(_side)
+MotorController::MotorController(const Motor::Gpio &motorGpio, I2C &encoderI2c, uint8_t encoderAddr,
+                                 const char *rawEncoderTopic, const char *tf, bool _reverseEncoder)
+    : motor(motorGpio),
+      encoder(encoderI2c, encoderAddr), reverseEncoder(_reverseEncoder),
+      rawEncoderPublisher(rawEncoderTopic, &this->rawEncoderMsg)
 {
+    this->rawEncoderMsg.header.frame_id = tf;
 }
 
 void MotorController::controlLoopThreadFcn()
 {
-    uint32_t cntr = 0;
-    statek_msgs::Encoder rawEncoderMsg;
-    statek_msgs::Encoder filteredEncoderMsg;
+    nh.advertise(this->rawEncoderPublisher);
+    nh.spinOnce();
 
-    ros::Publisher rawEncoderPublisher(this->side == Side::LEFT ? "motors/left/encoder/raw" : "motors/right/encoder/raw", &rawEncoderMsg);
-    nh.advertise(rawEncoderPublisher);
-    ros::Publisher filteredEncoderPublisher(this->side == Side::LEFT ? "motors/left/encoder/filtered" : "motors/right/encoder/filtered", &filteredEncoderMsg);
-    nh.advertise(filteredEncoderPublisher);
-
+    uint32_t seq = 0;
     this->motor.enable();
-
     while (true)
     {
         // 1. Read.
         double rawVelocity = this->encoder.velocity();
-        Thread::wait(1);
-
-        double rawPosition = this->encoder.angle();
+        wait_us(20);
+        double rawPosition = this->encoder.position();
         // Inverse encoder's output if necessary.
         if (this->reverseEncoder)
             rawPosition = 2 * M_PI - rawPosition;
-        Thread::wait(1);
 
-        // 2. Filter.
-        double filteredVelocity = rawVelocity;
-        double filteredPosition = rawPosition;
+        double rawAcceleration = 0;
 
         // 3. Control.
         double controlVal = 0;
         switch (this->controlMode)
         {
-        case MANUAL:
+        case DIRECT:
+            // Simple proportional control.
+            if (this->maxVelocity != 0)
+                controlVal = this->setpoint / this->maxVelocity;
             break;
-        case VELOCITY_TEST:
+        case MAX_VELOCITY_TEST:
             this->testedSamplesCounter++;
-
-            // Simple moving average
+            // Moving average.
             this->testedMeanVelocity = this->testedMeanVelocity +
-                                       1 / double(this->testedSamplesCounter) *
+                                       (double)(1 / (double)this->testedSamplesCounter) *
                                            (rawVelocity - this->testedMeanVelocity);
-            controlVal = 1.0f; // Force motor into max speed for test
+
+            controlVal = 1.0f; // Force motor into max speed for the test.
             break;
-        case AUTO:
+        case STATE_FEEDBACK:
             break;
         }
 
@@ -60,37 +56,30 @@ void MotorController::controlLoopThreadFcn()
         this->motor.write(controlVal);
 
         // 5. Publish.
-        rawEncoderMsg.header.seq = cntr;
-        rawEncoderMsg.header.stamp = nh.now();
-        rawEncoderMsg.velocity = rawVelocity;
-        rawEncoderMsg.position = rawPosition;
-        rawEncoderPublisher.publish(&rawEncoderMsg);
+        this->rawEncoderMsg.header.seq = seq;
+        this->rawEncoderMsg.header.stamp = nh.now();
+        this->rawEncoderMsg.velocity = rawVelocity;
+        this->rawEncoderMsg.position = rawPosition;
+        this->rawEncoderPublisher.publish(&rawEncoderMsg);
 
-        filteredEncoderMsg.header.seq = cntr;
-        filteredEncoderMsg.header.stamp = nh.now();
-        filteredEncoderMsg.velocity = filteredVelocity;
-        filteredEncoderMsg.position = filteredPosition;
-        filteredEncoderPublisher.publish(&filteredEncoderMsg);
-
-        cntr++;
+        seq++;
         Thread::wait(48);
     }
 }
 
-void MotorController::start()
+double MotorController::saturate(double minVal, double maxVal, double val)
 {
-    this->controlLoopThread.start(callback(this, &MotorController::controlLoopThreadFcn));
-}
-
-void MotorController::setVelocity(double vel)
-{
-    this->setpoint = vel;
+    if (val > maxVal)
+        val = maxVal;
+    if (val < minVal)
+        val = minVal;
+    return val;
 }
 
 void MotorController::setControlMode(ControlMode cm)
 {
     // Reset stuff for velocity test
-    if (cm == ControlMode::VELOCITY_TEST)
+    if (cm == ControlMode::MAX_VELOCITY_TEST)
     {
         this->testedMeanVelocity = 0;
         this->testedSamplesCounter = 0;

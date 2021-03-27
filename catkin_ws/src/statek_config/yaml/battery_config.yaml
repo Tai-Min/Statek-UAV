@@ -1,7 +1,9 @@
-absolute_max_battery_level: 28.8 # In [V]
-soft_max_battery_level: 25.0 # Typical battery's somewhat stable value in [V]
+absolute_max_battery_level: 30.809 # In [V]. Calculate it using real resistor values of your voltage divider
+                                   # connected to the battery and STM microcontroller
+                                   # or leave as is but the result will be a bit inaccurate.
+soft_max_battery_level: 25.0 # Typical battery's somewhat stable value in [V]. This will be treated as 100%.
 
-absolute_min_battery_level: 23.2 # In [V]
-soft_max_battery_level: 23.4 # When UAV should shutdown in [V]
+absolute_min_battery_level: 23.2 # In [V].
+soft_max_battery_level: 23.4 # When UAV should shutdown in [V]. This will be treated as 0%.
 
-battery_capacity: 9 # in [Ah]
+battery_design_capacity: 9 # in [Ah]

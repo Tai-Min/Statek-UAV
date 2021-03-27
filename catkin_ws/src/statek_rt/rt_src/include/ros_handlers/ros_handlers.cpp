@@ -1,4 +1,4 @@
 #include "ros_handlers.hpp"
 
-#include <ros.h>
+bool serviceInProgress = false;
 ros::NodeHandle nh;

@@ -1,9 +1,19 @@
 #pragma once
 
-#include "mbed.h"
+#include <mbed.h>
 
 class Motor
 {
+public:
+    /*! GPIO fot the motor */
+    struct Gpio
+    {
+        PinName en;  //!< Enable pin.
+        PinName cw;  //!< Clockwise pin.
+        PinName ccw; //!< Counter clockwise pin.
+        PinName pwm; //!< PWM pin.
+    };
+
 private:
     DigitalOut motorEnable;
     DigitalOut motorCW;
@@ -11,29 +21,34 @@ private:
     PwmOut motorPWM;
 
 public:
-    Motor(PinName en, PinName cw, PinName ccw, PinName pwm) : motorEnable(en), motorCW(cw), motorCCW(ccw), motorPWM(pwm) {}
+    Motor(const Gpio &gpio) : motorEnable(gpio.en), motorCW(gpio.cw), motorCCW(gpio.ccw), motorPWM(gpio.pwm) {}
 
-    void enable(){
+    void enable()
+    {
         motorEnable = true;
     }
 
-    void disable(){
+    void disable()
+    {
         motorEnable = false;
     }
 
     void write(float dutyCycleSigned)
     {
         bool forward = true;
-        if(dutyCycleSigned < 0){
+        if (dutyCycleSigned < 0)
+        {
             forward = false;
             dutyCycleSigned *= -1;
         }
 
-        if(forward){
+        if (forward)
+        {
             motorCW = true;
             motorCCW = false;
         }
-        else{
+        else
+        {
             motorCW = false;
             motorCCW = true;
         }

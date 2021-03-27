@@ -9,8 +9,8 @@
   <xacro:arg name="kd" default="1"/>
   <xacro:arg name="fdir1" default="0 0 1"/>
 
-  <xacro:property name="physical_config" value="${load_yaml('$(find statek_config)/yaml/physical_config.yaml')}"/>
-  <xacro:property name="max_rpm" value="${physical_config['soft_max_rpm']}"/>
+  <xacro:property name="motion_config" value="${load_yaml('$(find statek_config)/yaml/motion_config.yaml')}"/>
+  <xacro:property name="max_velocity_rads" value="${motion_config['wheel_max_angular_velocity']}"/>
 
   <xacro:property name="encoder_config" value="${load_yaml('$(find statek_config)/yaml/encoder_config.yaml')}"/>
   <xacro:property name="encoder_update_rate" value="${encoder_config['update_rate']}"/>
@@ -310,7 +310,7 @@
       <right_back_joint>right_back_wheel_hinge</right_back_joint>
       <left_front_joint>left_front_wheel_hinge</left_front_joint>
       <right_front_joint>right_front_wheel_hinge</right_front_joint>
-      <max_rpm>${max_rpm}</max_rpm>
+      <max_velocity_rads>${max_velocity_rads}</max_velocity_rads>
       <kp>5</kp>
       <ki>2.5</ki>
       <kd>0</kd>

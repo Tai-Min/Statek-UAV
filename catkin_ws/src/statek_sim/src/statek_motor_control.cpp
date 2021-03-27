@@ -52,8 +52,8 @@ namespace gazebo
 
     this->rosLoopRate = ros::Rate(loopRate);
 
-    if (_sdf->HasElement("max_rpm"))
-      this->maxRpmRads = 2 * M_PI / 60 * _sdf->Get<int>("max_rpm");
+    if (_sdf->HasElement("max_velocity_rads"))
+      this->maxRpmRads = _sdf->Get<int>("max_velocity_rads");
 
     if (_sdf->HasElement("left_motor_tf_frame"))
       this->left_motor_tf = _sdf->Get<std::string>("left_motor_tf_frame");
