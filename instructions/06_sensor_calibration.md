@@ -1,16 +1,10 @@
 # Sensor calibration
-## Kinematic calibration
+## Motion calibration
 On WSL 2 run:
 ```
-roslaunch statek_calibrate kinematic_calibrator.launch
+roslaunch statek_calibrate motion_calibrator.launch
 ```
 And follow instructions.
-
-## Encoder calibration
-On WSL 2 run:
-```
-roslaunch statek_calibrate encoder_calibrator.launch
-```
 
 ## Battery calibration
 On Jetson nano edit your statek_calibrate/yaml/battery_config.yaml to match your battery.
