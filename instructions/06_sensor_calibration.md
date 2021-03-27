@@ -40,12 +40,12 @@ Move this file to UAV using:
 scp <PATH TO LOCAL CATKIN WS>/statek_calibrate/yaml/depth_config.yaml <UAV's username>@<UAV's ip>:<PATH TO UAV CATKIN WS>/statek_calibrate/yaml/depth_config.yaml
 ```
 
-## Lidar tf calibration
-Run statek_hw/statek.launch and statek_rviz/view.launch.
-Open static_transform_publisher.launch from statek_tf package in text editor and find node with name "base_link_to_laser_link". Edit fourth parameter from args so PointCloud2 and LaserScan match in Rviz window.
-
 ## Troubleshooting
 If something in real UAV does not match Rviz's visualization, try to play with static transforms located in statek_tf/static_transform_publisher.launch as all the transforms can vary, depending on your print quality and assembly. You should also edit your Gazebo <pose> tags located in statek_config/urdf/statek.urdf under <gazebo> tags to match your static transforms.</br>
+  
+* Lidar tf calibration </br>
+Run statek_hw/statek.launch and statek_rviz/view.launch.
+Open static_transform_publisher.launch from statek_tf package in text editor and find node with name "base_link_to_laser_link". Edit fourth parameter from args so PointCloud2 and LaserScan match in Rviz window.
 
 Previous: [Real time hardware](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/05_rt_hardware_preparation.md) </br>
 Next: []()
