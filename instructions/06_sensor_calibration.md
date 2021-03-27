@@ -6,6 +6,11 @@ roslaunch statek_calibrate motion_calibrator.launch
 ```
 And follow instructions.
 
+Move generated file using:
+```
+scp <PATH TO LOCAL CATKIN WS>/statek_calibrate/yaml/motion_config.yaml <UAV's username>@<UAV's ip>:<PATH TO UAV CATKIN WS>/statek_calibrate/yaml/motion_config.yaml
+```
+
 ## Battery calibration
 On Jetson nano edit your statek_calibrate/yaml/battery_config.yaml to match your battery.
 
