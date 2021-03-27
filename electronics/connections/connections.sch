@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 1 20
+Sheet 1 22
 Title ""
 Date ""
 Rev ""
@@ -243,23 +243,23 @@ Connection ~ 8550 5200
 $Comp
 L Device:R R?
 U 1 1 60456894
-P 7750 3700
-F 0 "R?" H 7820 3746 50  0000 L CNN
-F 1 "R" H 7820 3655 50  0000 L CNN
-F 2 "" V 7680 3700 50  0001 C CNN
-F 3 "~" H 7750 3700 50  0001 C CNN
-	1    7750 3700
+P 8050 3750
+F 0 "R?" H 8120 3796 50  0000 L CNN
+F 1 "4.7k" H 8120 3705 50  0000 L CNN
+F 2 "" V 7980 3750 50  0001 C CNN
+F 3 "~" H 8050 3750 50  0001 C CNN
+	1    8050 3750
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:R R?
 U 1 1 604570D2
-P 7500 3700
-F 0 "R?" H 7570 3746 50  0000 L CNN
-F 1 "R" H 7570 3655 50  0000 L CNN
-F 2 "" V 7430 3700 50  0001 C CNN
-F 3 "~" H 7500 3700 50  0001 C CNN
-	1    7500 3700
+P 7750 3750
+F 0 "R?" H 7820 3796 50  0000 L CNN
+F 1 "4.7k" H 7820 3705 50  0000 L CNN
+F 2 "" V 7680 3750 50  0001 C CNN
+F 3 "~" H 7750 3750 50  0001 C CNN
+	1    7750 3750
 	1    0    0    -1  
 $EndComp
 $Sheet
@@ -276,14 +276,16 @@ F7 "B2" I R 8300 1950 50
 F8 "SHIELD" I L 7700 1650 50 
 $EndSheet
 $Sheet
-S 7400 2750 900  1200
+S 7200 2750 1100 1200
 U 6045FAE0
 F0 "Big screw shield" 50
 F1 "Big screw shield.sch" 50
-F2 "SHIELD" I L 7400 2900 50 
+F2 "SHIELD" I L 7200 2900 50 
 F3 "PB9" I R 8300 2900 50 
 F4 "PB8" I R 8300 3000 50 
 F5 "3.3V_PIN" I R 8300 3100 50 
+F6 "GND_PIN" I R 8300 3200 50 
+F7 "PA1" I R 8300 3300 50 
 $EndSheet
 $Sheet
 S 7650 2250 650  300 
@@ -294,30 +296,11 @@ F2 "SHIELD" I L 7650 2400 50
 F3 "3.3V" I R 8300 2350 50 
 F4 "GND" I R 8300 2450 50 
 $EndSheet
-Text Notes 7500 3450 0    50   ~ 0
-solder directly \nto the pin
 Wire Wire Line
-	7500 3550 7500 3500
-Wire Wire Line
-	7500 3500 7750 3500
-Wire Wire Line
-	8350 3500 8350 3100
-Wire Wire Line
-	8350 3100 8300 3100
-Wire Wire Line
-	7750 3550 7750 3500
-Connection ~ 7750 3500
-Wire Wire Line
-	7750 3500 8350 3500
-Wire Wire Line
-	8550 4400 7750 4400
-Wire Wire Line
-	7750 4400 7750 3850
+	8550 4400 8050 4400
 Connection ~ 8550 4400
 Wire Wire Line
-	8600 4500 7500 4500
-Wire Wire Line
-	7500 4500 7500 3850
+	8600 4500 7750 4500
 Connection ~ 8600 4500
 Wire Wire Line
 	8700 4200 8700 2350
@@ -346,8 +329,6 @@ Wire Wire Line
 Connection ~ 7150 2400
 Wire Wire Line
 	7150 2400 7150 2550
-Wire Wire Line
-	7150 2900 7400 2900
 $Comp
 L Switch:SW_Push SW?
 U 1 1 60489A36
@@ -457,4 +438,101 @@ Wire Wire Line
 Connection ~ 5800 3200
 Wire Wire Line
 	5800 3200 5800 3900
+$Comp
+L Device:R R?
+U 1 1 60520E00
+P 7400 3700
+F 0 "R?" H 7470 3746 50  0000 L CNN
+F 1 "10k" H 7470 3655 50  0000 L CNN
+F 2 "" V 7330 3700 50  0001 C CNN
+F 3 "~" H 7400 3700 50  0001 C CNN
+	1    7400 3700
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 60521303
+P 7400 3300
+F 0 "R?" H 7470 3346 50  0000 L CNN
+F 1 "1.2k" H 7470 3255 50  0000 L CNN
+F 2 "" V 7330 3300 50  0001 C CNN
+F 3 "~" H 7400 3300 50  0001 C CNN
+	1    7400 3300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7150 2900 7200 2900
+Wire Wire Line
+	8300 3100 8500 3100
+Wire Wire Line
+	7400 3150 7400 3100
+Wire Wire Line
+	7400 3100 7650 3100
+Wire Wire Line
+	8450 3200 8300 3200
+Wire Wire Line
+	7750 4500 7750 3900
+Wire Wire Line
+	8500 3100 8500 3550
+Wire Wire Line
+	7750 3600 7750 3550
+Connection ~ 3350 2350
+Wire Wire Line
+	7750 3550 8050 3550
+Wire Wire Line
+	8050 3550 8050 3600
+Connection ~ 8050 3550
+Wire Wire Line
+	8050 3550 8500 3550
+Wire Wire Line
+	8050 3900 8050 4400
+Wire Wire Line
+	7400 3450 7400 3500
+Wire Wire Line
+	7400 3500 8350 3500
+Wire Wire Line
+	8350 3500 8350 3300
+Wire Wire Line
+	8350 3300 8300 3300
+Connection ~ 7400 3500
+Wire Wire Line
+	7400 3500 7400 3550
+Wire Wire Line
+	7650 3450 8450 3450
+Wire Wire Line
+	8450 3200 8450 3450
+Wire Wire Line
+	7650 3100 7650 3450
+$Sheet
+S 6150 4200 550  200 
+U 6056CA13
+F0 "WiFi dongle" 50
+F1 "WiFi dongle.sch" 50
+F2 "USB" I L 6150 4300 50 
+$EndSheet
+$Sheet
+S 6150 4600 550  200 
+U 6056CA78
+F0 "Bluetooth dongle" 50
+F1 "Bluetooth dongle.sch" 50
+F2 "USB" I L 6150 4700 50 
+$EndSheet
+Wire Wire Line
+	5550 2250 5650 2250
+Wire Wire Line
+	5650 2250 5650 4300
+Wire Wire Line
+	5550 2350 5600 2350
+Wire Wire Line
+	5600 2350 5600 4700
+Wire Wire Line
+	6150 4300 5650 4300
+Wire Wire Line
+	6150 4700 5600 4700
+Wire Wire Line
+	7400 5150 3350 5150
+Wire Wire Line
+	7400 3850 7400 5150
+Wire Wire Line
+	3350 2350 3350 5150
 $EndSCHEMATC

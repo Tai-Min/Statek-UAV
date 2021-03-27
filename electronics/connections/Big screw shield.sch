@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 19 20
+Sheet 18 22
 Title ""
 Date ""
 Rev ""
@@ -19,6 +19,10 @@ Text HLabel 5700 4050 0    50   Input ~ 0
 PB9
 Text HLabel 5700 4150 0    50   Input ~ 0
 PB8
-Text HLabel 5700 4250 0    50   Input ~ 0
+Text HLabel 5700 4350 0    50   Input ~ 0
 3.3V_PIN
+Text HLabel 5700 4450 0    50   Input ~ 0
+GND_PIN
+Text HLabel 5700 4250 0    50   Input ~ 0
+PA1
 $EndSCHEMATC
