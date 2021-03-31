@@ -1,8 +1,8 @@
 # wheel config
 wheel_radius: 0.12 # In [m].
-wheel_max_angular_velocity: 0 # How fast wheels can rotate in [rad/s].
+wheel_max_angular_velocity: 3.82783429886 # How fast wheels can rotate in [rad/s].
 
 # kinematic config
 distance_between_wheels: 0.62 # In [m].
-max_linear_velocity: 0 # How fast UAV can move forward in m/s defined as wheel_radius*wheel_max_angular_velocity.
-max_angular_velocity: 0 # How fast UAV can rotate around it's center in [rad/s] defined as max_linear_velocity / (distance_between_wheels / 2).
+max_linear_velocity: 0.459340115863 # How fast UAV can move forward in m/s defined as wheel_radius*wheel_max_angular_velocity.
+max_angular_velocity: 1.48174230924 # How fast UAV can rotate around it's center in [rad/s] defined as max_linear_velocity / (distance_between_wheels / 2).

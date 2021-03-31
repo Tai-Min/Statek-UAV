@@ -4,7 +4,7 @@
   <arg name="gamepad_addr" default="" />
 
   <!-- Launch world -->
-  <include file="$(find statek_sim)/launch/simple_world.launch">
+  <include file="$(find statek_hw)/launch/statek.launch">
     <arg name="statek_name" value="$(arg statek_name)" />
   </include>
 
