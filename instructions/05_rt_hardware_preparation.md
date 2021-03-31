@@ -12,7 +12,7 @@ As described in [here](https://github.com/adamgreen/gcc4mbed).
 ## Compile and upload rt code
 Find source code:
 ```
-roscd statek_rt/rt_src
+roscd statek_hw/rt_src
 ```
 
 Build it:
