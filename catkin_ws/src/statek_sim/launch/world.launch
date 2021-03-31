@@ -2,7 +2,7 @@
 <launch>
     <arg name="world_name" default=""/>
 
-    <arg name="statek_name" default="statek"/>
+    <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
     <arg name="statek_x" default="0"/>
     <arg name="statek_y" default="0"/>
     <arg name="statek_z" default="0"/>
