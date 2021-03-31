@@ -6,6 +6,7 @@
 #include "../config.hpp"
 #include "../include/ros_handlers/ros_handlers.hpp"
 #include "../include/motor_controller/motor_controller.hpp"
+#include "../include/clock/clock.hpp"
 
 /**
  * @brief Callback fired on new message on motors/vel_cmd topic. Sets new setpoints for both motors.
@@ -67,6 +68,9 @@ namespace
 
 int main()
 {
+    clockStart();
+
+    //i2c.frequency(100000);
 
     nh.initNode();
 

@@ -1,6 +1,7 @@
 #include "motor_controller.hpp"
 
 #include "../ros_handlers/ros_handlers.hpp"
+#include "../clock/clock.hpp"
 
 MotorController::MotorController(const Motor::Gpio &motorGpio, I2C &encoderI2c, uint8_t encoderAddr,
                                  const char *rawEncoderTopic, const char *tf, bool _reverseEncoder)
@@ -13,31 +14,72 @@ MotorController::MotorController(const Motor::Gpio &motorGpio, I2C &encoderI2c, 
 
 void MotorController::controlLoopThreadFcn()
 {
-    float param;
-    while (!nh.getParam("~wheel_max_angular_velocity", &param))
+    // Get params.
+    float maxVelocity;
+    while (!nh.getParam("~wheel_max_angular_velocity", &maxVelocity))
     {
         Thread::wait(5);
+        nh.spinOnce();
     }
-    this->maxVelocity = param;
+    this->maxVelocity = maxVelocity;
 
+    int loopUpdateRate;
+    while(!nh.getParam("~loop_rate_ms", &loopUpdateRate)){
+        Thread::wait(5);
+        nh.spinOnce();
+    }
+
+    int encoderPublishRate;
+    while(!nh.getParam("~encoder_publish_rate_ms", &encoderPublishRate)){
+        Thread::wait(5);
+        nh.spinOnce();
+    }
+
+    // Advertise encoder topic
     nh.advertise(this->rawEncoderPublisher);
     nh.spinOnce();
 
+    // Prepare some helper variables
     uint32_t seq = 0;
+    unsigned long previousUpdateTime = clockNow();
+    unsigned long previousEncoderPublishTime = clockNow();
+    double previousPosition = 0;
+    double previousVelocity = 0;
+    const double loopUpdateRateInSeconds = (double)(loopUpdateRate / 1000.0);
+
     this->motor.enable();
     while (true)
     {
         // 1. Read.
-        //double rawVelocity = this->encoder.velocity();
-        wait_us(20);
-        //double rawPosition = this->encoder.position();
+        double currentPosition = this->encoder.position();
         // Inverse encoder's output if necessary.
-        //if (this->reverseEncoder)
-        //    rawPosition = 2 * M_PI - rawPosition;
+        if (this->reverseEncoder)
+            currentPosition = 2 * M_PI - currentPosition;
 
-        double rawAcceleration = 0;
+        // Handle position overflow while moving forward
+        if(previousPosition > 5.5 && currentPosition < 1){
+            previousPosition = previousPosition - 2 * M_PI;
+        }
+        // Handle position overflow while moving backward
+        else if(previousPosition < 1 && currentPosition > 5.5){
+            previousPosition = previousPosition + 2 * M_PI;
+        }
 
-        // 3. Control.
+        double currentVelocity = this->encoder.velocity();
+
+        // Find the sign of the velocity
+        if(currentPosition < previousPosition){
+            velocity *= -1;
+        }
+
+        // Use velocity and position to estimate acceleration
+        // Compute simple mean of estimations
+        // Maybe add Kalman filter later?
+        double accelerationFromPosition = currentPosition - previousPosition - previousVelocity * loopUpdateRateInSeconds;
+        double accelerationFromVelocity = (currentVelocity - previousVelocity) * 1 / loopUpdateRateInSeconds;
+        double currentAcceleration = (accelerationFromPosition + accelerationFromVelocity) / 2.0
+
+        // 2. Control.
         double controlVal = 0;
         switch (this->controlMode)
         {
@@ -49,9 +91,9 @@ void MotorController::controlLoopThreadFcn()
         case MAX_VELOCITY_TEST:
             this->testedSamplesCounter++;
             // Moving average.
-            /*this->testedMeanVelocity = this->testedMeanVelocity +
+            this->testedMeanVelocity = this->testedMeanVelocity +
                                        (double)(1 / (double)this->testedSamplesCounter) *
-                                           (rawVelocity - this->testedMeanVelocity);*/
+                                           (currentVelocity - this->testedMeanVelocity);
 
             controlVal = 1.0f; // Force motor into max speed for the test.
             break;
@@ -59,19 +101,47 @@ void MotorController::controlLoopThreadFcn()
             break;
         }
 
-        // 4. Write.
+        // 3. Write.
         controlVal = fakeInertia.read(controlVal);
         this->motor.write(controlVal);
 
-        // 5. Publish.
-        /*this->rawEncoderMsg.header.seq = seq;
-        this->rawEncoderMsg.header.stamp = nh.now();
-        this->rawEncoderMsg.velocity = rawVelocity;
-        this->rawEncoderMsg.position = rawPosition;
-        this->rawEncoderPublisher.publish(&rawEncoderMsg);*/
+        // 4. Publish (maybe).
+        unsigned int currentEncoderPublishTime = clockNow();
 
-        seq++;
-        Thread::wait(48);
+        // Can be false on clock overflow.
+        if(currentEncoderPublishTime > previousEncoderPublishTime){
+            previousEncoderPublishTime = currentEncoderPublishTime;
+
+            this->rawEncoderMsg.header.seq = seq;
+            this->rawEncoderMsg.header.stamp = nh.now();
+            this->rawEncoderMsg.velocity = currentVelocity;
+            this->rawEncoderMsg.position = currentPosition;
+            this->rawEncoderPublisher.publish(&rawEncoderMsg);
+            seq++;
+        }
+        else{
+            // Handle overflow.
+            previousEncoderPublishTime = clockNow();
+        }
+
+        // 5. Wait for next update.
+        unsigned int currentUpdateTime = clockNow();
+
+        // Can be false on clock overflow.
+        if (currentUpdateTime > previousUpdateTime)
+        {
+            // How much time passed since start of current update.
+            unsigned int diff = currentUpdateTime - previousUpdateTime;
+            previousUpdateTime = currentUpdateTime;
+            previousPosition = currentPosition;
+            previousVelocity = currentVelocity;
+
+            Thread::wait(loopUpdateRate - diff); // Loop took "diff" time so wait remaining time.
+        }
+        else{
+            // Handle overflow.
+            previousUpdateTime = currentUpdateTime;
+        }
     }
 }
 

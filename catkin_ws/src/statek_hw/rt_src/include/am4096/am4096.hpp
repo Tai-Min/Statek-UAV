@@ -29,8 +29,10 @@ private:
         data[0] = register_addr;
 
         this->i2c.write(this->addr, data, 1, true);
+        wait_us(10);
         this->i2c.read(this->addr, data, 2);
-
+        wait_us(10);
+        
         uint16_t val = bitmask & (data[0] << 8 | data[1]);
 
         return val / (double)resolution * range;
