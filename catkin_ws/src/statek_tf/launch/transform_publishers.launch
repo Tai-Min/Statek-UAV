@@ -2,12 +2,10 @@
 <launch>
     <arg name="statek_name" default="statek"/>
 
-    <!-- Launch world -->
     <include file="$(find statek_tf)/launch/static_transform_publisher.launch">
         <arg name="statek_name" value="$(arg statek_name)"/>
     </include>
 
-    <!-- Launch world -->
     <include file="$(find statek_tf)/launch/dynamic_transform_publisher.launch">
         <arg name="statek_name" value="$(arg statek_name)"/>
     </include>

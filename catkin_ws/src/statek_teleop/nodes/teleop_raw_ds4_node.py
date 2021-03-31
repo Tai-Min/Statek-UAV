@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 import rospy
-import math
 import time
 
-#import argparse
 from ds4_driver.msg import Status
 from statek_msgs.msg import Velocity
 
@@ -25,10 +23,9 @@ def ds4_callback(status, args):
 rospy.init_node("teleop_raw_ds4", anonymous=True)
 
 statek_name = rospy.get_param("~statek_name", "statek")
-gamepad_name = rospy.get_param("~gamepad_name", "ds4")
 wheel_max_angular_velocity = rospy.get_param("~wheel_max_angular_velocity", 0)
 
-vel_cmd_publisher = rospy.Publisher("/" + statek_name + "/motors/vel_cmd", Velocity, queue_size=1)
-rospy.Subscriber("/" + gamepad_name + "/status", Status, ds4_callback, (wheel_max_angular_velocity, vel_cmd_publisher), queue_size=1)
+vel_cmd_publisher = rospy.Publisher("/" + statek_name + "/real_time/motors/vel_cmd", Velocity, queue_size=1)
+rospy.Subscriber("/" + statek_name + "/controller/status", Status, ds4_callback, (wheel_max_angular_velocity, vel_cmd_publisher), queue_size=1)
 
 rospy.spin()
