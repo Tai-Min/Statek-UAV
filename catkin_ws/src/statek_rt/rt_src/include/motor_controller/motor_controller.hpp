@@ -5,6 +5,7 @@
 #include "../ros_handlers/ros.h"
 #include "../motor/motor.hpp"
 #include "../am4096/am4096.hpp"
+#include "../low_pass_filter/low_pass_filter.hpp"
 
 class MotorController
 {
@@ -24,12 +25,14 @@ private:
     double maxVelocity = 0;      //!< Maximum possible velocity. Should be loaded from ROS param server or using setMaxVelocity function.
     bool reverseEncoder = false; //!< Whether inverse encoder's reading.
 
+    // for max velocity test
     double testedMeanVelocity = 0; //!< Mean velocity determined in MAX_VELOCITY_TEST control mode.
     int testedSamplesCounter = 0;  //!< Helper for testedMeanVelocity to compute moving average.
 
     // control system stuff
     double setpoint = 0;                                   //!< Current setpoint.
     ControlMode controlMode = ControlMode::STATE_FEEDBACK; //!< Current control mode.
+    LowPassFilter fakeInertia;
 
     // ros stuff
     statek_msgs::Encoder rawEncoderMsg; //!< Message for raw state reading from encoder.

@@ -67,6 +67,7 @@ namespace
 
 int main()
 {
+
     nh.initNode();
 
     // Start motor threads along with their ROS stuff.
@@ -105,7 +106,8 @@ void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints)
 void maxVelocityTestServiceCallback(const statek_msgs::VelocityTestRequest &req, statek_msgs::VelocityTestResponse &res)
 {
     // Don't run the test when another callback is doing stuff.
-    if(serviceInProgress){
+    if (serviceInProgress)
+    {
         res.velocity = -1;
         return;
     }
