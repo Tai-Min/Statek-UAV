@@ -314,7 +314,7 @@
       <kp>5</kp>
       <ki>2.5</ki>
       <kd>0</kd>
-      <motor_namespace>motors</motor_namespace>
+      <motor_namespace>real_time/motors</motor_namespace>
       <!--<sensor_dev>${encoder_std_dev}</sensor_dev>
       <sensor_mean>${encoder_mean}</sensor_mean>
       <sensor_namespace>encoders</sensor_namespace>

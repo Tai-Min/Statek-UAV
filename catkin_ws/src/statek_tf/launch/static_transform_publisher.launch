@@ -2,13 +2,17 @@
 <launch>
     <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
 
+    <arg name="base_to_laser" value="$(eval open(find('statek_config') + '/tf/base_to_laser').read())"/>
+    <arg name="base_to_left_camera" value="$(eval open(find('statek_config') + '/tf/base_to_left_camera').read())"/>
+    <arg name="base_to_right_camera" value="$(eval open(find('statek_config') + '/tf/base_to_right_camera').read())"/>
+
     <group ns="$(arg statek_name)/tf">
         <!-- base link to lidar link -->
-        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_laser_link" args="0.020 0 0.15 2.99 0 0 $(arg statek_name)/base_link $(arg statek_name)/laser/laser_link" respawn="true"/>
+        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_laser_link" args="$(arg base_to_laser) $(arg statek_name)/base_link $(arg statek_name)/laser/laser_link" respawn="true"/>
         
         <!-- base link to camera links -->
-        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_left_camera_link" args="0.405 0 0.073 -1.5707 0 -1.5707 $(arg statek_name)/base_link $(arg statek_name)/stereo/left_link" respawn="true"/>
-        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_right_camera_link" args="0.405 -0.0625 0.073 -1.5707  0  -1.5707 $(arg statek_name)/base_link $(arg statek_name)/stereo/right_link" respawn="true"/>
+        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_left_camera_link" args="$(arg base_to_left_camera) $(arg statek_name)/base_link $(arg statek_name)/stereo/left_link" respawn="true"/>
+        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_right_camera_link" args="$(arg base_to_right_camera) $(arg statek_name)/base_link $(arg statek_name)/stereo/right_link" respawn="true"/>
     </group>
 
 </launch>

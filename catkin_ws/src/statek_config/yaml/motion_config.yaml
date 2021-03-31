@@ -6,3 +6,11 @@ wheel_max_angular_velocity: 3.82783429886 # How fast wheels can rotate in [rad/s
 distance_between_wheels: 0.62 # In [m].
 max_linear_velocity: 0.459340115863 # How fast UAV can move forward in m/s defined as wheel_radius*wheel_max_angular_velocity.
 max_angular_velocity: 1.48174230924 # How fast UAV can rotate around it's center in [rad/s] defined as max_linear_velocity / (distance_between_wheels / 2).
+
+# closed loop control
+loop_rate_ms: 30
+encoder_publish_rate_ms: 100
+left_motor_velocity_feedback_gain: 0
+left_motor_acceleration_feedback_gain: 0
+right_motor_velocity_feedback_gain: 0
+right_motor_acceleration_feedback_gain: 0
