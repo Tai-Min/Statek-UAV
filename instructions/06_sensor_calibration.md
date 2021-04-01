@@ -1,4 +1,10 @@
 # Sensor calibration
+## Prepare UAV
+Run:
+```
+roslaunch statek_hw statek.launch
+```
+
 ## Motion calibration
 On WSL 2 run:
 ```
