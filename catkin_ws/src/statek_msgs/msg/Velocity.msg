@@ -1,2 +1,2 @@
-float64 left # left wheel angular velocity in rad/s
-float64 right # right wheel angular velocity in rad/s
+float64 left # Left wheel angular velocity in rad/s.
+float64 right # Right wheel angular velocity in rad/s.

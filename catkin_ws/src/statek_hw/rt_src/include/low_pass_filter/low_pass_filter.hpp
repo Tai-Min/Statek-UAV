@@ -3,15 +3,15 @@
 class LowPassFilter
 {
 private:
-  double previousOutput = 0;
+  double previousOutput = 0; //!< Object's memory.
 
 public:
-  const double smoothingFactor = 1;//!< Smoothing factor. 1: everything passes through, 0: nothing passes through.
+  const double smoothingFactor = 1;//!< Smoothing factor. 1 - everything passes through, 0 - nothing passes through.
 
   /**
    * @brief Class constructor
    * 
-   * @param _sf Smoothing factor. 1: everything passes through, 0: nothing passes through.
+   * @param _sf Smoothing factor. 1 - everything passes through, 0 - nothing passes through.
    */
   LowPassFilter(double _sf = 1) : smoothingFactor(_sf){};
 

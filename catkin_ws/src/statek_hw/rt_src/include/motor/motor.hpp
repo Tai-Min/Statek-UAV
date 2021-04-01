@@ -15,24 +15,40 @@ public:
     };
 
 private:
-    DigitalOut motorEnable;
-    DigitalOut motorCW;
-    DigitalOut motorCCW;
-    PwmOut motorPWM;
+    DigitalOut motorEnable; //!< Motor enable GPIO.
+    DigitalOut motorCW;     //!< Clockwise GPIO.
+    DigitalOut motorCCW;    //!< Counter clockwise GPIO.
+    PwmOut motorPWM;        //!< PWM GPIO.
 
 public:
+    /**
+     * @brief Class constructor.
+     * 
+     * @param gpio Struct with GPIOs required to control the motor.
+     */
     Motor(const Gpio &gpio) : motorEnable(gpio.en), motorCW(gpio.cw), motorCCW(gpio.ccw), motorPWM(gpio.pwm) {}
 
+    /**
+     * @brief Enable motor.
+     */
     void enable()
     {
         motorEnable = true;
     }
 
+    /**
+     * @brief Disable motor.
+     */
     void disable()
     {
         motorEnable = false;
     }
 
+    /**
+     * @brief Control the motor.
+     * 
+     * @param dutyCycleSigned Value from -1 (max speed in one direction) to 1 (max speed in other direction).
+     */
     void write(float dutyCycleSigned)
     {
         bool forward = true;

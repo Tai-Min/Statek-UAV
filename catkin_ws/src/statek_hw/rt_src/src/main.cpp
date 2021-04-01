@@ -1,7 +1,8 @@
 #include <mbed.h>
 #include <statek_msgs/Velocity.h>
-#include <statek_msgs/VelocityTest.h>
-#include <std_srvs/Empty.h>
+#include <statek_msgs/RunVelocityTest.h>
+#include <statek_msgs/SetMotorParams.h>
+#include <std_srvs/Trigger.h>
 
 #include "../config.hpp"
 #include "../include/ros_handlers/ros_handlers.hpp"
@@ -21,23 +22,39 @@ void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints);
  * @param req Request - For how long to test the motors.
  * @param res Response - Maximum possible velocity.
  */
-void maxVelocityTestServiceCallback(const statek_msgs::VelocityTestRequest &req, statek_msgs::VelocityTestResponse &res);
+void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &req, statek_msgs::RunVelocityTestResponse &res);
 
 /**
  * @brief Callback fired when someone requests motors/set_direct_control service. Sets motors into direct control mode.
  * 
  * @param req Unused.
- * @param res Unused.
+ * @param res Set to true if service succeed.
  */
-void setDirectControlServiceCallback(const std_srvs::EmptyRequest &req, std_srvs::EmptyResponse &res);
+void setDirectControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
 
 /**
- * @brief Callback fired when someone requests motors/set_state_feedback_control service. Sets motors into state feedback loop control mode.
+ * @brief Callback fired when someone requests motors/set_pid_control service. Sets motors into closed loop control mode.
  * 
  * @param req Unused.
- * @param res Unused.
+ * @param res Set to true if service succeed.
  */
-void setStateFeedbackControlServiceCallback(const std_srvs::EmptyRequest &req, std_srvs::EmptyResponse &res);
+void setClosedLoopControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
+
+/**
+ * @brief Set given params to left motor.
+ * 
+ * @param req Request - Params to set.
+ * @param res Response - Response to the called.
+ */
+void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res);
+
+/**
+ * @brief Set given params to right motor.
+ * 
+ * @param req Request - Params to set.
+ * @param res Response - Response to the called.
+ */
+void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res);
 
 /**
  * @brief Safety function. Stops the motors in case of broken communication flow on motors/vel_cmd topic.
@@ -50,17 +67,31 @@ namespace
     MotorController rightMotor(RIGHT_MOTOR_GPIO,
                                i2c, RIGHT_MOTOR_ENCODER_I2C_ADDRESS,
                                RIGHT_MOTOR_ENCODER_RAW_TOPIC,
+                               RIGHT_MOTOR_KP_PARAM,
+                               RIGHT_MOTOR_KI_PARAM,
+                               RIGHT_MOTOR_KD_PARAM,
                                RIGHT_MOTOR_TF_LINK); //!< Right motor controller.
     MotorController leftMotor(LEFT_MOTOR_GPIO,
                               i2c, LEFT_MOTOR_ENCODER_I2C_ADDRESS,
                               LEFT_MOTOR_ENCODER_RAW_TOPIC,
+                              LEFT_MOTOR_KP_PARAM,
+                              LEFT_MOTOR_KI_PARAM,
+                              LEFT_MOTOR_KD_PARAM,
                               LEFT_MOTOR_TF_LINK, true); //!< Left motor controller.
 
-    statek_msgs::Velocity setpoints;                                                                                                                                          //!< Setpoints in [rad/s] for both motors.
-    ros::Subscriber<statek_msgs::Velocity> setpointsSubscriber(VELOCITY_SETPOINTS_TOPIC, &setpointsSubscriberCallback);                                                       //!< Subscriber waiting for new setpoint values.
-    ros::ServiceServer<statek_msgs::VelocityTestRequest, statek_msgs::VelocityTestResponse> maxVelocityTestService(VELOCITY_TEST_SERVICE, &maxVelocityTestServiceCallback);   //!< Service to perform max velocity test.
-    ros::ServiceServer<std_srvs::EmptyRequest, std_srvs::EmptyResponse> directControlService(DIRECT_CONTROL_SERVICE, &setDirectControlServiceCallback);                       //!< Service to set motors into manual control.
-    ros::ServiceServer<std_srvs::EmptyRequest, std_srvs::EmptyResponse> stateFeedbackControlService(STATE_FEEDBACK_CONTROL_SERVICE, &setStateFeedbackControlServiceCallback); //!< Service to set motors into state feedback control.
+    statek_msgs::Velocity setpoints; //!< Setpoints in [rad/s] for both motors.
+    ros::Subscriber<statek_msgs::Velocity>
+        setpointsSubscriber(VELOCITY_SETPOINTS_TOPIC, &setpointsSubscriberCallback); //!< Subscriber waiting for new setpoint values.
+    ros::ServiceServer<statek_msgs::RunVelocityTestRequest, statek_msgs::RunVelocityTestResponse>
+        maxVelocityTestService(VELOCITY_TEST_SERVICE, &maxVelocityTestServiceCallback); //!< Service to perform max velocity test.
+    ros::ServiceServer<std_srvs::TriggerRequest, std_srvs::TriggerResponse>
+        directControlService(DIRECT_CONTROL_SERVICE, &setDirectControlServiceCallback); //!< Service to set motors into direct control.
+    ros::ServiceServer<std_srvs::TriggerRequest, std_srvs::TriggerResponse>
+        closedLoopControlService(PID_CONTROL_SERVICE, &setClosedLoopControlServiceCallback); //!< Service to set motors into pid control.
+    ros::ServiceServer<statek_msgs::SetMotorParamsRequest, statek_msgs::SetMotorParamsResponse>
+        setLeftMotorParamsService(LEFT_MOTOR_PARAM_SERVICE, &setLeftMotorParamsCallback);
+    ros::ServiceServer<statek_msgs::SetMotorParamsRequest, statek_msgs::SetMotorParamsResponse>
+        setrightMotorParamsService(RIGHT_MOTOR_PARAM_SERVICE, &setRightMotorParamsCallback);
 
     volatile bool SAFETY_stopMotorsFlag = false;     //!< Used to stop the motors by SAFETY_communicationFlowSupervisor function. Should be reset every time a new message in motors/vel_cmd arrives.
     Ticker SAFETY_communicationFlowSupervisorTicker; //!< Interval to invoke SAFETY_communicationFlowSupervisor callback.
@@ -70,7 +101,7 @@ int main()
 {
     clockStart();
 
-    //i2c.frequency(100000);
+    i2c.frequency(100000);
 
     nh.initNode();
 
@@ -78,6 +109,7 @@ int main()
     leftMotor.start();
     rightMotor.start();
 
+    // Start services shared by some objects.
     nh.subscribe(setpointsSubscriber);
     nh.spinOnce();
 
@@ -87,7 +119,7 @@ int main()
     nh.advertiseService(directControlService);
     nh.spinOnce();
 
-    nh.advertiseService(stateFeedbackControlService);
+    nh.advertiseService(closedLoopControlService);
     nh.spinOnce();
 
     // Start safety measurements
@@ -107,12 +139,12 @@ void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints)
     SAFETY_stopMotorsFlag = false; // A message arrived so don's stop the motors.
 }
 
-void maxVelocityTestServiceCallback(const statek_msgs::VelocityTestRequest &req, statek_msgs::VelocityTestResponse &res)
+void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &req, statek_msgs::RunVelocityTestResponse &res)
 {
     // Don't run the test when another callback is doing stuff.
     if (serviceInProgress)
     {
-        res.velocity = -1;
+        res.success = false;
         return;
     }
 
@@ -146,26 +178,51 @@ void maxVelocityTestServiceCallback(const statek_msgs::VelocityTestRequest &req,
     if (leftMaxVel < rightMaxVel)
         maxVel = leftMaxVel;
 
-    // Save it locally.
-    rightMotor.setMaxVelocity(maxVel);
-    leftMotor.setMaxVelocity(maxVel);
-
     // Finally, respond to the caller.
+    res.success = true;
     res.velocity = maxVel;
 
     serviceInProgress = false;
 }
 
-void setDirectControlServiceCallback(const std_srvs::EmptyRequest &req, std_srvs::EmptyResponse &res)
+void setDirectControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res)
 {
+    if (serviceInProgress)
+    {
+        res.success = false;
+        return;
+    }
+    serviceInProgress = true;
+
     rightMotor.setControlMode(MotorController::ControlMode::DIRECT);
     leftMotor.setControlMode(MotorController::ControlMode::DIRECT);
+    res.success = true;
+
+    serviceInProgress = false;
 }
 
-void setStateFeedbackControlServiceCallback(const std_srvs::EmptyRequest &req, std_srvs::EmptyResponse &res)
+void setClosedLoopControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res)
 {
-    rightMotor.setControlMode(MotorController::ControlMode::STATE_FEEDBACK);
-    leftMotor.setControlMode(MotorController::ControlMode::STATE_FEEDBACK);
+    if (serviceInProgress)
+    {
+        res.success = false;
+        return;
+    }
+    serviceInProgress = true;
+
+    rightMotor.setControlMode(MotorController::ControlMode::PID_CONTROL);
+    leftMotor.setControlMode(MotorController::ControlMode::PID_CONTROL);
+    res.success = true;
+
+    serviceInProgress = false;
+}
+
+void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res){
+    leftMotor.setMotorParamsCallback(req, res);
+}
+
+void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res){
+    rightMotor.setMotorParamsCallback(req, res);
 }
 
 void SAFETY_communicationFlowSupervisor()

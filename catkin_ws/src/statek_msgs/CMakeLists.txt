@@ -14,7 +14,8 @@ add_message_files(
 
 add_service_files(
   FILES
-  VelocityTest.srv
+  RunVelocityTest.srv
+  SetMotorParams.srv
 )
 
 generate_messages(
