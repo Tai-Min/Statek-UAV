@@ -35,7 +35,7 @@ export ROS_LIB_DIR=~/ros/lib/ros_lib
 ```
 
 ## VS Code setup
-Instal Remote - SSH extension.
+Instal Remote - SSH and PlatformIO extensions.
 
 Previous: [ROS](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/03_ros.md)</br>
 Next: [Real time hardware](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/05_rt_hardware_preparation.md)
