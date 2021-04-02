@@ -1,4 +1,3 @@
-uint32 encoder_publish_rate_ms # In ms. Set to 0 to ignore.
 uint32 loop_update_rate_ms # In ms. Set to 0 to ignore.
 float64 wheel_max_angular_velocity # In rad/s.
 float64 kp # Set to negative to ignore.

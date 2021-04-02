@@ -1,154 +1,190 @@
-#include <mbed.h>
-#include <statek_msgs/Velocity.h>
-#include <statek_msgs/RunVelocityTest.h>
-#include <statek_msgs/SetMotorParams.h>
-#include <std_srvs/Trigger.h>
+#include <Arduino.h>
+#include <Wire.h>
+#include <MPU9250.h>
 
-#include "../config.hpp"
-#include "../include/ros_handlers/ros_handlers.hpp"
-#include "../include/motor_controller/motor_controller.hpp"
-#include "../include/clock/clock.hpp"
+#include "../include/config.hpp"
+#include "../include/motor_controller.hpp"
 
-/**
- * @brief Callback fired on new message on motors/vel_cmd topic. Sets new setpoints for both motors.
- * 
- * @param setpoints Setpoints to set on both motors.
- */
+#include "../lib/ros_lib/ros.h"
+#include "../lib/ros_lib/statek_msgs/Velocity.h"
+#include "../lib/ros_lib/statek_msgs/Encoder.h"
+#include "../lib/ros_lib/statek_msgs/RunVelocityTest.h"
+#include "../lib/ros_lib/statek_msgs/SetMotorParams.h"
+#include "../lib/ros_lib/std_srvs/Trigger.h"
+#include "../lib/ros_lib/sensor_msgs/Imu.h"
+
+void setup();
+void loop();
+
+// Param loaders.
+void loadParamsToMotorControllers();
+
+// Callbacks for subscribers.
 void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints);
 
-/**
- * @brief Callback fired on motors/max_velocity_test service. Returns max possible velocity that can be set to both motors.
- * 
- * @param req Request - For how long to test the motors.
- * @param res Response - Maximum possible velocity.
- */
+// Callbacks for services.
 void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &req, statek_msgs::RunVelocityTestResponse &res);
-
-/**
- * @brief Callback fired when someone requests motors/set_direct_control service. Sets motors into direct control mode.
- * 
- * @param req Unused.
- * @param res Set to true if service succeed.
- */
 void setDirectControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
-
-/**
- * @brief Callback fired when someone requests motors/set_pid_control service. Sets motors into closed loop control mode.
- * 
- * @param req Unused.
- * @param res Set to true if service succeed.
- */
 void setClosedLoopControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
-
-/**
- * @brief Set given params to left motor.
- * 
- * @param req Request - Params to set.
- * @param res Response - Response to the called.
- */
 void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res);
-
-/**
- * @brief Set given params to right motor.
- * 
- * @param req Request - Params to set.
- * @param res Response - Response to the called.
- */
 void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res);
 
-/**
- * @brief Safety function. Stops the motors in case of broken communication flow on motors/vel_cmd topic.
- */
+// Publisher functions
+bool tryPublishEncoders();
+void publishEncoders();
+bool tryPublishIMU();
+void publishIMU();
+
+// SAFETY functions and variables
+bool SAFETY_serviceInProgress = false;
+bool SAFETY_stopMotorsFlag = false;
 void SAFETY_communicationFlowSupervisor();
+void SAFETY_recoverI2C();
 
-namespace
+ros::NodeHandle nh;
+
+statek_msgs::Velocity setpoints;
+ros::Subscriber<statek_msgs::Velocity>
+    setpointsSubscriber(VELOCITY_SETPOINTS_TOPIC, &setpointsSubscriberCallback);
+
+ros::ServiceServer<statek_msgs::RunVelocityTestRequest, statek_msgs::RunVelocityTestResponse>
+    maxVelocityTestService(VELOCITY_TEST_SERVICE, &maxVelocityTestServiceCallback);
+
+ros::ServiceServer<std_srvs::TriggerRequest, std_srvs::TriggerResponse>
+    directControlService(DIRECT_CONTROL_SERVICE, &setDirectControlServiceCallback);
+
+ros::ServiceServer<std_srvs::TriggerRequest, std_srvs::TriggerResponse>
+    closedLoopControlService(PID_CONTROL_SERVICE, &setClosedLoopControlServiceCallback);
+
+ros::ServiceServer<statek_msgs::SetMotorParamsRequest, statek_msgs::SetMotorParamsResponse>
+    setLeftMotorParamsService(LEFT_MOTOR_PARAM_SERVICE, &setLeftMotorParamsCallback);
+
+ros::ServiceServer<statek_msgs::SetMotorParamsRequest, statek_msgs::SetMotorParamsResponse>
+    setrightMotorParamsService(RIGHT_MOTOR_PARAM_SERVICE, &setRightMotorParamsCallback);
+
+statek_msgs::Encoder leftEncoderMsg;
+ros::Publisher leftEncoderPublisher(LEFT_MOTOR_ENCODER_TOPIC, &leftEncoderMsg);
+
+statek_msgs::Encoder rightEncoderMsg;
+ros::Publisher rightEncoderPublisher(RIGHT_MOTOR_ENCODER_TOPIC, &rightEncoderMsg);
+
+sensor_msgs::Imu imuMsg;
+ros::Publisher imuPublisher(IMU_TOPIC, &imuMsg);
+
+MotorController leftMotor(LEFT_MOTOR_GPIO, Wire, LEFT_MOTOR_ENCODER_I2C_ADDRESS, true);
+MotorController rightMotor(LEFT_MOTOR_GPIO, Wire, LEFT_MOTOR_ENCODER_I2C_ADDRESS, true);
+MPU9250 imu;
+
+void setup()
 {
-    I2C i2c(D_SDA, D_SCL); //!< I2C to communicate with AM4096 encoders and MPU9250 IMU.
-    MotorController rightMotor(RIGHT_MOTOR_GPIO,
-                               i2c, RIGHT_MOTOR_ENCODER_I2C_ADDRESS,
-                               RIGHT_MOTOR_ENCODER_RAW_TOPIC,
-                               RIGHT_MOTOR_KP_PARAM,
-                               RIGHT_MOTOR_KI_PARAM,
-                               RIGHT_MOTOR_KD_PARAM,
-                               RIGHT_MOTOR_TF_LINK); //!< Right motor controller.
-    MotorController leftMotor(LEFT_MOTOR_GPIO,
-                              i2c, LEFT_MOTOR_ENCODER_I2C_ADDRESS,
-                              LEFT_MOTOR_ENCODER_RAW_TOPIC,
-                              LEFT_MOTOR_KP_PARAM,
-                              LEFT_MOTOR_KI_PARAM,
-                              LEFT_MOTOR_KD_PARAM,
-                              LEFT_MOTOR_TF_LINK, true); //!< Left motor controller.
+    // Init I2C.
+    Wire.begin();
 
-    statek_msgs::Velocity setpoints; //!< Setpoints in [rad/s] for both motors.
-    ros::Subscriber<statek_msgs::Velocity>
-        setpointsSubscriber(VELOCITY_SETPOINTS_TOPIC, &setpointsSubscriberCallback); //!< Subscriber waiting for new setpoint values.
-    ros::ServiceServer<statek_msgs::RunVelocityTestRequest, statek_msgs::RunVelocityTestResponse>
-        maxVelocityTestService(VELOCITY_TEST_SERVICE, &maxVelocityTestServiceCallback); //!< Service to perform max velocity test.
-    ros::ServiceServer<std_srvs::TriggerRequest, std_srvs::TriggerResponse>
-        directControlService(DIRECT_CONTROL_SERVICE, &setDirectControlServiceCallback); //!< Service to set motors into direct control.
-    ros::ServiceServer<std_srvs::TriggerRequest, std_srvs::TriggerResponse>
-        closedLoopControlService(PID_CONTROL_SERVICE, &setClosedLoopControlServiceCallback); //!< Service to set motors into pid control.
-    ros::ServiceServer<statek_msgs::SetMotorParamsRequest, statek_msgs::SetMotorParamsResponse>
-        setLeftMotorParamsService(LEFT_MOTOR_PARAM_SERVICE, &setLeftMotorParamsCallback);
-    ros::ServiceServer<statek_msgs::SetMotorParamsRequest, statek_msgs::SetMotorParamsResponse>
-        setrightMotorParamsService(RIGHT_MOTOR_PARAM_SERVICE, &setRightMotorParamsCallback);
-
-    volatile bool SAFETY_stopMotorsFlag = false;     //!< Used to stop the motors by SAFETY_communicationFlowSupervisor function. Should be reset every time a new message in motors/vel_cmd arrives.
-    Ticker SAFETY_communicationFlowSupervisorTicker; //!< Interval to invoke SAFETY_communicationFlowSupervisor callback.
-}
-
-int main()
-{
-    clockStart();
-
-    i2c.frequency(100000);
-
+    // Init ROS stuff.
     nh.initNode();
+    /*while (!nh.connected())
+    {
+    }*/
 
-    // Start motor threads along with their ROS stuff.
+    nh.subscribe(setpointsSubscriber);
+    nh.advertiseService(maxVelocityTestService);
+    nh.advertiseService(directControlService);
+    nh.advertiseService(closedLoopControlService);
+    nh.advertiseService(setLeftMotorParamsService);
+    nh.advertiseService(setrightMotorParamsService);
+    nh.advertise(rightEncoderPublisher);
+    nh.advertise(leftEncoderPublisher);
+    nh.advertise(imuPublisher);
+
+    loadParamsToMotorControllers();
+
+    // Add some static message values here.
+    leftEncoderMsg.header.frame_id = LEFT_MOTOR_TF_LINK;
+    rightEncoderMsg.header.frame_id = RIGHT_MOTOR_TF_LINK;
+    imuMsg.header.frame_id = IMU_TF_LINK;
+
     leftMotor.start();
     rightMotor.start();
 
-    // Start services shared by some objects.
-    nh.subscribe(setpointsSubscriber);
-    nh.spinOnce();
-
-    nh.advertiseService(maxVelocityTestService);
-    nh.spinOnce();
-
-    nh.advertiseService(directControlService);
-    nh.spinOnce();
-
-    nh.advertiseService(closedLoopControlService);
-    nh.spinOnce();
-
-    // Start safety measurements
-    SAFETY_communicationFlowSupervisorTicker.attach(callback(&SAFETY_communicationFlowSupervisor), 0.5f);
-
-    while (true)
-    {
-        nh.spinOnce();
-        Thread::wait(MAIN_THREAD_UPDATE_INTERVAL);
-    }
+    imu.setup(IMU_I2C_ADDRESS);
+    delay(1000);
+    imu.calibrateAccelGyro();
+    imu.calibrateMag();
 }
 
+void loop()
+{
+    // ROS update.
+    nh.spinOnce();
+    tryPublishEncoders();
+    tryPublishIMU();
+
+    // Sensors / actuators update.
+    MotorController::FailCode code = leftMotor.tryUpdate();
+    if (code == MotorController::FailCode::ENCODER_FAILURE)
+        SAFETY_recoverI2C();
+
+    code = rightMotor.tryUpdate();
+    if (code == MotorController::FailCode::ENCODER_FAILURE)
+        SAFETY_recoverI2C();
+
+    delay(1);
+}
+
+// Param loaders.
+void loadParamsToMotorControllers()
+{
+    MotorController::ControlParams params;
+
+    if (!nh.getParam(WHEEL_MAX_ANGULAR_VELOCITY_PARAM, &params.maxVelocity))
+        params.maxVelocity = 0;
+
+    if (!nh.getParam(LOOP_RATE_MS_PARAM, (int *)&params.loopUpdateRate))
+        params.loopUpdateRate = 0;
+
+    float pidParams[3];
+    if (!nh.getParam(LEFT_MOTOR_PID_PARAMS, pidParams, 3))
+    {
+        params.kp = 0;
+        params.ki = 0;
+        params.kd = 0;
+    }
+    leftMotor.setMotorParams(params);
+
+    if (!nh.getParam(LEFT_MOTOR_PID_PARAMS, pidParams, 3))
+    {
+        params.kp = 0;
+        params.ki = 0;
+        params.kd = 0;
+    }
+    rightMotor.setMotorParams(params);
+}
+
+// Callbacks for subscribers.
 void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints)
 {
+    // Don't disturb the service.
+    if (SAFETY_serviceInProgress)
+    {
+        return;
+    }
+
     rightMotor.setVelocity(setpoints.right);
     leftMotor.setVelocity(setpoints.left);
     SAFETY_stopMotorsFlag = false; // A message arrived so don's stop the motors.
 }
 
+// Callbacks for services.
 void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &req, statek_msgs::RunVelocityTestResponse &res)
 {
     // Don't run the test when another callback is doing stuff.
-    if (serviceInProgress)
+    if (SAFETY_serviceInProgress)
     {
         res.success = false;
         return;
     }
 
-    serviceInProgress = true;
+    SAFETY_serviceInProgress = true;
 
     MotorController::ControlMode previousMode = rightMotor.getControlMode(); // Restore previous mode after test.
 
@@ -157,12 +193,12 @@ void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &r
     leftMotor.setControlMode(MotorController::ControlMode::MAX_VELOCITY_TEST);
 
     // Let it do it's job for some time.
-    // But also keep communication with ROS alive.
+
     for (unsigned int i = 0; i < req.time; i += 10)
     {
-        SAFETY_stopMotorsFlag = false; // Also reset this flag so motor's won't stop.
-        nh.spinOnce();
-        Thread::wait(10);
+        SAFETY_stopMotorsFlag = false; // Also reset this flag so motor's won't stop due to safety reasons.
+        loop();                        // Keep other parts of the system alive.
+        delay(9);                      // One ms delay is in loop.
     }
 
     // Restore previous mode.
@@ -170,11 +206,11 @@ void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &r
     leftMotor.setControlMode(previousMode);
 
     // Treat mean velocity as maximum velocity to reject noise etc.
-    double rightMaxVel = rightMotor.getTestedMeanVelocity();
-    double leftMaxVel = leftMotor.getTestedMeanVelocity();
+    float rightMaxVel = rightMotor.getMaxVelocityTestResult();
+    float leftMaxVel = leftMotor.getMaxVelocityTestResult();
 
     // Set lower value as max possible velocity so both motors will be able to achieve it.
-    double maxVel = rightMaxVel;
+    float maxVel = rightMaxVel;
     if (leftMaxVel < rightMaxVel)
         maxVel = leftMaxVel;
 
@@ -182,62 +218,236 @@ void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &r
     res.success = true;
     res.velocity = maxVel;
 
-    serviceInProgress = false;
+    SAFETY_serviceInProgress = false;
 }
 
 void setDirectControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res)
 {
-    if (serviceInProgress)
+    // Don't run the test when another callback is doing stuff.
+    if (SAFETY_serviceInProgress)
     {
         res.success = false;
         return;
     }
-    serviceInProgress = true;
+
+    SAFETY_serviceInProgress = true;
 
     rightMotor.setControlMode(MotorController::ControlMode::DIRECT);
     leftMotor.setControlMode(MotorController::ControlMode::DIRECT);
+
     res.success = true;
 
-    serviceInProgress = false;
+    SAFETY_serviceInProgress = false;
 }
 
 void setClosedLoopControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res)
 {
-    if (serviceInProgress)
+    if (SAFETY_serviceInProgress)
     {
         res.success = false;
         return;
     }
-    serviceInProgress = true;
+    SAFETY_serviceInProgress = true;
 
     rightMotor.setControlMode(MotorController::ControlMode::PID_CONTROL);
     leftMotor.setControlMode(MotorController::ControlMode::PID_CONTROL);
+
     res.success = true;
 
-    serviceInProgress = false;
+    SAFETY_serviceInProgress = false;
 }
 
-void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res){
-    leftMotor.setMotorParamsCallback(req, res);
+void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res)
+{
+    // Don't run the test when another callback is doing stuff.
+    if (SAFETY_serviceInProgress)
+    {
+        res.success = false;
+        return;
+    }
+
+    SAFETY_serviceInProgress = true;
+
+    MotorController::ControlParams params = {
+        req.kp, req.ki, req.kd, req.loop_update_rate_ms, req.wheel_max_angular_velocity};
+
+    leftMotor.setMotorParams(params);
+
+    res.success = true;
+
+    SAFETY_serviceInProgress = false;
 }
 
-void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res){
-    rightMotor.setMotorParamsCallback(req, res);
+void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res)
+{
+    // Don't run the test when another callback is doing stuff.
+    if (SAFETY_serviceInProgress)
+    {
+        res.success = false;
+        return;
+    }
+    SAFETY_serviceInProgress = true;
+
+    MotorController::ControlParams params = {
+        req.kp, req.ki, req.kd, req.loop_update_rate_ms, req.wheel_max_angular_velocity};
+
+    rightMotor.setMotorParams(params);
+
+    res.success = true;
+
+    SAFETY_serviceInProgress = false;
+}
+
+// Publisher functions
+bool tryPublishEncoders()
+{
+    static unsigned long long previousEncoderPublishTime = millis();
+
+    unsigned long long now = millis();
+    // Handle clock overflow.
+    if ((now >= previousEncoderPublishTime))
+    {
+        // Check if 100ms passed so we can publish encoders.
+        if (now - previousEncoderPublishTime >= 100)
+        {
+            publishEncoders();
+            previousEncoderPublishTime = now;
+            return true;
+        }
+    }
+    else
+    {
+        previousEncoderPublishTime = now;
+    }
+    return false;
+}
+
+void publishEncoders()
+{
+    static uint32_t seq = 0;
+
+    MotorController::EncoderState leftEncoderState = leftMotor.getLatestEncoderState();
+    MotorController::EncoderState rightEncoderState = rightMotor.getLatestEncoderState();
+
+    leftEncoderMsg.header.seq = seq;
+    leftEncoderMsg.header.stamp = nh.now();
+    leftEncoderMsg.acceleration = leftEncoderState.acceleration;
+    leftEncoderMsg.velocity = leftEncoderState.velocity;
+    leftEncoderMsg.position = leftEncoderState.position;
+    leftEncoderPublisher.publish(&leftEncoderMsg);
+
+    rightEncoderMsg.header.seq = seq;
+    rightEncoderMsg.header.stamp = nh.now();
+    rightEncoderMsg.acceleration = rightEncoderState.acceleration;
+    rightEncoderMsg.velocity = rightEncoderState.velocity;
+    rightEncoderMsg.position = rightEncoderState.position;
+    rightEncoderPublisher.publish(&rightEncoderMsg);
+
+    seq++;
+}
+
+bool tryPublishIMU()
+{
+    static unsigned long long previousImuPublishTime = millis();
+
+    unsigned long long now = millis();
+    // Handle clock overflow.
+    if ((now >= previousImuPublishTime))
+    {
+        // Check if 100ms passed so we can publish encoders.
+        if (now - previousImuPublishTime >= 100)
+        {
+            publishIMU();
+            previousImuPublishTime = now;
+            return true;
+        }
+    }
+    else
+    {
+        previousImuPublishTime = now;
+    }
+    return false;
+}
+
+void publishIMU()
+{
+    static uint32_t seq = 0;
+
+    imuMsg.header.seq = seq;
+    imuMsg.header.stamp = nh.now();
+    imuMsg.orientation;
+
+    imuMsg.angular_velocity;
+
+    imuMsg.linear_acceleration.x = imu.getAccX();
+    imuMsg.linear_acceleration.y = imu.getAccY();
+    imuMsg.linear_acceleration.z = imu.getAccZ();
+
+    imuPublisher.publish(&imuMsg);
+
+    seq++;
+    return;
 }
 
 void SAFETY_communicationFlowSupervisor()
 {
-    // The flag was not reset by motors/vel_cmd subscriber
-    // so treat it as broken communication flow and stop the motors.
-    if (SAFETY_stopMotorsFlag)
+    static unsigned long long previousCommunicationCheckTime = millis();
+
+    unsigned long long now = millis();
+
+    // Handle clock overflow.
+    if ((now >= previousCommunicationCheckTime))
     {
-        rightMotor.SAFETY_stopMotor();
-        leftMotor.SAFETY_stopMotor();
+        // Check if 100ms passed so we can publish encoders.
+        if (now - previousCommunicationCheckTime >= 500)
+        {
+            // The flag was not reset by motors/vel_cmd subscriber
+            // so treat it as broken communication flow and stop the motors.
+            if (SAFETY_stopMotorsFlag)
+            {
+                rightMotor.setVelocity(0);
+                leftMotor.setVelocity(0);
+            }
+            // The flag was reset by motors/vel_cmd callback
+            // so communication flow is ok.
+            else
+            {
+                SAFETY_stopMotorsFlag = true; // Set it again and wait for motors/vel_cmd to reset it hopefully.
+            }
+            previousCommunicationCheckTime = now;
+        }
     }
-    // The flag was reset by motors/vel_cmd callback
-    // so communication flow is ok.
     else
     {
-        SAFETY_stopMotorsFlag = true; // Set it again and wait for motors/vel_cmd to reset it hopefully.
+        previousCommunicationCheckTime = now;
+    }
+}
+
+void SAFETY_recoverI2C() {
+    nh.logwarn("I2C stuck detected!");
+
+    // SDA held low by the slave.
+    if(digitalRead(D_SDA) == LOW){
+        Wire.end();
+        pinMode(D_SDA, OUTPUT);
+
+        // Perform max 9 nine clock pulses
+        // to unstuck the line.
+        for(uint8_t i = 0; i < 9; i++){
+            digitalWrite(D_SDA, HIGH);
+
+            if(digitalRead(D_SDA) != LOW){
+                break;
+            }
+        }
+
+        if(digitalRead(D_SDA) == LOW)
+            nh.logerror("Unable to recover I2C!");
+        else
+            nh.loginfo("I2C recovered.");
+
+        // Restore I2C line and generate STOP condition.
+        Wire.begin();
+        Wire.endTransmission();
     }
 }

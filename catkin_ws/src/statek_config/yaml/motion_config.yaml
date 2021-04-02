@@ -9,12 +9,5 @@ max_angular_velocity: 1.48174230924 # How fast UAV can rotate around it's center
 
 # closed loop control
 loop_rate_ms: 30
-encoder_publish_rate_ms: 100
-
-left_motor_kp: 0
-left_motor_ki: 0
-left_motor_kd: 0
-
-right_motor_kp: 0
-right_motor_ki: 0
-right_motor_kd: 0
+left_motor_pid: [0, 0, 0] # Kp, ki, kd.
+right_motor_pid: [0, 0, 0]
