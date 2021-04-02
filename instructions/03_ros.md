@@ -10,7 +10,7 @@ Copy content of this repository's catkin_ws/src content into your catkin_ws/src 
 Now, install third party packages:
 * [ds4_driver](http://wiki.ros.org/ds4_driver)
 * [ydlidar_ros](https://github.com/YDLIDAR/ydlidar_ros)
-* [rosserial](http://wiki.ros.org/rosserial_mbed/Tutorials/rosserial_mbed%20Setup) (Skip gcc4mbed part as it does not work on Jetson Nano) (select melodic branch to clone)
+* [rosserial](https://github.com/ros-drivers/rosserial) (select melodic branch to clone)
 
 cd into rosserial:
 ```
