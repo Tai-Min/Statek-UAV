@@ -4,6 +4,7 @@ Run:
 ```
 roslaunch statek_hw statek.launch
 ```
+And restart it after every calibration step to load calibrated params.
 
 ## Motion calibration
 On Jetson nano run:
