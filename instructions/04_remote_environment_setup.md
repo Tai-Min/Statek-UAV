@@ -9,6 +9,9 @@ https://medium.com/@japheth.yates/the-complete-wsl2-gui-setup-2582828f4577
 
 **Note:** Always start VcXsrv with -nowgl parameter and access control disabled.
 
+### Setup ROS
+Just repeat [03_ros.md](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/03_ros.md) again.
+
 ### Establish connection with UAV
 To be able to use Rviz or Gazebo on WSL that will communicate with rosmaster node on the UAV, type:
 ```
