@@ -6,6 +6,7 @@
     <group ns="$(arg statek_name)/">
         <node name="rosserial" pkg="rosserial_python" type="serial_node.py" output="screen" respawn="true">
             <param name="port" value="/dev/stm"/>
+            <param name="baud" value="57600"/>
             <rosparam command="load" file="$(find statek_config)/yaml/motion_config.yaml"/>
         </node>
     </group>
