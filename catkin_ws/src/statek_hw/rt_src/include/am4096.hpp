@@ -62,7 +62,7 @@ private:
     }
 
 public:
-    AM4096(TwoWire &tw, uint8_t _addr) : i2c(tw), addr(_addr) {}
+    AM4096(uint8_t _addr, TwoWire &tw = Wire) : i2c(tw), addr(_addr) {}
 
     float absolutePosition(bool &ok) const
     {

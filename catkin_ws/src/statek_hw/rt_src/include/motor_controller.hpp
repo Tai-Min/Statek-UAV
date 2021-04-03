@@ -69,17 +69,19 @@ class MotorController {
     static float saturate(float minVal, float maxVal, float val);
 
     public:
-    MotorController(const Motor::Gpio &motorGpio, TwoWire &encoderI2c, uint8_t encoderAddr, bool _reverseEncoder = false);
+    MotorController(const Motor::Gpio &motorGpio, uint8_t encoderAddr, bool _reverseEncoder = false, TwoWire &encoderI2c = Wire);
 
     void start();
 
     FailCode tryUpdate();
 
-    void setVelocity(float vel);
+    void requestVelocity(float vel);
 
     void setMotorParams(const ControlParams &params);
 
     void setControlMode(ControlMode cm);
+
+    float getRequestedVelocity();
 
     ControlMode getControlMode() const;
 

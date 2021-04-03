@@ -1,7 +1,7 @@
 #include "../include/motor_controller.hpp"
 
-MotorController::MotorController(const Motor::Gpio &motorGpio, TwoWire &encoderI2c, uint8_t encoderAddr, bool _reverseEncoder)
-    : motor(motorGpio), encoder(encoderI2c, encoderAddr), reverseEncoder(_reverseEncoder),
+MotorController::MotorController(const Motor::Gpio &motorGpio, uint8_t encoderAddr, bool _reverseEncoder, TwoWire &encoderI2c)
+    : motor(motorGpio), encoder(encoderAddr, encoderI2c), reverseEncoder(_reverseEncoder),
       fakeInertia(0.11), pid(-1, 1) {}
 
 MotorController::EncoderState MotorController::getCurrentEncoderState(bool &ok) const
@@ -163,7 +163,7 @@ MotorController::FailCode MotorController::tryUpdate()
     return UPDATE_NOT_READY;
 }
 
-void MotorController::setVelocity(float vel)
+void MotorController::requestVelocity(float vel)
 {
     this->setpoint = this->saturate(-1 * this->maxVelocity, this->maxVelocity, vel);
 }
@@ -199,6 +199,10 @@ void MotorController::setControlMode(ControlMode cm)
     }
 
     this->controlMode = cm;
+}
+
+float MotorController::getRequestedVelocity(){
+    return this->setpoint;
 }
 
 MotorController::ControlMode MotorController::getControlMode() const

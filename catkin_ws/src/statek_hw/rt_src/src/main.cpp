@@ -10,14 +10,17 @@
 #include "../lib/ros_lib/statek_msgs/Encoder.h"
 #include "../lib/ros_lib/statek_msgs/RunVelocityTest.h"
 #include "../lib/ros_lib/statek_msgs/SetMotorParams.h"
+#include "../lib/ros_lib/statek_msgs/SetImuParams.h"
+#include "../lib/ros_lib/statek_msgs/RunImuCalibration.h"
 #include "../lib/ros_lib/std_srvs/Trigger.h"
 #include "../lib/ros_lib/sensor_msgs/Imu.h"
 
 void setup();
 void loop();
+void delayAndSpin(unsigned long t);
 
 // Param loaders.
-void loadParamsToMotorControllers();
+bool loadParamsToMotorControllers();
 
 // Callbacks for subscribers.
 void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints);
@@ -28,6 +31,8 @@ void setDirectControlServiceCallback(const std_srvs::TriggerRequest &req, std_sr
 void setClosedLoopControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
 void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res);
 void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res);
+void imuCalibrationServiceCallback(const statek_msgs::RunImuCalibrationRequest &req, statek_msgs::RunImuCalibrationResponse &res);
+void setImuParamsServiceCallback(const statek_msgs::SetImuParamsRequest &req, statek_msgs::SetImuParamsResponse &res);
 
 // Publisher functions
 bool tryPublishEncoders();
@@ -38,8 +43,9 @@ void publishIMU();
 // SAFETY functions and variables
 bool SAFETY_serviceInProgress = false;
 bool SAFETY_stopMotorsFlag = false;
-void SAFETY_communicationFlowSupervisor();
-void SAFETY_recoverI2C();
+int SAFETY_communicationFlowSupervisor();
+int SAFETY_tryForceI2cRecovery();
+bool SAFETY_forceI2cRecovery();
 
 ros::NodeHandle nh;
 
@@ -62,6 +68,12 @@ ros::ServiceServer<statek_msgs::SetMotorParamsRequest, statek_msgs::SetMotorPara
 ros::ServiceServer<statek_msgs::SetMotorParamsRequest, statek_msgs::SetMotorParamsResponse>
     setrightMotorParamsService(RIGHT_MOTOR_PARAM_SERVICE, &setRightMotorParamsCallback);
 
+ros::ServiceServer<statek_msgs::RunImuCalibrationRequest, statek_msgs::RunImuCalibrationResponse>
+    imuCalibrationService(IMU_CALIBRATION_SERVICE, &imuCalibrationServiceCallback);
+
+ros::ServiceServer<statek_msgs::SetImuParamsRequest, statek_msgs::SetImuParamsResponse>
+    setImuParamsService(IMU_PARAM_SERVICE, &setImuParamsServiceCallback);
+
 statek_msgs::Encoder leftEncoderMsg;
 ros::Publisher leftEncoderPublisher(LEFT_MOTOR_ENCODER_TOPIC, &leftEncoderMsg);
 
@@ -71,20 +83,24 @@ ros::Publisher rightEncoderPublisher(RIGHT_MOTOR_ENCODER_TOPIC, &rightEncoderMsg
 sensor_msgs::Imu imuMsg;
 ros::Publisher imuPublisher(IMU_TOPIC, &imuMsg);
 
-MotorController leftMotor(LEFT_MOTOR_GPIO, Wire, LEFT_MOTOR_ENCODER_I2C_ADDRESS, true);
-MotorController rightMotor(LEFT_MOTOR_GPIO, Wire, LEFT_MOTOR_ENCODER_I2C_ADDRESS, true);
+MotorController leftMotor(LEFT_MOTOR_GPIO, LEFT_MOTOR_ENCODER_I2C_ADDRESS, true);
+MotorController rightMotor(RIGHT_MOTOR_GPIO, RIGHT_MOTOR_ENCODER_I2C_ADDRESS);
 MPU9250 imu;
+
+AM4096 encoder(LEFT_MOTOR_ENCODER_I2C_ADDRESS);
 
 void setup()
 {
+    leftMotor.start();
+    rightMotor.start();
+
+    imu.setup(IMU_I2C_ADDRESS);
+
     // Init I2C.
     Wire.begin();
 
     // Init ROS stuff.
     nh.initNode();
-    /*while (!nh.connected())
-    {
-    }*/
 
     nh.subscribe(setpointsSubscriber);
     nh.advertiseService(maxVelocityTestService);
@@ -96,68 +112,52 @@ void setup()
     nh.advertise(leftEncoderPublisher);
     nh.advertise(imuPublisher);
 
-    loadParamsToMotorControllers();
-
     // Add some static message values here.
     leftEncoderMsg.header.frame_id = LEFT_MOTOR_TF_LINK;
     rightEncoderMsg.header.frame_id = RIGHT_MOTOR_TF_LINK;
     imuMsg.header.frame_id = IMU_TF_LINK;
 
-    leftMotor.start();
-    rightMotor.start();
-
-    imu.setup(IMU_I2C_ADDRESS);
-    delay(1000);
-    imu.calibrateAccelGyro();
-    imu.calibrateMag();
+    Serial.begin(9600);
 }
 
 void loop()
 {
+    bool ok;
+    Serial.println(encoder.absolutePosition(ok));
     // ROS update.
-    nh.spinOnce();
     tryPublishEncoders();
     tryPublishIMU();
 
     // Sensors / actuators update.
     MotorController::FailCode code = leftMotor.tryUpdate();
     if (code == MotorController::FailCode::ENCODER_FAILURE)
-        SAFETY_recoverI2C();
+        goto recover;
 
     code = rightMotor.tryUpdate();
     if (code == MotorController::FailCode::ENCODER_FAILURE)
-        SAFETY_recoverI2C();
+        goto recover;
 
-    delay(1);
+    if (!imu.update() && digitalRead(D_SDA) == LOW)
+        goto recover;
+
+    // Safety measurements.
+    SAFETY_communicationFlowSupervisor();
+    SAFETY_tryForceI2cRecovery();
+
+    return;
+
+recover:
+    SAFETY_forceI2cRecovery();
+    return;
 }
 
-// Param loaders.
-void loadParamsToMotorControllers()
+void delayAndSpin(unsigned long t)
 {
-    MotorController::ControlParams params;
-
-    if (!nh.getParam(WHEEL_MAX_ANGULAR_VELOCITY_PARAM, &params.maxVelocity))
-        params.maxVelocity = 0;
-
-    if (!nh.getParam(LOOP_RATE_MS_PARAM, (int *)&params.loopUpdateRate))
-        params.loopUpdateRate = 0;
-
-    float pidParams[3];
-    if (!nh.getParam(LEFT_MOTOR_PID_PARAMS, pidParams, 3))
+    for (unsigned long i = 0; i < t; i++)
     {
-        params.kp = 0;
-        params.ki = 0;
-        params.kd = 0;
+        nh.spinOnce();
+        delay(1);
     }
-    leftMotor.setMotorParams(params);
-
-    if (!nh.getParam(LEFT_MOTOR_PID_PARAMS, pidParams, 3))
-    {
-        params.kp = 0;
-        params.ki = 0;
-        params.kd = 0;
-    }
-    rightMotor.setMotorParams(params);
 }
 
 // Callbacks for subscribers.
@@ -169,8 +169,8 @@ void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints)
         return;
     }
 
-    rightMotor.setVelocity(setpoints.right);
-    leftMotor.setVelocity(setpoints.left);
+    rightMotor.requestVelocity(setpoints.right);
+    leftMotor.requestVelocity(setpoints.left);
     SAFETY_stopMotorsFlag = false; // A message arrived so don's stop the motors.
 }
 
@@ -268,6 +268,8 @@ void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, s
 
     SAFETY_serviceInProgress = true;
 
+    nh.logwarn("Params received!");
+
     MotorController::ControlParams params = {
         req.kp, req.ki, req.kd, req.loop_update_rate_ms, req.wheel_max_angular_velocity};
 
@@ -292,6 +294,75 @@ void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, 
         req.kp, req.ki, req.kd, req.loop_update_rate_ms, req.wheel_max_angular_velocity};
 
     rightMotor.setMotorParams(params);
+
+    res.success = true;
+
+    SAFETY_serviceInProgress = false;
+}
+
+void imuCalibrationServiceCallback(const statek_msgs::RunImuCalibrationRequest &req, statek_msgs::RunImuCalibrationResponse &res)
+{
+    // Don't run the test when another callback is doing stuff.
+    if (SAFETY_serviceInProgress)
+    {
+        res.success = false;
+        return;
+    }
+    SAFETY_serviceInProgress = true;
+
+    // Stop the UAV for acc / gyro calibration.
+    leftMotor.requestVelocity(0);
+    rightMotor.requestVelocity(0);
+
+    imu.calibrateAccelGyro();
+
+    // Rotate around for mag calibration.
+    leftMotor.requestVelocity(-1000);
+    rightMotor.requestVelocity(1000);
+
+    imu.calibrateMag();
+
+    // Stop again.
+    leftMotor.requestVelocity(0);
+    rightMotor.requestVelocity(0);
+
+    // Save the result!
+    res.gyro_bias[0] = imu.getGyroBiasX();
+    res.gyro_bias[1] = imu.getGyroBiasY();
+    res.gyro_bias[2] = imu.getGyroBiasZ();
+
+    res.acc_bias[0] = imu.getAccBiasX();
+    res.acc_bias[1] = imu.getAccBiasY();
+    res.acc_bias[2] = imu.getAccBiasZ();
+
+    res.mag_bias[0] = imu.getMagBiasX();
+    res.mag_bias[1] = imu.getMagBiasY();
+    res.mag_bias[2] = imu.getMagBiasZ();
+
+    res.mag_scale[0] = imu.getMagScaleX();
+    res.mag_scale[1] = imu.getMagScaleY();
+    res.mag_scale[2] = imu.getMagScaleZ();
+
+    res.success = true;
+
+    SAFETY_serviceInProgress = false;
+}
+
+void setImuParamsServiceCallback(const statek_msgs::SetImuParamsRequest &req, statek_msgs::SetImuParamsResponse &res)
+{
+    // Don't run the test when another callback is doing stuff.
+    if (SAFETY_serviceInProgress)
+    {
+        res.success = false;
+        return;
+    }
+    SAFETY_serviceInProgress = true;
+    
+    imu.setAccBias(req.acc_bias[0], req.acc_bias[1], req.acc_bias[2]);
+    imu.setGyroBias(req.gyro_bias[0], req.gyro_bias[1], req.gyro_bias[2]);
+    imu.setMagBias(req.mag_bias[0], req.mag_bias[1], req.mag_bias[2]);
+    imu.setMagScale(req.mag_scale[0], req.mag_scale[1], req.mag_scale[2]);
+    imu.setMagneticDeclination(req.magnetic_declination);
 
     res.success = true;
 
@@ -375,21 +446,25 @@ void publishIMU()
 
     imuMsg.header.seq = seq;
     imuMsg.header.stamp = nh.now();
-    imuMsg.orientation;
+    imuMsg.orientation.w = imu.getQuaternionW();
+    imuMsg.orientation.x = imu.getQuaternionX();
+    imuMsg.orientation.y = imu.getQuaternionY();
+    imuMsg.orientation.z = imu.getQuaternionZ();
 
-    imuMsg.angular_velocity;
+    imuMsg.angular_velocity.x = imu.getGyroX();
+    imuMsg.angular_velocity.y = imu.getGyroY();
+    imuMsg.angular_velocity.z = imu.getGyroZ();
 
-    imuMsg.linear_acceleration.x = imu.getAccX();
-    imuMsg.linear_acceleration.y = imu.getAccY();
-    imuMsg.linear_acceleration.z = imu.getAccZ();
+    imuMsg.linear_acceleration.x = imu.getLinearAccX();
+    imuMsg.linear_acceleration.y = imu.getLinearAccY();
+    imuMsg.linear_acceleration.z = imu.getLinearAccZ();
 
     imuPublisher.publish(&imuMsg);
 
     seq++;
-    return;
 }
 
-void SAFETY_communicationFlowSupervisor()
+int SAFETY_communicationFlowSupervisor()
 {
     static unsigned long long previousCommunicationCheckTime = millis();
 
@@ -398,21 +473,27 @@ void SAFETY_communicationFlowSupervisor()
     // Handle clock overflow.
     if ((now >= previousCommunicationCheckTime))
     {
-        // Check if 100ms passed so we can publish encoders.
+        // Check if 100ms passed so we can check safety function.
         if (now - previousCommunicationCheckTime >= 500)
         {
             // The flag was not reset by motors/vel_cmd subscriber
             // so treat it as broken communication flow and stop the motors.
             if (SAFETY_stopMotorsFlag)
             {
-                rightMotor.setVelocity(0);
-                leftMotor.setVelocity(0);
+                // Display message only if there were non zero velocities set to motors.
+                if (leftMotor.getRequestedVelocity() != 0 || rightMotor.getRequestedVelocity() != 0)
+                    nh.logwarn("Communication flow broken.");
+
+                rightMotor.requestVelocity(0);
+                leftMotor.requestVelocity(0);
+                return -1; // Communication broken.
             }
             // The flag was reset by motors/vel_cmd callback
             // so communication flow is ok.
             else
             {
                 SAFETY_stopMotorsFlag = true; // Set it again and wait for motors/vel_cmd to reset it hopefully.
+                return 1;                     // Communication active.
             }
             previousCommunicationCheckTime = now;
         }
@@ -421,33 +502,68 @@ void SAFETY_communicationFlowSupervisor()
     {
         previousCommunicationCheckTime = now;
     }
+    return 0; // Didn't check the flag.
 }
 
-void SAFETY_recoverI2C() {
-    nh.logwarn("I2C stuck detected!");
+int SAFETY_tryForceI2cRecovery()
+{
+    static unsigned long long previousCommunicationCheckTime = millis();
 
-    // SDA held low by the slave.
-    if(digitalRead(D_SDA) == LOW){
-        Wire.end();
-        pinMode(D_SDA, OUTPUT);
+    unsigned long long now = millis();
 
-        // Perform max 9 nine clock pulses
-        // to unstuck the line.
-        for(uint8_t i = 0; i < 9; i++){
-            digitalWrite(D_SDA, HIGH);
-
-            if(digitalRead(D_SDA) != LOW){
-                break;
-            }
+    // Handle clock overflow.
+    if ((now >= previousCommunicationCheckTime))
+    {
+        // Check if 100ms passed so we can force reset i2c.
+        if (now - previousCommunicationCheckTime >= 100)
+        {
+            previousCommunicationCheckTime = now;
+            if (SAFETY_forceI2cRecovery())
+                return 1; // Recovery success.
+            else
+                return -1; // Recovery failed.
         }
-
-        if(digitalRead(D_SDA) == LOW)
-            nh.logerror("Unable to recover I2C!");
-        else
-            nh.loginfo("I2C recovered.");
-
-        // Restore I2C line and generate STOP condition.
-        Wire.begin();
-        Wire.endTransmission();
     }
+    else
+    {
+        previousCommunicationCheckTime = now;
+    }
+    return 0; // Didn't try to recovery.
+}
+
+bool SAFETY_forceI2cRecovery()
+{
+    pinMode(D_SDA, OUTPUT);
+    pinMode(D_SCL, OUTPUT);
+
+    // Perform max 9 nine clock pulses
+    // to unstuck the line.
+    for (uint8_t i = 0; i < 9; i++)
+    {
+        digitalWrite(D_SDA, HIGH);
+        delayMicroseconds(50);
+
+        // SDA is high so success!
+        if (digitalRead(D_SDA) == HIGH)
+        {
+            return true;
+        }
+        // SDA still low so generate pulse.
+        else
+        {
+            digitalWrite(D_SCL, HIGH);
+            delayMicroseconds(50);
+            digitalWrite(D_SCL, LOW);
+            delayMicroseconds(50);
+            digitalWrite(D_SCL, HIGH);
+            delayMicroseconds(50);
+        }
+    }
+
+    // Restore I2C line and generate STOP condition.
+    Wire.endTransmission();
+
+    if (digitalRead(D_SDA) == LOW)
+        return false;
+    return true;
 }

@@ -27,5 +27,7 @@
 #define PID_CONTROL_SERVICE "motors/set_pid_control"
 
 #define IMU_I2C_ADDRESS 0x68
-#define IMU_TOPIC "/imu"
+#define IMU_TOPIC "imu"
 #define IMU_TF_LINK "/imu"
+#define IMU_CALIBRATION_SERVICE "imu/calibrate"
+#define IMU_PARAM_SERVICE "imu/set_params"
