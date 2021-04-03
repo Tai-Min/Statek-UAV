@@ -45,12 +45,9 @@
     <node name="depth_reconfigure" pkg="dynamic_reconfigure" type="dynparam" args="load $(arg statek_name)/stereo/stereo_image_proc $(find statek_config)/yaml/depth_config.yaml -t 8"/>
 
     <!-- Real time hardware -->
-    <group ns="$(arg statek_name)/real_time">
-        <node name="rosserial" pkg="rosserial_python" type="serial_node.py" output="screen" respawn="true">
-            <param name="port" value="/dev/stm"/>
-            <rosparam command="load" file="$(find statek_config)/yaml/motion_config.yaml"/>
-        </node>
-    </group>
+    <include file="$(find statek_hw)/launch/real_time.launch">
+        <arg name="statek_name" value="$(arg statek_name)"/>
+    </include>
 
     <!-- Twist to differential command converter -->
     <include file="$(find statek_hw)/launch/twist_to_differential.launch">

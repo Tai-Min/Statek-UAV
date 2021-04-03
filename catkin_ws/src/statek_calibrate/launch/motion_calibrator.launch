@@ -5,6 +5,7 @@
     <!-- Launch calibration tool -->
     <node name="motion_calibration_node" pkg="statek_calibrate" type="motion_calibration_node.py" output="screen" respawn="false">
         <param name="statek_name" value="$(arg statek_name)"/>
+        <param name="max_velocity_service_name" value="/real_time/motors/max_velocity_test"/>
     </node>
 
 </launch>

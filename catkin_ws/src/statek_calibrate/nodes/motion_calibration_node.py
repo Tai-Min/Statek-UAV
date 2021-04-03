@@ -10,7 +10,7 @@ def type_float(text):
         except:
             print("Type floating point value!")
 
-def velocity_test(namespace, test_time):
+def velocity_test(namespace, service_name, test_time):
     print("Starting velocity test...")
     time.sleep(1)
     print("3")
@@ -20,9 +20,10 @@ def velocity_test(namespace, test_time):
     print("1")
     time.sleep(1)
 
-    rospy.wait_for_service("/" + namespace + "/motors/max_velocity_test")
+    full_service_name = "/" + namespace + service_name
+    rospy.wait_for_service(full_service_name)
     try:
-        velocity_test = rospy.ServiceProxy("/" + namespace + "/motors/max_velocity_test", VelocityTest)
+        velocity_test = rospy.ServiceProxy(full_service_name, VelocityTest)
         velocity_response = velocity_test(test_time)
         print("Test finished, found velocity is %f radians per second. If this value is bigger than around 4 that could mean that encoders have gone wrong." % velocity_response.velocity)
     except rospy.ServiceException as e:
@@ -31,6 +32,7 @@ def velocity_test(namespace, test_time):
     return velocity_response.velocity
 
 statek_name = rospy.get_param("~statek_name", "statek")
+max_velocity_service_name = rospy.get_param("~max_velocity_service_name", "/real_time/motors/max_velocity_test")
 test_time = rospy.get_param("~test_time", 5000)
 
 print("Before performing this test make sure that the UAV is lifted a bit so it won't move when wheels will start spinning!")
@@ -38,7 +40,7 @@ raw_input("Press anything to proceed or Ctrl + C to exit.")
 
 wheel_radius = type_float("Type wheel radius [m]: ")
 distance_between_wheels = type_float("Type distance between front left and right wheel centers [m]: ")
-wheel_max_angular_velocity = velocity_test(statek_name, test_time)
+wheel_max_angular_velocity = velocity_test(statek_name, max_velocity_service_name, test_time)
 max_linear_velocity = wheel_max_angular_velocity * wheel_radius
 max_angular_velocity = max_linear_velocity / (distance_between_wheels / 2)
 
