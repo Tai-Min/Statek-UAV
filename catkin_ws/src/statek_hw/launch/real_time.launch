@@ -13,7 +13,7 @@
         </node>
 
         <!-- Param sender -->
-        <node name="real_time_param_sender" pkg="statek_hw" type="real_time_param_sender_node.py" output="screen" respawn="true">
+        <node name="real_time_param_sender" pkg="statek_hw" type="real_time_param_sender_node.py" output="screen" respawn="false">
             <param name="statek_name" value="$(arg statek_name)"/>
             <param name="left_motor_param_service_name" value="/real_time/motors/left/set_params"/>
             <param name="right_motor_param_service_name" value="/real_time/motors/right/set_params"/>

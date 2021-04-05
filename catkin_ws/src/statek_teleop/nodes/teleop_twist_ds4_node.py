@@ -21,7 +21,7 @@ def ds4_callback(status, args):
 
     time.sleep(0.1) # limit message rate to 10
 
-rospy.init_node("teleop_raw_ds4", anonymous=True)
+rospy.init_node("teleop_twist_ds4", anonymous=True)
 
 statek_name = rospy.get_param("~statek_name", "statek")
 max_linear_velocity = rospy.get_param("~max_linear_velocity", 0)
