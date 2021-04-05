@@ -15,6 +15,7 @@ add_message_files(
 add_service_files(
   FILES
   RunImuCalibration.srv
+  RunModelIdentification.srv
   RunVelocityTest.srv
   SetImuParams.srv
   SetMotorParams.srv
