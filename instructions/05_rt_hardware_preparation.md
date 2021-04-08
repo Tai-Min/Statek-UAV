@@ -1,5 +1,11 @@
 # Real time hardware
 
+## Install necessary libraries
+In PlatformIO terminal type:
+```
+pio lib -g install https://github.com/Tai-Min/MPU9250/archive/refs/heads/master.zip
+```
+
 ## Compile and upload rt code
 Connect STM board to PC.
 
