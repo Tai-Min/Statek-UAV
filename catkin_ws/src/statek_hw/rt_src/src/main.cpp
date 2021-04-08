@@ -189,7 +189,7 @@ void updateROS(bool publish)
     {
         tryPublishEncoders();
         tryPublishIMU();
-        tryPublishOdom();
+        //tryPublishOdom();
     }
 }
 
@@ -235,7 +235,7 @@ bool tryUpdateHardware()
     leftMotor.tryUpdate();
     rightMotor.tryUpdate();
     tryUpdateImu();
-    odom.tryUpdate();
+    //odom.tryUpdate();
 
     return true;
 }
@@ -281,7 +281,7 @@ void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &r
     unsigned long start = millis();
     unsigned long now = millis();
     bool overflowFlag = false;
-    while (now - start < req.time)
+    while (now - start < req.time_ms)
     {
         // Clock overflow
         // Really rare situation.
@@ -329,7 +329,7 @@ void stepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdenti
 
     SAFETY_serviceInProgress = true;
 
-    res.sampling_time = req.identification_time / (float)numSamples;
+    res.sampling_time = (req.identification_time_ms / 1000.0) / (float)numSamples;
     unsigned int sampleTime = res.sampling_time * 1000;
     bool overflowFlag = false;
 
@@ -498,7 +498,7 @@ void imuCalibrationServiceCallback(const statek_msgs::RunImuCalibrationRequest &
     imu.calibrateAccelGyro(); // Calibrate gyro.
 
     // Move around during mag calibration.
-    forceWheelMovement(leftMotor.getMaxVelocity(), rightMotor.getMaxVelocity(), 1500);
+    forceWheelMovement(leftMotor.getMaxVelocity(), -rightMotor.getMaxVelocity(), 1500);
 
     imu.calibrateMag();
 
@@ -564,6 +564,8 @@ void setOdomParamsCallback(const statek_msgs::SetOdomParamsRequest &req, statek_
     SAFETY_serviceInProgress = true;
 
     odom.setOdomParams({req.wheel_radius, req.distance_between_wheels, req.odom_update_rate_ms});
+
+    res.success = true;
 
     SAFETY_serviceInProgress = false;
 }

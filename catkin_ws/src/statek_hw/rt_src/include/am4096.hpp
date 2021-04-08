@@ -36,7 +36,6 @@ private:
         i2c.write(register_addr);               
         uint8_t res = i2c.endTransmission(0);
         if(res){
-            Serial.println(res);
             ok = false;
             return 0;
         }
