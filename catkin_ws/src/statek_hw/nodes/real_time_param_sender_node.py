@@ -20,11 +20,10 @@ def send_motor_params(namespace, param_service, params):
         req.kd = params["kd"]
 
         res = service(req)
-        if res.ok == False:
+        if res.success == False:
             rospy.logwarn("Failed to send parameters.")
     except:
-        pass # STM still receives parameters D: so not sure why this fires.
-        #rospy.logwarn("Exception occured! Failed to send parameters.")
+        rospy.logwarn("Exception occured! Failed to send parameters.")
 
 rospy.init_node("real_time_param_sender", anonymous=True)
 
@@ -51,7 +50,7 @@ right_motor_params = {
     "kd": right_motor_pid[2]
 }
 
-time.sleep(10)
+time.sleep(20)
 send_motor_params(statek_name, left_motor_param_service_name, left_motor_params)
 time.sleep(1)
 send_motor_params(statek_name, right_motor_param_service_name, right_motor_params)
