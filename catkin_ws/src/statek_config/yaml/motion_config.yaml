@@ -11,3 +11,14 @@ max_angular_velocity: 1.48174230924 # How fast UAV can rotate around it's center
 loop_update_rate_ms: 30
 left_motor_pid: [0, 0, 0] # Kp, ki, kd.
 right_motor_pid: [0, 0, 0]
+
+# imu config
+imu_update_rate_ms: 30
+acc_bias: [0,0,0]
+gyro_bias: [0,0,0]
+mag_bias: [0,0,0]
+mag_scale: [0,0,0]
+magnetic_declination: 6.9
+
+# odom config
+odom_update_rate_ms: 30
