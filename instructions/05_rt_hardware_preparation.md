@@ -15,5 +15,7 @@ roscd statek_hw/rt_src
 ```
 Open it on Windows in VS code with PLATFORMIO plugin, and compile then upload the code.
 
+Additionaly, you can change content of /include/config.hpp to change encoder addresses or tf links.
+
 Previous: [Remote environment setup](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/04_remote_environment_setup.md)</br>
 Next: [Sensor calibration](https://github.com/Tai-Min/Statek-UAV/blob/master/instructions/06_sensor_calibration.md)
