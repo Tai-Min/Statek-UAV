@@ -24,5 +24,5 @@ Text HLabel 5700 4350 0    50   Input ~ 0
 Text HLabel 5700 4450 0    50   Input ~ 0
 GND_PIN
 Text HLabel 5700 4250 0    50   Input ~ 0
-PA1
+PC0
 $EndSCHEMATC

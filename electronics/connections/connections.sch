@@ -285,7 +285,7 @@ F3 "PB9" I R 8300 2900 50
 F4 "PB8" I R 8300 3000 50 
 F5 "3.3V_PIN" I R 8300 3100 50 
 F6 "GND_PIN" I R 8300 3200 50 
-F7 "PA1" I R 8300 3300 50 
+F7 "PC0" I R 8300 3300 50 
 $EndSheet
 $Sheet
 S 7650 2250 650  300 
@@ -535,4 +535,20 @@ Wire Wire Line
 	7400 3850 7400 5150
 Wire Wire Line
 	3350 2350 3350 5150
+Wire Notes Line
+	8450 2000 8750 2000
+Wire Notes Line
+	8750 2000 8750 1300
+Wire Notes Line
+	8750 1300 8450 1300
+Wire Notes Line
+	8450 1300 8450 2000
+Text Notes 7850 1050 0    50   ~ 0
+Add ferrite bead close to the motor shield
+Wire Notes Line
+	8600 1300 8600 1100
+Text Notes 9400 4200 0    50   ~ 0
+Solder jumper close to voltage regulator
+Text Notes 9400 4300 0    50   ~ 0
+Remove 10k pull ups on SDA / SCL pins
 $EndSCHEMATC
