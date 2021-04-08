@@ -1,16 +1,22 @@
 #pragma once
 
-#define D_SDA PB_9
-#define D_SCL PB_8
+#define D_SDA PB9
+#define D_SCL PB8
 
-#define RIGHT_MOTOR_GPIO {PA_0, PA_8, PA_9, PB_4} // Enable, clockwise, counter clockwise, pwm.
+#define RIGHT_MOTOR_GPIO   \
+    {                      \
+        PA0, PA8, PA9, PB4 \
+    } // Enable, clockwise, counter clockwise, pwm.
 #define RIGHT_MOTOR_ENCODER_I2C_ADDRESS 0x1E
 #define RIGHT_MOTOR_ENCODER_TOPIC "motors/right/encoder"
 #define RIGHT_MOTOR_TF_LINK "/wheels/right_front_link"
 #define RIGHT_MOTOR_PID_PARAMS "~right_motor_pid"
 #define RIGHT_MOTOR_PARAM_SERVICE "motors/right/set_params"
 
-#define LEFT_MOTOR_GPIO {PA_1, PB_5, PC_7, PB_10}
+#define LEFT_MOTOR_GPIO     \
+    {                       \
+        PA1, PB5, PC7, PB10 \
+    }
 #define LEFT_MOTOR_ENCODER_I2C_ADDRESS 0x3C
 #define LEFT_MOTOR_ENCODER_TOPIC "motors/left/encoder"
 #define LEFT_MOTOR_TF_LINK "/wheels/left_front_link"
@@ -23,6 +29,7 @@
 #define VELOCITY_SETPOINTS_TOPIC "motors/vel_cmd"
 
 #define VELOCITY_TEST_SERVICE "motors/max_velocity_test"
+#define STEP_RESPONSE_IDENTIFICATION_SERVICE "motors/step_response_identification"
 #define DIRECT_CONTROL_SERVICE "motors/set_direct_control"
 #define PID_CONTROL_SERVICE "motors/set_pid_control"
 
@@ -31,3 +38,8 @@
 #define IMU_TF_LINK "/imu"
 #define IMU_CALIBRATION_SERVICE "imu/calibrate"
 #define IMU_PARAM_SERVICE "imu/set_params"
+
+#define ODOM_TOPIC "odom"
+#define ODOM_TF_LINK "/odom"
+#define ODOM_CHILD_LINK "/base_footprint"
+#define ODOM_PARAM_SERVICE "odom/set_params"

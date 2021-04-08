@@ -19,6 +19,7 @@ add_service_files(
   RunVelocityTest.srv
   SetImuParams.srv
   SetMotorParams.srv
+  SetOdomParams.srv
 )
 
 generate_messages(

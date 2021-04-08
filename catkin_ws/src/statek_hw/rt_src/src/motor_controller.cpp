@@ -2,7 +2,7 @@
 
 MotorController::MotorController(const Motor::Gpio &motorGpio, uint8_t encoderAddr, bool _reverseEncoder, TwoWire &encoderI2c)
     : motor(motorGpio), encoder(encoderAddr, encoderI2c), reverseEncoder(_reverseEncoder),
-      fakeInertia(0.11), pid(-1, 1) {}
+      fakeInertia(0.2), pid(-1, 1) {}
 
 MotorController::EncoderState MotorController::getCurrentEncoderState(bool &ok) const
 {
@@ -52,7 +52,8 @@ MotorController::EncoderState MotorController::getCurrentEncoderState(bool &ok) 
     // Maybe add Kalman filter later?
     float accelerationFromPosition = currentEncoderState.position - fixedLatestPosition - this->latestEncoderState.velocity * this->loopUpdateRate / (float)1000.0;
     float accelerationFromVelocity = (currentEncoderState.velocity - this->latestEncoderState.velocity) * this->loopUpdateRate / (float)1000.0;
-    currentEncoderState.acceleration = (accelerationFromPosition + accelerationFromVelocity) / 2.0;
+    //currentEncoderState.acceleration = (accelerationFromPosition + accelerationFromVelocity) / 2.0;
+    currentEncoderState.acceleration = accelerationFromVelocity;
 
     ok = true;
     return currentEncoderState;
@@ -68,10 +69,13 @@ float MotorController::getControlValue(const EncoderState &currentEncoderState)
 
         // Moving average.
         this->averageVelocity = this->averageVelocity +
-                                   (float)(1 / (float)this->movingAverageSampleTracker) *
-                                       (currentEncoderState.velocity - this->averageVelocity);
+                                (float)(1 / (float)this->movingAverageSampleTracker) *
+                                    (currentEncoderState.velocity - this->averageVelocity);
 
         controlVal = 1.0f; // Force motor into max speed during this test.
+        break;
+    case STEP_IDENTIFICATION:
+        controlVal = 1;
         break;
     case DIRECT:
         // Simply scale the setpoint to range [-1; 1]
@@ -94,17 +98,12 @@ float MotorController::getControlValue(const EncoderState &currentEncoderState)
 
 bool MotorController::update()
 {
-    // Something went wrong.
-    if (this->loopUpdateRate <= 0)
-        return false;
-
     // 1. Read / estimate system's state.
-    bool ok;
+    bool ok = true;
     EncoderState currentEncoderState = this->getCurrentEncoderState(ok);
     if (!ok)
     {
-        // TODO: handle this.
-        return false;
+        this->setpoint = 0;
     }
 
     // 2. Control.
@@ -113,10 +112,16 @@ bool MotorController::update()
 
     // 3. Keep current motion dynamics for next iteration
     // and for anyone interested.
-    this->latestEncoderState.position = currentEncoderState.position;
-    this->latestEncoderState.velocity = currentEncoderState.velocity;
-    this->latestEncoderState.acceleration = currentEncoderState.acceleration;
-
+    if (ok)
+    {
+        this->latestEncoderState.position = currentEncoderState.position;
+        this->latestEncoderState.velocity = currentEncoderState.velocity;
+        this->latestEncoderState.acceleration = currentEncoderState.acceleration;
+    }
+    else
+    {
+        return false; // Encoder reading failed.
+    }
     return true;
 }
 
@@ -135,24 +140,31 @@ void MotorController::start()
     this->motor.enable();
 }
 
+bool MotorController::isReady()
+{
+    return this->ready;
+}
+
 MotorController::FailCode MotorController::tryUpdate()
 {
     // Something went wrong / controller has not received any params.
     if (this->loopUpdateRate <= 0)
         return LOOP_RATE_ZERO;
+    if(!this->ready)
+        return MOTOR_NOT_READY;
 
-    unsigned long long now = millis();
+    unsigned long now = millis();
     // Handle clock overflow.
     if (now >= this->previousUpdateTime)
     {
         // Check if enough time has passed so we can update control loop.
         if (now - this->previousUpdateTime > this->loopUpdateRate)
         {
-            if(this->update())
+            if (this->update())
                 return CONTROL_UPDATED;
             else
                 return ENCODER_FAILURE;
-                
+
             this->previousUpdateTime = now;
         }
     }
@@ -187,6 +199,8 @@ void MotorController::setMotorParams(const ControlParams &params)
 
     if (params.maxVelocity >= 0)
         this->maxVelocity = params.maxVelocity;
+
+    this->ready = true;
 }
 
 void MotorController::setControlMode(ControlMode cm)
@@ -201,8 +215,14 @@ void MotorController::setControlMode(ControlMode cm)
     this->controlMode = cm;
 }
 
-float MotorController::getRequestedVelocity(){
+float MotorController::getRequestedVelocity()
+{
     return this->setpoint;
+}
+
+float MotorController::getMaxVelocity()
+{
+    return this->maxVelocity;
 }
 
 MotorController::ControlMode MotorController::getControlMode() const

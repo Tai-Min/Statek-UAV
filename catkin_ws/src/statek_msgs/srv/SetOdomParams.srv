@@ -1,0 +1,5 @@
+uint32 odom_update_rate_ms
+float64 distance_between_wheels
+float64 wheel_radius
+---
+bool success # Set to true on success.

@@ -8,21 +8,24 @@
 #include "../include/pid.hpp"
 #include "../include/low_pass_filter.hpp"
 
-class MotorController {
-    public:
-
-    enum FailCode {
+class MotorController
+{
+public:
+    enum FailCode
+    {
         CONTROL_UPDATED,
         LOOP_RATE_ZERO,
         UPDATE_NOT_READY,
-        ENCODER_FAILURE
+        ENCODER_FAILURE,
+        MOTOR_NOT_READY
     };
 
     enum ControlMode
     {
-        MAX_VELOCITY_TEST, 
-        DIRECT,          
-        PID_CONTROL      
+        MAX_VELOCITY_TEST,
+        STEP_IDENTIFICATION,
+        DIRECT,
+        PID_CONTROL
     };
 
     struct EncoderState
@@ -41,7 +44,9 @@ class MotorController {
         float maxVelocity;
     };
 
-    private:
+private:
+    bool ready = false;
+
     // Hardware
     Motor motor;
     AM4096 encoder;
@@ -55,7 +60,7 @@ class MotorController {
     unsigned long previousUpdateTime = 0;
     float setpoint = 0;
     float maxVelocity = 0;
-    unsigned int loopUpdateRate = 0;
+    unsigned int loopUpdateRate = 30;
     ControlMode controlMode = ControlMode::PID_CONTROL;
     LowPassFilter fakeInertia;
     PIDController pid;
@@ -65,13 +70,15 @@ class MotorController {
     float getControlValue(const EncoderState &currentEncoderState);
 
     bool update();
-    
+
     static float saturate(float minVal, float maxVal, float val);
 
-    public:
+public:
     MotorController(const Motor::Gpio &motorGpio, uint8_t encoderAddr, bool _reverseEncoder = false, TwoWire &encoderI2c = Wire);
 
     void start();
+
+    bool isReady();
 
     FailCode tryUpdate();
 
@@ -82,6 +89,8 @@ class MotorController {
     void setControlMode(ControlMode cm);
 
     float getRequestedVelocity();
+
+    float getMaxVelocity();
 
     ControlMode getControlMode() const;
 
