@@ -44,7 +44,9 @@ void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints);
 
 // Callbacks for services.
 void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &req, statek_msgs::RunVelocityTestResponse &res);
-void stepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res);
+void stepResponseIdentificationServiceCallback(MotorController &mot, const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res);
+void leftMotorStepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res);
+void rightMotorStepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res);
 void setDirectControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
 void setClosedLoopControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
 void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res);
@@ -84,7 +86,10 @@ ros::ServiceServer<statek_msgs::RunVelocityTestRequest, statek_msgs::RunVelocity
     maxVelocityTestService(VELOCITY_TEST_SERVICE, &maxVelocityTestServiceCallback);
 
 ros::ServiceServer<statek_msgs::RunModelIdentificationRequest, statek_msgs::RunModelIdentificationResponse>
-    stepResponseIdentificationService(STEP_RESPONSE_IDENTIFICATION_SERVICE, &stepResponseIdentificationServiceCallback);
+    leftMotorStepResponseIdentificationService(LEFT_MOTOR_STEP_RESPONSE_IDENTIFICATION_SERVICE, &leftMotorStepResponseIdentificationServiceCallback);
+
+ros::ServiceServer<statek_msgs::RunModelIdentificationRequest, statek_msgs::RunModelIdentificationResponse>
+    rightMotorStepResponseIdentificationService(RIGHT_MOTOR_STEP_RESPONSE_IDENTIFICATION_SERVICE, &rightMotorStepResponseIdentificationServiceCallback);
 
 ros::ServiceServer<std_srvs::TriggerRequest, std_srvs::TriggerResponse>
     directControlService(DIRECT_CONTROL_SERVICE, &setDirectControlServiceCallback);
@@ -133,7 +138,8 @@ void setup()
 
     nh.subscribe(setpointsSubscriber);
     nh.advertiseService(maxVelocityTestService);
-    nh.advertiseService(stepResponseIdentificationService);
+    nh.advertiseService(leftMotorStepResponseIdentificationService);
+    nh.advertiseService(rightMotorStepResponseIdentificationService);
     nh.advertiseService(directControlService);
     nh.advertiseService(closedLoopControlService);
     nh.advertiseService(setLeftMotorParamsService);
@@ -283,6 +289,7 @@ void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &r
     bool overflowFlag = false;
     while (now - start < req.time_ms)
     {
+        now = millis();
         // Clock overflow
         // Really rare situation.
         // So just mark test as failed.
@@ -316,7 +323,7 @@ void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &r
     SAFETY_serviceInProgress = false;
 }
 
-void stepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res)
+void stepResponseIdentificationServiceCallback(MotorController &mot, const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res)
 {
     const uint8_t numSamples = 100;
 
@@ -333,28 +340,11 @@ void stepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdenti
     unsigned int sampleTime = res.sampling_time * 1000;
     bool overflowFlag = false;
 
-    MotorController::ControlMode previousMode = rightMotor.getControlMode();
+    MotorController::ControlMode previousMode = mot.getControlMode();
 
-    if (req.selected_motor == statek_msgs::RunModelIdentificationRequest::MOTOR_LEFT)
-    {
-        // Stop right motor.
-        rightMotor.setControlMode(MotorController::ControlMode::DIRECT);
-        rightMotor.requestVelocity(0);
-
-        // Perform identification.
-        leftMotor.requestVelocity(0);
-        leftMotor.setControlMode(MotorController::ControlMode::STEP_IDENTIFICATION);
-    }
-    else
-    {
-        // Stop left motor.
-        leftMotor.setControlMode(MotorController::ControlMode::DIRECT);
-        leftMotor.requestVelocity(0);
-
-        // Perform identification.
-        rightMotor.requestVelocity(0);
-        rightMotor.setControlMode(MotorController::ControlMode::STEP_IDENTIFICATION);
-    }
+    // Perform identification.
+    mot.requestVelocity(0);
+    mot.setControlMode(MotorController::ControlMode::STEP_IDENTIFICATION);
 
     for (uint8_t i = 0; i < numSamples; i++)
     {
@@ -377,23 +367,25 @@ void stepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdenti
         }
 
         // Get the sample.
-        if (req.selected_motor == statek_msgs::RunModelIdentificationRequest::MOTOR_LEFT)
-        {
-            res.samples[i] = leftMotor.getLatestEncoderState().velocity;
-        }
-        else
-        {
-            res.samples[i] = rightMotor.getLatestEncoderState().velocity;
-        }
+        res.samples[i] = mot.getLatestEncoderState().velocity;
     }
 
     // Restore previous control mode.
-    leftMotor.setControlMode(previousMode);
-    rightMotor.setControlMode(previousMode);
+    mot.setControlMode(previousMode);
 
     res.success = !overflowFlag;
 
     SAFETY_serviceInProgress = false;
+}
+
+void leftMotorStepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res)
+{
+    stepResponseIdentificationServiceCallback(leftMotor, req, res);
+}
+
+void rightMotorStepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res)
+{
+    stepResponseIdentificationServiceCallback(rightMotor, req, res);
 }
 
 void setDirectControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res)
@@ -489,7 +481,8 @@ void imuCalibrationServiceCallback(const statek_msgs::RunImuCalibrationRequest &
     rightMotor.setControlMode(MotorController::ControlMode::DIRECT);
 
     // Stop the UAV for acc / gyro calibration.
-    if(!forceWheelMovement(0, 0, 2000)){
+    if (!forceWheelMovement(0, 0, 2000))
+    {
         res.success = false;
         SAFETY_serviceInProgress = false;
         return;
@@ -666,7 +659,8 @@ void publishIMU()
     seq++;
 }
 
-bool tryPublishOdom(){
+bool tryPublishOdom()
+{
     static unsigned long previousOdomPublishTime = millis();
 
     unsigned long now = millis();
@@ -688,7 +682,8 @@ bool tryPublishOdom(){
     return false;
 }
 
-void publishOdom(){
+void publishOdom()
+{
     static uint32_t seq = 0;
 
     // Odometry message

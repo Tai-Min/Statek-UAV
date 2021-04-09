@@ -1,7 +1,3 @@
-bool MOTOR_LEFT = 0
-bool MOTOR_RIGHT = 1
-
-bool selected_motor
 uint32 identification_time_ms
 ---
 bool success

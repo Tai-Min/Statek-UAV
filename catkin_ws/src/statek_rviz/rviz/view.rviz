@@ -4,9 +4,11 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Global Options1
+        - /RobotModel1
+        - /RobotModel1/Status1
         - /TF1/Tree1
-        - /Camera1
-        - /PointCloud21
+        - /Imu1
       Splitter Ratio: 0.5
     Tree Height: 804
   - Class: rviz/Selection
@@ -129,13 +131,29 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        statek/base_footprint:
+          Value: true
         statek/base_link:
           Value: true
+        statek/imu/imu_link:
+          Value: true
         statek/laser/laser_link:
+          Value: true
+        statek/motors/left_link:
+          Value: true
+        statek/motors/right_link:
           Value: true
         statek/stereo/left_link:
           Value: true
         statek/stereo/right_link:
+          Value: true
+        statek/wheels/left_back_link:
+          Value: true
+        statek/wheels/left_front_link:
+          Value: true
+        statek/wheels/right_back_link:
+          Value: true
+        statek/wheels/right_front_link:
           Value: true
       Marker Scale: 0.5
       Name: TF
@@ -143,13 +161,28 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        statek/base_link:
-          statek/laser/laser_link:
-            {}
-          statek/stereo/left_link:
-            {}
-          statek/stereo/right_link:
-            {}
+        statek/base_footprint:
+          statek/base_link:
+            statek/imu/imu_link:
+              {}
+            statek/laser/laser_link:
+              {}
+            statek/motors/left_link:
+              {}
+            statek/motors/right_link:
+              {}
+            statek/stereo/left_link:
+              {}
+            statek/stereo/right_link:
+              {}
+            statek/wheels/left_back_link:
+              {}
+            statek/wheels/left_front_link:
+              {}
+            statek/wheels/right_back_link:
+              {}
+            statek/wheels/right_front_link:
+              {}
       Update Interval: 0
       Value: true
     - Class: rviz/Camera
@@ -164,12 +197,22 @@ Visualization Manager:
       Value: true
       Visibility:
         Grid: false
+        Imu: true
         LaserScan: true
         PointCloud2: false
         RobotModel: false
         TF: false
         Value: true
       Zoom Factor: 1
+    - Alpha: 1
+      Class: rviz_plugin_tutorials/Imu
+      Color: 204; 51; 204
+      Enabled: true
+      History Length: 5
+      Name: Imu
+      Topic: /statek/real_time/imu
+      Unreliable: false
+      Value: true
     - Alpha: 0.5
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -204,7 +247,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: statek/base_link
+    Fixed Frame: statek/base_footprint
     Frame Rate: 30
   Name: root
   Tools:
@@ -228,25 +271,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.84697687625885
+      Distance: 1.5283687114715576
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.13484801352024078
-        Y: 0.2734053134918213
-        Z: -0.3680555522441864
+        X: 0.07587995380163193
+        Y: 0.042243700474500656
+        Z: 0.3376021981239319
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.724795937538147
+      Pitch: 0.5247942209243774
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.579034805297852
+      Yaw: 5.124014854431152
     Saved: ~
 Window Geometry:
   Camera:
