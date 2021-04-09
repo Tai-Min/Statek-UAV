@@ -5,6 +5,11 @@ Reinstall libcanberra-gtk-module:
 ```
 sudo apt-get install --reinstall libcanberra-gtk-module
 ```
+
+Install required python modules:
+```
+sudo apt-get install python-numpy python-scipy python-matplotlib ipython python-pandas python-sympy python-nose
+```
 ## Configure wifi
 Find name of your wifi device:
 ```
