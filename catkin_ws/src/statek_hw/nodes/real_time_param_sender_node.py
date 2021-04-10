@@ -121,20 +121,16 @@ odom_params = {
     "odom_update_rate_ms": rospy.get_param("odom_update_rate_ms", 0)
 }
 
-time.sleep(20)
+time.sleep(6)
 
 while(not send_motor_params(statek_name, left_motor_param_service_name, left_motor_params)):
     time.sleep(5)
 time.sleep(2)
 
-while(not send_motor_params(statek_name, right_motor_param_service_name, right_motor_params)):
-    time.sleep(5)
+send_motor_params(statek_name, right_motor_param_service_name, right_motor_params)
 time.sleep(2)
 
-while(not send_imu_params(statek_name, imu_param_service_name, imu_params)):
-    time.sleep(5)
+send_imu_params(statek_name, imu_param_service_name, imu_params)
 time.sleep(2)
 
-while(not send_odom_params(statek_name, odom_param_service_name, odom_params)):
-    time.sleep(5)
-time.sleep(2)
+send_odom_params(statek_name, odom_param_service_name, odom_params)

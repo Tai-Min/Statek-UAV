@@ -4,24 +4,27 @@
 
     <arg name="base_to_left_motor" value="$(eval open(find('statek_config') + '/tf/base_to_left_motor').read())"/>
     <arg name="base_to_right_motor" value="$(eval open(find('statek_config') + '/tf/base_to_right_motor').read())"/>
-    
-    <arg name="base_to_left_back_wheel" value="$(eval open(find('statek_config') + '/tf/base_to_right_back_wheel').read())"/>
-    <arg name="base_to_left_front_wheel" value="$(eval open(find('statek_config') + '/tf/base_to_right_back_wheel').read())"/>
+
+    <arg name="base_to_left_back_wheel" value="$(eval open(find('statek_config') + '/tf/base_to_left_back_wheel').read())"/>
+    <arg name="base_to_left_front_wheel" value="$(eval open(find('statek_config') + '/tf/base_to_left_front_wheel').read())"/>
     <arg name="base_to_right_back_wheel" value="$(eval open(find('statek_config') + '/tf/base_to_right_back_wheel').read())"/>
-    <arg name="base_to_right_front_wheel" value="$(eval open(find('statek_config') + '/tf/base_to_right_back_wheel').read())"/>
+    <arg name="base_to_right_front_wheel" value="$(eval open(find('statek_config') + '/tf/base_to_right_front_wheel').read())"/>
 
     <group ns="$(arg statek_name)/tf">
         <!-- base link to encoder and wheel links  -->
         <node pkg="statek_tf" type="encoders_wheels_transforms_publisher.py" name="encoders_wheels_transforms_publisher" respawn="true">
             <param name="statek_name" type="string" value="$(arg statek_name)" />
 
-            <param name="base_to_left_motor" value="[$(arg base_to_left_motor)]"/>
-            <param name="base_to_right_motor" value="[$(arg base_to_right_motor)]"/>
+            <param name="left_encoder_topic" value="/real_time/motors/left/encoder"/>
+            <param name="right_encoder_topic" value="/real_time/motors/right/encoder"/>
 
-            <param name="base_to_left_back_wheel" value="[$(arg base_to_left_back_wheel)]"/>
-            <param name="base_to_left_front_wheel" value="[$(arg base_to_left_front_wheel)]"/>
-            <param name="base_to_right_back_wheel" value="[$(arg base_to_right_back_wheel)]"/>
-            <param name="base_to_right_front_wheel" value="[$(arg base_to_right_front_wheel)]"/>
+            <param name="base_to_left_motor" value="$(arg base_to_left_motor)"/>
+            <param name="base_to_right_motor" value="$(arg base_to_right_motor)"/>
+
+            <param name="base_to_left_back_wheel" value="$(arg base_to_left_back_wheel)"/>
+            <param name="base_to_left_front_wheel" value="$(arg base_to_left_front_wheel)"/>
+            <param name="base_to_right_back_wheel" value="$(arg base_to_right_back_wheel)"/>
+            <param name="base_to_right_front_wheel" value="$(arg base_to_right_front_wheel)"/>
         </node>
     </group>
 
