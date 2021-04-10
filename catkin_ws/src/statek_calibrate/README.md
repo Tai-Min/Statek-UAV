@@ -15,7 +15,7 @@ Launches simple terminal app to calibrate motion. This includes:
 * Motor PID tuning which includes:
   * Step response data acquisition
   * n-th order discrete model identification using recursive least squares
-  * Least squares minimalization using cost function that is expressed as result of (ISE + IAE)/2 + penalty from overshoot and CV saturation
+  * Least squares minimalization using cost function that is expressed as result of (ISE + IAE)/2 + penalties from overshoot and CV saturation
 * IMU calibration
 
 ## Nodes
