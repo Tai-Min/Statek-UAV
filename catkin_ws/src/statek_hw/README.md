@@ -1,13 +1,25 @@
 # statek_hw
-Launch file to launch all attached sensors and actuators both real time and non real time. Also launches tfs.
+Package with all hardware related stuff
 
-* **launch files**
-  * **statek.launch** - Launch all sensors and actuators attached to the platform. </br>
-  
-    | args | description |
-    |-|-|
-    | statek_name | Used to create namespaces for sensors, actuators and tfs, i.e **<statek_name>/scan**. |
+## Launch files
+### statek.launch
+Launches all hardware stuff along with it's transforms.
 
-    | result |
-    |-|
-    | Launch file will run all sensor, actuator and tf publisher nodes. |
+### real_time.launch
+Launches real time related stuff.
+
+### twist_to_differential.launch
+Launches bridge between geometry_msgs/Twist and statek_msgs/Velocity
+
+## Nodes
+### real_time_param_sender_node.py
+Sends config to real time hardware once.
+
+### twist_to_differential_node.py
+See twist_to_differential.launch
+
+### vision_publisher_node
+Publishes state of both cameras using image_transport and advertises service to set camera info.
+
+### vision_publisher_node_DEPRECATED.py
+Use vision_publisher_node instead.
