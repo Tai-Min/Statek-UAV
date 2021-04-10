@@ -13,7 +13,7 @@ class Odometry
     };
 
 private:
-    bool ready = false;
+    bool ready = true;
 
     // Odom stuff.
     float x = 0, y = 0, theta = 0;

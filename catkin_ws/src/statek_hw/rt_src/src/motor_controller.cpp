@@ -2,7 +2,7 @@
 
 MotorController::MotorController(const Motor::Gpio &motorGpio, uint8_t encoderAddr, bool _reverseEncoder, TwoWire &encoderI2c)
     : motor(motorGpio), encoder(encoderAddr, encoderI2c), reverseEncoder(_reverseEncoder),
-      fakeInertia(0.2), pid(-1, 1) {}
+      fakeInertia(0.025), pid(-1, 1) {}
 
 MotorController::EncoderState MotorController::getCurrentEncoderState(bool &ok) const
 {

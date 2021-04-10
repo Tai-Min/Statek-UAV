@@ -549,18 +549,20 @@ void setImuParamsServiceCallback(const statek_msgs::SetImuParamsRequest &req, st
 void setOdomParamsCallback(const statek_msgs::SetOdomParamsRequest &req, statek_msgs::SetOdomParamsResponse &res)
 {
     // Don't run the test when another callback is doing stuff.
+    nh.logwarn("Start.");
     if (SAFETY_serviceInProgress)
     {
         res.success = false;
         return;
     }
     SAFETY_serviceInProgress = true;
-
+    nh.logwarn("Bef.");
     odom.setOdomParams({req.wheel_radius, req.distance_between_wheels, req.odom_update_rate_ms});
-
+    nh.logwarn("Af.");
     res.success = true;
 
     SAFETY_serviceInProgress = false;
+    nh.logwarn("End.");
 }
 
 // Publisher functions.

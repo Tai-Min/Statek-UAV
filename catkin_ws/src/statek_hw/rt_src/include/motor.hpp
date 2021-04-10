@@ -68,6 +68,9 @@ public:
             digitalWrite(motorCCW, HIGH);
         }
 
+        if(dutyCycleSigned < 0.1)
+            dutyCycleSigned = 0;
+            
         pwmTimer->setCaptureCompare(pwmChannel, 100 * dutyCycleSigned, PERCENT_COMPARE_FORMAT);
     }
 };
