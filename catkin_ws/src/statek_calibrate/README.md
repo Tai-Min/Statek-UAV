@@ -2,7 +2,7 @@
 ## Launch files
 ### camera_info_calibrator.launch
 Launches calibration GUI so should be run on remote machine.
-The result of this node is automatically saved.
+The result of this node is automatically saved to the UAV.
 
 ### depth_calibrator.launch
 Launches dynamic reconfigure along with stereo preview and rviz with point cloud. 
