@@ -5,11 +5,12 @@ Launches calibration GUI so should be run on remote machine.
 The result of this node is automatically saved to the UAV.
 
 ### depth_calibrator.launch
-Launches dynamic reconfigure along with stereo preview and rviz with point cloud. 
+Should be run on remote machine as it launches dynamic reconfigure along with stereo preview and rviz with point cloud. 
 Resulting params should be saved manually in dynamic reconfigure as depth_config.yaml and moved to UAV to statek_config/yaml
 
 ### motion_calibrator.launch
-Launches simple terminal app to calibrate motion this includes:
+Should be run via SSH.
+Launches simple terminal app to calibrate motion. This includes:
 * Physical constraints
 * Motor PID tuning which includes:
   * Step response data acquisition
