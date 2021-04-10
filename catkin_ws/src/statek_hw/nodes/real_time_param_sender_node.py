@@ -133,4 +133,4 @@ time.sleep(2)
 send_imu_params(statek_name, imu_param_service_name, imu_params)
 time.sleep(2)
 
-send_odom_params(statek_name, odom_param_service_name, odom_params)
+#send_odom_params(statek_name, odom_param_service_name, odom_params)

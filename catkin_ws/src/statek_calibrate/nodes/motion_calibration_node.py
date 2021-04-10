@@ -84,7 +84,7 @@ def velocity_test(namespace, service_name, test_time):
         print("Test failed: %s" % e)
         return -1
 
-def step_response_identification(namespace, service_name, test_time, motor):
+def step_response_identification(namespace, service_name, test_time):
     print("Starting step response...")
     time.sleep(1)
     print("3")
@@ -100,7 +100,6 @@ def step_response_identification(namespace, service_name, test_time, motor):
         service = rospy.ServiceProxy(full_service_name, RunModelIdentification)
 
         req = RunModelIdentificationRequest()
-        req.selected_motor = motor
         req.identification_time_ms = test_time
 
         service_response = service(req)
@@ -275,7 +274,8 @@ rospy.init_node("motion_calibration_node", anonymous=True)
 
 statek_name = rospy.get_param("~statek_name", "statek")
 max_velocity_service_name = rospy.get_param("~max_velocity_service_name", "/real_time/motors/max_velocity_test")
-step_response_service_name = rospy.get_param("~step_response_service_name", "/real_time/motors/step_response_identification")
+right_motor_step_response_service_name = rospy.get_param("~right_motor_step_response_service_name", "/real_time/motors/right/step_response_identification")
+left_motor_step_response_service_name = rospy.get_param("~left_motor_step_response_service_name", "/real_time/motors/left/step_response_identification")
 imu_calibration_service_name = rospy.get_param("~imu_calibration_service_name", "/real_time/imu/calibrate")
 model_order = rospy.get_param("~model_order", 10)
 
@@ -300,13 +300,13 @@ max_angular_velocity = max_linear_velocity / (distance_between_wheels / 2)
 # CONTROL LOOP TUNING
 loop_rate = 30
 
-left_motor_step_response_data = step_response_identification(statek_name, step_response_service_name, 600, 0)
+left_motor_step_response_data = step_response_identification(statek_name, left_motor_step_response_service_name, 600)
 if left_motor_step_response_data == -1:
     sys.exit(-1)
 left_model = rls(model_order, left_motor_step_response_data)
 left_motor_pid = tune_pid(model_order, left_model, left_motor_step_response_data["sampling_time"])
 
-right_motor_step_response_data = step_response_identification(statek_name, step_response_service_name, 600, 1)
+right_motor_step_response_data = step_response_identification(statek_name, right_motor_step_response_service_name, 600)
 if right_motor_step_response_data == -1:
     sys.exit(-1)
 right_model = rls(model_order, right_motor_step_response_data)

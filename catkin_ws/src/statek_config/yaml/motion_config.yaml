@@ -10,7 +10,7 @@ max_angular_velocity: 0.0 # How fast UAV can rotate around it's center in [rad/s
 # closed loop control
 loop_update_rate_ms : 30
 left_motor_pid: [1.0, 0.1, 0.0] # Kp, ki, kd.
-right_motor_pid: [0.151482669125, 2.16062631491, 0.0]
+right_motor_pid: [0.772985503471, 1.50820728219, 0.0]
 
 # imu config
 imu_update_rate_ms: 30
