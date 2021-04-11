@@ -44,6 +44,14 @@ Now, you should be able to connect to the UAV and control it without wired conne
 TODO
 ## Configure serial devices
 Make sure that all serial devices are connected.
+
+### Disable UART console
+```
+systemctl stop nvgetty
+systemctl disable nvgetty
+udevadm trigger
+```
+
 ### Add yourself to dialout group
 ```
 sudo usermod -a -G dialout $USER
