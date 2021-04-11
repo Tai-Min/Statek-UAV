@@ -10,29 +10,6 @@ from statek_msgs.srv import SetMotorParamsRequest
 from statek_msgs.srv import SetImuParamsRequest
 from statek_msgs.srv import SetOdomParamsRequest
 
-def send_motor_params(namespace, param_service, params):
-    full_service_name = "/" + namespace + param_service
-    rospy.loginfo("Sending parameters to %s" % (full_service_name))
-    rospy.wait_for_service(full_service_name)
-    try:
-        service = rospy.ServiceProxy(full_service_name, SetMotorParams)
-
-        req = SetMotorParamsRequest()
-        req.loop_update_rate_ms = params["loop_update_rate_ms"]
-        req.wheel_max_angular_velocity = params["wheel_max_angular_velocity"]
-        req.kp = params["kp"]
-        req.ki = params["ki"]
-        req.kd = params["kd"]
-
-        res = service(req)
-        if res.success == False:
-            rospy.logwarn("Failed to send parameters.")
-            return False
-    except:
-        rospy.logwarn("Exception occured! Failed to send parameters.")
-        return False
-    return True
-
 def send_imu_params(namespace, param_service, params):
     full_service_name = "/" + namespace + param_service
     rospy.loginfo("Sending parameters to %s" % (full_service_name))
