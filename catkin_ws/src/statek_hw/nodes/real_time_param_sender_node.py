@@ -118,19 +118,19 @@ imu_params = {
 odom_params = {
     "wheel_radius": rospy.get_param("~wheel_radius", 0),
     "distance_between_wheels": rospy.get_param("~distance_between_wheels", 0),
-    "odom_update_rate_ms": rospy.get_param("odom_update_rate_ms", 0)
+    "odom_update_rate_ms": rospy.get_param("~odom_update_rate_ms", 0)
 }
 
 time.sleep(6)
 
 while(not send_motor_params(statek_name, left_motor_param_service_name, left_motor_params)):
     time.sleep(5)
-time.sleep(2)
+time.sleep(1)
 
 send_motor_params(statek_name, right_motor_param_service_name, right_motor_params)
-time.sleep(2)
+time.sleep(1)
 
 send_imu_params(statek_name, imu_param_service_name, imu_params)
-time.sleep(2)
+time.sleep(1)
 
-#send_odom_params(statek_name, odom_param_service_name, odom_params)
+send_odom_params(statek_name, odom_param_service_name, odom_params)

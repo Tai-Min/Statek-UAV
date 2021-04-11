@@ -24,7 +24,6 @@
             <param name="frequency" type="double" value="8"/>
             <param name="samp_rate" type="int" value="5"/>
         </node>
-
     </group>
 
     <group ns="$(arg statek_name)/stereo/">
@@ -38,7 +37,6 @@
 
         <!-- Launch depth image and point cloud generator -->
         <node name="stereo_image_proc" pkg="stereo_image_proc" type="stereo_image_proc" output="screen" respawn="true"/>
-
     </group>
 
     <!-- Reconfigure depth vision  -->
