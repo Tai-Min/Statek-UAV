@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /RobotModel1
-        - /RobotModel1/Status1
         - /TF1/Tree1
         - /Imu1
       Splitter Ratio: 0.5
@@ -143,6 +142,8 @@ Visualization Manager:
           Value: true
         statek/motors/right_link:
           Value: true
+        statek/odom/odom_link:
+          Value: true
         statek/stereo/left_link:
           Value: true
         statek/stereo/right_link:
@@ -161,28 +162,29 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        statek/base_footprint:
-          statek/base_link:
-            statek/imu/imu_link:
-              {}
-            statek/laser/laser_link:
-              {}
-            statek/motors/left_link:
-              {}
-            statek/motors/right_link:
-              {}
-            statek/stereo/left_link:
-              {}
-            statek/stereo/right_link:
-              {}
-            statek/wheels/left_back_link:
-              {}
-            statek/wheels/left_front_link:
-              {}
-            statek/wheels/right_back_link:
-              {}
-            statek/wheels/right_front_link:
-              {}
+        statek/odom/odom_link:
+          statek/base_footprint:
+            statek/base_link:
+              statek/imu/imu_link:
+                {}
+              statek/laser/laser_link:
+                {}
+              statek/motors/left_link:
+                {}
+              statek/motors/right_link:
+                {}
+              statek/stereo/left_link:
+                {}
+              statek/stereo/right_link:
+                {}
+              statek/wheels/left_back_link:
+                {}
+              statek/wheels/left_front_link:
+                {}
+              statek/wheels/right_back_link:
+                {}
+              statek/wheels/right_front_link:
+                {}
       Update Interval: 0
       Value: true
     - Class: rviz/Camera
@@ -208,7 +210,7 @@ Visualization Manager:
       Class: rviz_plugin_tutorials/Imu
       Color: 204; 51; 204
       Enabled: true
-      History Length: 5
+      History Length: 1
       Name: Imu
       Topic: /statek/real_time/imu
       Unreliable: false
@@ -247,7 +249,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: statek/base_footprint
+    Fixed Frame: statek/odom/odom_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -271,25 +273,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.5283687114715576
+      Distance: 1.92423415184021
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.07587995380163193
-        Y: 0.042243700474500656
-        Z: 0.3376021981239319
+        X: 0.2501026391983032
+        Y: 1.1207712888717651
+        Z: 0.01478646881878376
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5247942209243774
+      Pitch: 0.7397963404655457
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.124014854431152
+      Yaw: 0.24764221906661987
     Saved: ~
 Window Geometry:
   Camera:

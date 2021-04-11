@@ -17,7 +17,7 @@ namespace
 class AM4096
 {
 private:
-    TwoWire &i2c;
+    TwoWire &i2c; //!< Reference to used i2c object.
     uint8_t addr; //!< Encoder's address
 
     /**

@@ -26,6 +26,7 @@
 #include "../lib/ros_lib/statek_msgs/SetOdomParams.h"
 #include "../lib/ros_lib/nav_msgs/Odometry.h"
 #include "../lib/ros_lib/tf/transform_broadcaster.h"
+#include "../lib/ros_lib/tf/tf.h"
 
 bool imuReady = false;
 unsigned long imuUpdateRate = 0;
@@ -68,7 +69,7 @@ bool tryPublishOdom();
 void publishOdom();
 
 // Helper functions
-bool forceWheelMovement(float left, float right, unsigned long time);
+bool forceWheelMovement(float leftNormalized, float rightNormalized, unsigned long time);
 
 // SAFETY functions and variables
 bool SAFETY_serviceInProgress = false;
@@ -129,12 +130,13 @@ tf::TransformBroadcaster odomBroadcaster;
 MotorController leftMotor(LEFT_MOTOR_GPIO, LEFT_MOTOR_ENCODER_I2C_ADDRESS, true);
 MotorController rightMotor(RIGHT_MOTOR_GPIO, RIGHT_MOTOR_ENCODER_I2C_ADDRESS);
 MPU9250 imu;
-Odometry odom(leftMotor, rightMotor, imu);
+Odometry odom(leftMotor, rightMotor);
 
 void setup()
 {
     // Init ROS stuff.
     nh.initNode();
+    odomBroadcaster.init(nh);
 
     nh.subscribe(setpointsSubscriber);
     nh.advertiseService(maxVelocityTestService);
@@ -195,7 +197,7 @@ void updateROS(bool publish)
     {
         tryPublishEncoders();
         tryPublishIMU();
-        //tryPublishOdom();
+        tryPublishOdom();
     }
 }
 
@@ -241,7 +243,7 @@ bool tryUpdateHardware()
     leftMotor.tryUpdate();
     rightMotor.tryUpdate();
     tryUpdateImu();
-    //odom.tryUpdate();
+    odom.tryUpdate();
 
     return true;
 }
@@ -436,7 +438,7 @@ void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, s
     SAFETY_serviceInProgress = true;
 
     MotorController::ControlParams params = {
-        req.kp, req.ki, req.kd, req.loop_update_rate_ms, req.wheel_max_angular_velocity};
+        req.kp, req.ki, req.kd, req.smoothing_factor, req.loop_update_rate_ms, req.wheel_max_angular_velocity};
 
     leftMotor.setMotorParams(params);
 
@@ -456,7 +458,7 @@ void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, 
     SAFETY_serviceInProgress = true;
 
     MotorController::ControlParams params = {
-        req.kp, req.ki, req.kd, req.loop_update_rate_ms, req.wheel_max_angular_velocity};
+        req.kp, req.ki, req.kd, req.smoothing_factor, req.loop_update_rate_ms, req.wheel_max_angular_velocity};
 
     rightMotor.setMotorParams(params);
 
@@ -475,7 +477,8 @@ void imuCalibrationServiceCallback(const statek_msgs::RunImuCalibrationRequest &
     }
     SAFETY_serviceInProgress = true;
 
-    // Set motors to direct control.
+    // Set motors to forced normalized control.
+    // So we can move motors without any parameters set.
     MotorController::ControlMode previousMode = rightMotor.getControlMode();
     leftMotor.setControlMode(MotorController::ControlMode::DIRECT);
     rightMotor.setControlMode(MotorController::ControlMode::DIRECT);
@@ -491,7 +494,7 @@ void imuCalibrationServiceCallback(const statek_msgs::RunImuCalibrationRequest &
     imu.calibrateAccelGyro(); // Calibrate gyro.
 
     // Move around during mag calibration.
-    forceWheelMovement(leftMotor.getMaxVelocity(), -rightMotor.getMaxVelocity(), 1500);
+    forceWheelMovement(1, -1, 1500);
 
     imu.calibrateMag();
 
@@ -549,20 +552,18 @@ void setImuParamsServiceCallback(const statek_msgs::SetImuParamsRequest &req, st
 void setOdomParamsCallback(const statek_msgs::SetOdomParamsRequest &req, statek_msgs::SetOdomParamsResponse &res)
 {
     // Don't run the test when another callback is doing stuff.
-    nh.logwarn("Start.");
     if (SAFETY_serviceInProgress)
     {
         res.success = false;
         return;
     }
     SAFETY_serviceInProgress = true;
-    nh.logwarn("Bef.");
+
     odom.setOdomParams({req.wheel_radius, req.distance_between_wheels, req.odom_update_rate_ms});
-    nh.logwarn("Af.");
+
     res.success = true;
 
     SAFETY_serviceInProgress = false;
-    nh.logwarn("End.");
 }
 
 // Publisher functions.
@@ -670,7 +671,7 @@ bool tryPublishOdom()
     if ((now >= previousOdomPublishTime))
     {
         // Check if 50ms passed so we can publish odometry.
-        if (now - previousOdomPublishTime >= 50)
+        if (now - previousOdomPublishTime >= 100)
         {
             publishOdom();
             previousOdomPublishTime = now;
@@ -695,10 +696,7 @@ void publishOdom()
     odomMsg.pose.pose.position.x = odom.getX();
     odomMsg.pose.pose.position.y = odom.getY();
     odomMsg.pose.pose.position.z = 0;
-    odomMsg.pose.pose.orientation.w = imu.getQuaternionW();
-    odomMsg.pose.pose.orientation.x = imu.getQuaternionX();
-    odomMsg.pose.pose.orientation.y = imu.getQuaternionY();
-    odomMsg.pose.pose.orientation.z = imu.getQuaternionZ();
+    odomMsg.pose.pose.orientation = tf::createQuaternionFromYaw(odom.getTheta());
 
     odomMsg.twist.twist.linear.x = odom.getDx();
     odomMsg.twist.twist.linear.y = odom.getDy();
@@ -713,26 +711,24 @@ void publishOdom()
     odomTrans.transform.translation.x = odom.getX();
     odomTrans.transform.translation.y = odom.getY();
     odomTrans.transform.translation.z = 0;
-    odomTrans.transform.rotation.w = imu.getQuaternionW();
-    odomTrans.transform.rotation.x = imu.getQuaternionX();
-    odomTrans.transform.rotation.y = imu.getQuaternionY();
-    odomTrans.transform.rotation.z = imu.getQuaternionZ();
+    odomTrans.transform.rotation = tf::createQuaternionFromYaw(odom.getTheta());
+
+    odomBroadcaster.sendTransform(odomTrans);
 
     seq++;
 }
 
 // Helpers
-bool forceWheelMovement(float left, float right, unsigned long time)
+bool forceWheelMovement(float leftNormalized, float rightNormalized, unsigned long time)
 {
-    if ((leftMotor.getMaxVelocity() == 0 && left != 0) || (rightMotor.getMaxVelocity() == 0 && right != 0))
+    if ((leftMotor.getMaxVelocity() == 0 && leftNormalized != 0) || (rightMotor.getMaxVelocity() == 0 && rightNormalized != 0))
     {
         nh.logerror("Can't force movement of the wheels (Max velocity not set).");
         return false;
     }
 
-    // Rotate around for mag calibration.
-    leftMotor.requestVelocity(left);
-    rightMotor.requestVelocity(right);
+    leftMotor.requestVelocity(leftNormalized * leftMotor.getMaxVelocity());
+    rightMotor.requestVelocity(rightNormalized * rightMotor.getMaxVelocity());
 
     // Wait for wheels a bit to start moving.
     unsigned long start = millis();

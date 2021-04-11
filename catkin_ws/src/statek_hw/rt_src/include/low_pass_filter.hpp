@@ -3,10 +3,10 @@
 class LowPassFilter
 {
 private:
-  float previousOutput = 0;
+  float previousOutput = 0; //!< Object's memory.
 
 public:
-  const float smoothingFactor = 1;
+  float smoothingFactor = 1; //!< Smoothing factor between 0 and 1.
 
   /**
    * @brief Class constructor.
@@ -21,8 +21,20 @@ public:
    */
   float read(float input)
   {
-    float output = previousOutput + smoothingFactor * (input - previousOutput);
-    previousOutput = output;
+    float output = this->previousOutput + this->smoothingFactor * (input - this->previousOutput);
+    this->previousOutput = output;
     return output;
+  }
+
+  /**
+   * @brief Set smoothing factor.
+   * @param _sf Smoothing factor to set.
+   */
+  void setSmoothingFactor(float _sf){
+    if(_sf < 0)
+      _sf = 0;
+    if(_sf > 1)
+      _sf = 1;
+    this->smoothingFactor = _sf;
   }
 };

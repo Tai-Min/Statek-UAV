@@ -2,7 +2,7 @@
 
 MotorController::MotorController(const Motor::Gpio &motorGpio, uint8_t encoderAddr, bool _reverseEncoder, TwoWire &encoderI2c)
     : motor(motorGpio), encoder(encoderAddr, encoderI2c), reverseEncoder(_reverseEncoder),
-      fakeInertia(0.025), pid(-1, 1) {}
+      fakeInertia(0.18), pid(-1, 1) {}
 
 MotorController::EncoderState MotorController::getCurrentEncoderState(bool &ok) const
 {
@@ -47,10 +47,8 @@ MotorController::EncoderState MotorController::getCurrentEncoderState(bool &ok) 
         currentEncoderState.velocity *= -1;
     }
 
-    // Use velocity and position to estimate acceleration
-    // Compute simple mean of estimations
     // Maybe add Kalman filter later?
-    float accelerationFromPosition = currentEncoderState.position - fixedLatestPosition - this->latestEncoderState.velocity * this->loopUpdateRate / (float)1000.0;
+    //float accelerationFromPosition = currentEncoderState.position - fixedLatestPosition - this->latestEncoderState.velocity * this->loopUpdateRate / (float)1000.0;
     float accelerationFromVelocity = (currentEncoderState.velocity - this->latestEncoderState.velocity) * this->loopUpdateRate / (float)1000.0;
     //currentEncoderState.acceleration = (accelerationFromPosition + accelerationFromVelocity) / 2.0;
     currentEncoderState.acceleration = accelerationFromVelocity;
@@ -140,7 +138,7 @@ void MotorController::start()
     this->motor.enable();
 }
 
-bool MotorController::isReady()
+bool MotorController::isReady() const
 {
     return this->ready;
 }
@@ -148,9 +146,7 @@ bool MotorController::isReady()
 MotorController::FailCode MotorController::tryUpdate()
 {
     // Something went wrong / controller has not received any params.
-    if (this->loopUpdateRate <= 0)
-        return LOOP_RATE_ZERO;
-    if(!this->ready)
+    if (!this->ready)
         return MOTOR_NOT_READY;
 
     unsigned long now = millis();
@@ -197,10 +193,16 @@ void MotorController::setMotorParams(const ControlParams &params)
         this->pid.setSamplingTime(params.loopUpdateRate / (float)1000.0);
     }
 
+    if (params.smoothingFactor >= 0)
+        this->fakeInertia.setSmoothingFactor(params.smoothingFactor);
+
     if (params.maxVelocity >= 0)
         this->maxVelocity = params.maxVelocity;
 
-    this->ready = true;
+    if (this->maxVelocity != 0 && this->loopUpdateRate != 0)
+        this->ready = true;
+    else
+        this->ready = false;
 }
 
 void MotorController::setControlMode(ControlMode cm)
@@ -212,17 +214,15 @@ void MotorController::setControlMode(ControlMode cm)
         this->movingAverageSampleTracker = 0;
     }
 
+    // Reset setpoint for safety.
+    this->setpoint = 0;
+
     this->controlMode = cm;
 }
 
-float MotorController::getRequestedVelocity()
+float MotorController::getRequestedVelocity() const
 {
     return this->setpoint;
-}
-
-float MotorController::getMaxVelocity()
-{
-    return this->maxVelocity;
 }
 
 MotorController::ControlMode MotorController::getControlMode() const
@@ -233,6 +233,11 @@ MotorController::ControlMode MotorController::getControlMode() const
 MotorController::EncoderState MotorController::getLatestEncoderState() const
 {
     return this->latestEncoderState;
+}
+
+float MotorController::getMaxVelocity() const
+{
+    return this->maxVelocity;
 }
 
 float MotorController::getMaxVelocityTestResult() const

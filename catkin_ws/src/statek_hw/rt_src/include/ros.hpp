@@ -6,5 +6,5 @@
 namespace ros
 {
     // Publishers, subscribers, input buffer, output buffer
-    typedef NodeHandle_<ArduinoHardware, 12, 12, 1024, 1024> NodeHandle;
+    typedef NodeHandle_<ArduinoHardware, 20, 20, 1024, 1024> NodeHandle;
 }
