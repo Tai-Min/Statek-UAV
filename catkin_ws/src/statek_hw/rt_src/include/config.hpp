@@ -1,5 +1,12 @@
 #pragma once
 
+/*
+The only file you should touch.
+
+* Topics musn't have namespace.
+* Tf links must have namespace.
+*/
+
 #define D_SDA PB9
 #define D_SCL PB8
 

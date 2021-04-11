@@ -192,6 +192,10 @@ void MotorController::setMotorParams(const ControlParams &params)
         this->loopUpdateRate = params.loopUpdateRate;
         this->pid.setSamplingTime(params.loopUpdateRate / (float)1000.0);
     }
+    else{
+        this->loopUpdateRate = 0;
+        this->pid.setSamplingTime(0);
+    }
 
     if (params.smoothingFactor >= 0)
         this->fakeInertia.setSmoothingFactor(params.smoothingFactor);

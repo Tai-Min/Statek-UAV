@@ -6,37 +6,47 @@
 
 class Odometry
 {
+    /**
+     * @brief Structure for odometry params.
+     */
     struct OdomParams
     {
         float wheelRadius;
         float distanceBetweenWheels;
-        unsigned long updateRate;
+        unsigned long updateRate; //!< In milliseconds.
     };
 
 private:
-    bool ready = false;
-    bool firstUpdate = true;
+    bool ready = false; //!< Whether the loop should start updating.
+    bool firstUpdate = true; //!< Whether this is first update of the odometry.
 
     // Odom stuff.
-    float x = 0, y = 0, theta = 0;
-    float dx = 0, dy = 0, dtheta = 0;
+    float x = 0; //!< X position.
+    float y = 0; //!< Y position.
+    float theta = 0; //!< Rotation in radians.
+    float dx = 0; //!< Latest change in X.
+    float dy = 0; //!< Latest change in Y.
+    float dtheta = 0; //!< Latest rotation change.
 
     // Parameters.
     float wheelRadius = 0;
     float distanceBetweenWheels = 0;
-    unsigned long updateRate;
+    unsigned long updateRate; //!< In milliseconds.
 
     // Memory of previous wheel positions in radians.
-    float latestLeftWheelPosition = 0;
-    float latestRightWheelPosition = 0;
+    float latestLeftWheelPosition = 0; //!< To compute distance traveled since last update.
+    float latestRightWheelPosition = 0; //!< To compute distance traveled since last update.
 
     // Memory for update loop.
-    unsigned long previousUpdateTime;
+    unsigned long previousUpdateTime; //!< Tracks update time.
 
     // Motors for odometry.
-    MotorController &leftMotor;
-    MotorController &rightMotor;
+    const MotorController &leftMotor; //!< Reference to left motor object.
+    const MotorController &rightMotor; //!< Reference to right motor object.
 
+    /**
+     * @brief Update odometry.
+     */
     void update()
     {
         if (this->firstUpdate)
@@ -81,6 +91,15 @@ private:
         this->latestRightWheelPosition = currentRightWheelPosition;
     }
 
+    /**
+     * @brief Fixes given latest wheel position in case there was unsafe rotation
+     * that resulted in encoder's overflow (i.e from 0.1 radians to 6.12 radians).
+     * This function changest latest wheel position to accommodate that. 
+     * In above example it would return latest position as ~6.38.
+     * @param current Newest position.
+     * @param latest Latest position
+     * @return Latest position with unsafe rotation fixed.
+     */
     static float fixLatestWheelPosition(float current, float latest)
     {
         float result = latest;
@@ -101,23 +120,40 @@ private:
         return result;
     }
 
+    /**
+     * @brief Changes some angular distance to linear distance travelled by the wheel.
+     * @param rad Distance travelled by wheel in radians.
+     * @return Distance travelled by wheel in meters.
+     */
     float angularDistanceToLinear(float rad)
     {
         return rad * this->wheelRadius;
     }
 
 public:
-    Odometry(MotorController &_leftMotor, MotorController &_rightMotor)
+    /**
+     * @brief Class constructor.
+     * @param _leftMotor Left motor reference.
+     * @param _rightMotor Right motor reference.
+     */
+    Odometry(const MotorController &_leftMotor, const MotorController &_rightMotor)
         : leftMotor(_leftMotor), rightMotor(_rightMotor) {}
 
+    /**
+     * @brief Prepare some stuff for odometry.
+     */
     void start()
     {
         this->previousUpdateTime = millis();
     }
 
+    /**
+     * @brief Try to update odometry. Can fail if not enough time has passed since last update.
+     * @return False if odometry was not updated. True otherwise.
+     */
     bool tryUpdate()
     {
-        if (!this->ready || this->updateRate == 0)
+        if (!this->ready)
             return false;
 
         unsigned long now = millis();
@@ -139,15 +175,26 @@ public:
         return false;
     }
 
+    /**
+     * @brief Check whether odometry has all required params and is ready to update.
+     * @return True if odom ready.
+     */
     bool isReady()
     {
         return this->ready;
     }
 
+    /**
+     * @brief Set all necessady odometry parameters.
+     * 
+     * Floats with negative value are ignored.
+     * This function sets the ready flag if all of the values are greater than 0.
+     * Otherwise it resets this flag.
+     * @param params Odometry parameters.
+     */
     void setOdomParams(const OdomParams &params)
     {
-        if (params.updateRate > 0)
-            this->updateRate = params.updateRate;
+        this->updateRate = params.updateRate;
 
         if (params.wheelRadius >= 0)
             this->wheelRadius = params.wheelRadius;
@@ -161,32 +208,53 @@ public:
             this->ready = false;
     };
 
-    float getX()
+    /**
+     * @brief Get X position from odometry.
+     * @return X.
+     */
+    float getX() const
     {
         return this->x;
     }
 
-    float getY()
+    /**
+     * @brief Get Y position from odometry.
+     * @return Y.
+     */
+    float getY() const
     {
         return this->y;
     }
 
-    float getTheta()
+    /**
+     * @brief Get rotation from odometry.
+     * @return Rotation in radians.
+     */
+    float getTheta() const
     {
         return this->theta;
     }
 
-    float getDx()
+    /**
+     * @brief Get velocity in X direction.
+     */
+    float getDx() const
     {
         return this->dx / this->updateRate;
     }
 
-    float getDy()
+    /**
+     * @brief Get velocity in Y direction.
+     */
+    float getDy() const
     {
         return this->dy / this->updateRate;
     }
 
-    float getDtheta()
+    /**
+     * @brief Get rational velocity.
+     */
+    float getDtheta() const
     {
         return this->dtheta / this->updateRate;
     }

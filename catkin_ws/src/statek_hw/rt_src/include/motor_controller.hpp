@@ -31,7 +31,7 @@ public:
         MAX_VELOCITY_TEST,   //!< Spin with max CV and compute average speed.
         STEP_IDENTIFICATION, //!< Just spin with max CV.
         DIRECT,              //!< Open loop control.
-        PID_CONTROL,         //!< Closed loop control.
+        PID_CONTROL         //!< Closed loop control.
     };
 
     /**
@@ -132,7 +132,7 @@ public:
     bool isReady() const;
 
     /**
-     * @brief Try update the control loop.
+     * @brief Try update the control loop. Can fail if not enough time has passed since last update or due to hardware failure.
      * @return MotorController::FailCode indicating what happened during this function.
      */
     FailCode tryUpdate();
@@ -145,7 +145,8 @@ public:
 
     /**
      * @brief Set all motor params.
-     * If any of the given params is less than zero then it will be set to 0.
+     * 
+     * Floats with negative value are ignored.
      * This function sets ready flag if maxVelocity and loopUpdateRate are bigger than 0.
      * Otherwise it resets this flag.
      * @param params Params to set.

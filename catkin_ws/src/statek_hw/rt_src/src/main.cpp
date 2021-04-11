@@ -1,13 +1,9 @@
 #include "../include/config.hpp"
 
 #include <Arduino.h>
-
 #include <Wire.h>
-
 #include <MPU9250.h>
-
 #include "../include/motor_controller.hpp"
-
 #include "../include/odometry.hpp"
 
 #include "../include/ros.hpp"
@@ -28,56 +24,200 @@
 #include "../lib/ros_lib/tf/transform_broadcaster.h"
 #include "../lib/ros_lib/tf/tf.h"
 
-bool imuReady = false;
-unsigned long imuUpdateRate = 0;
+bool imuReady = false; //!< Whether IMU is ready.
+unsigned long imuUpdateRate = 0; //!< IMU's sampling time.
 
+/**
+ * @brief Arduino's setup function.
+ * 
+ * Sets all ROS services and prepares all hardware.
+ */
 void setup();
+
+/**
+ * @brief Arduino's loop function.
+ */
 void loop();
+
+/**
+ * @brief Update all the stuff!
+ * 
+ * Updates ROS, hardware and SAFETY.
+ * @param rosPublish Whether allow ROS to publish data. Should be set to false when called from some service.
+ */
 void update(bool rosPublish = true);
+
+/**
+ * @brief Update ROS stuff.
+ * @param publish Whether ROS is allowed to publish data.
+ */
 void updateROS(bool publish = true);
+
+/**
+ * @brief Whether hardware stuff is ready, all params loaded etc.
+ * @return True if ready.
+ */
 bool hardwareReady();
+
+/**
+ * @brief Try update IMU readings. Can fail if not enough time has passed since last update.
+ * @return True if IMU managed to update.
+ */
 bool tryUpdateImu();
+
+/**
+ * @brief Try update all of the hardware.
+ * @return True if hardware COULD update. This does not mean that the hardware updated.
+ */
 bool tryUpdateHardware();
+
+/**
+ * @brief Run all safety measurements.
+ */
 void SAFETY();
 
 // Callbacks for subscribers.
+/**
+ * @brief Called when ROS serial received new setpoint values from master.
+ * @param setpoints Setpoints for both wheels.
+ */
 void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints);
 
 // Callbacks for services.
+/**
+ * @brief Called when user wants to check max velocity. Performs max velocity test for given time.
+ * @param req Request structure.
+ * @param res Response structure.
+ */
 void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &req, statek_msgs::RunVelocityTestResponse &res);
+
+/**
+ * @brief Called when user wants to identify some motor's dynamics. Collects 100 velocity step response samples for some time.
+ * @param mot Motor to perform identification on.
+ * @param req Request structure.
+ * @param res Response structure.
+ */
 void stepResponseIdentificationServiceCallback(MotorController &mot, const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res);
+
+/**
+ * @brief Perform step response identification on left motor.
+ * @param req Request structure.
+ * @param res Response structure.
+ */
 void leftMotorStepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res);
+
+/**
+ * @brief Perform step response identification on right motor.
+ * @param req Request structure.
+ * @param res Response structure.
+ */
 void rightMotorStepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res);
+
+/**
+ * @brief Called when user wants to switch to open loop control. Sets open loop control.
+ * @param req Request structure.
+ * @param res Response structure.
+ */
 void setDirectControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
+
+/**
+ * @brief Called when user wants to switch to closed loop control. Sets closed loop control.
+ * @param req Request structure.
+ * @param res Response structure.
+ */
 void setClosedLoopControlServiceCallback(const std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
+
+/**
+ * @brief Called when user wants to set left motors params. Sets left motor's params.
+ * @param req Request structure.
+ * @param res Response structure.
+ */
 void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res);
+
+/**
+ * @brief Called when user wants to set right motors params. Sets right motor's params.
+ * @param req Request structure.
+ * @param res Response structure.
+ */
 void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res);
 
+/**
+ * @brief Called when user wants to calibrate IMU. Performs IMU calibration.
+ * 
+ * This function requires that motors have some non zero max velocity!
+ * @param req Request structure.
+ * @param res Response structure.
+ */
 void imuCalibrationServiceCallback(const statek_msgs::RunImuCalibrationRequest &req, statek_msgs::RunImuCalibrationResponse &res);
+
+/**
+ * @brief Called when user wants to set IMU's parameters. Sets IMU's parameters.
+ * @param req Request structure.
+ * @param res Response structure.
+ */
 void setImuParamsServiceCallback(const statek_msgs::SetImuParamsRequest &req, statek_msgs::SetImuParamsResponse &res);
 
+/**
+ * @brief Called when user wants to set odom's parameters. Sets odom's parameters.
+ * @param req Request structure.
+ * @param res Response structure.
+ */
 void setOdomParamsCallback(const statek_msgs::SetOdomParamsRequest &req, statek_msgs::SetOdomParamsResponse &res);
 
 // Publisher functions
+/**
+ * @brief Try to publish encoder's state. Can fail if not enough time has passed since last update.
+ * @return True on success.
+ */
 bool tryPublishEncoders();
+
+/**
+ * @brief Publish encoder's state to ROS.
+ */
 void publishEncoders();
 
+/**
+ * @brief Try to publish IMU's state. Can fail if not enough time has passed since last update.
+ * @return True on success.
+ */
 bool tryPublishIMU();
+
+/**
+ * @brief Publish IMU's state to ROS.
+ */
 void publishIMU();
 
+/**
+ * @brief Try to publish odom's state. Can fail if not enough time has passed since last update.
+ * @return True on success.
+ */
 bool tryPublishOdom();
+
+/**
+ * @brief Publish odom's state to ROS along with tf.
+ */
 void publishOdom();
 
 // Helper functions
+/**
+ * @brief Force some velocities on both motors and wait for them to accelerate to these velocities.
+ * 
+ * This functions requires max velocity on both motors to be greater than zero.
+ * This function should be called by services not tied to the motors that require some motor movement (i.e mag calibration).
+ * @param leftNormalized Value between -1 (max speed reverse) and 1 (max speed forward).
+ * @param rightNormalized Value between -1 (max speed reverse) and 1 (max speed forward).
+ * @param time How long to wait for motors to accelerate to given speed.
+ * @return True on success.
+ */
 bool forceWheelMovement(float leftNormalized, float rightNormalized, unsigned long time);
 
 // SAFETY functions and variables
-bool SAFETY_serviceInProgress = false;
-bool SAFETY_stopMotorsFlag = false;
-int SAFETY_motorsCommunicationFlowSupervisor();
+bool SAFETY_serviceInProgress = false; //!< Should be set to true during service callback and to false at the end of it. Every service callback should firstly check whether this flag is set to true and if so then fail.
+bool SAFETY_stopMotorsFlag = false; //!< Any function related to motor movement should reset this flag as frequent as possible. If not, safety measurements will stop the motors.
+int SAFETY_motorsCommunicationFlowSupervisor(); //!< Check whether there is active communication flow between ROS master and this uC. 
 
 // ROS stuff
-ros::NodeHandle nh;
+ros::NodeHandle nh; //!< Manage all ROS stuff.
 
 statek_msgs::Velocity setpoints;
 ros::Subscriber<statek_msgs::Velocity>
@@ -542,7 +682,10 @@ void setImuParamsServiceCallback(const statek_msgs::SetImuParamsRequest &req, st
     imu.setMagneticDeclination(req.magnetic_declination);
 
     imuUpdateRate = req.imu_update_rate_ms;
-    imuReady = true;
+    if (req.imu_update_rate_ms > 0)
+        imuReady = true;
+    else
+        imuReady = 0;
 
     res.success = true;
 
@@ -570,6 +713,9 @@ void setOdomParamsCallback(const statek_msgs::SetOdomParamsRequest &req, statek_
 bool tryPublishEncoders()
 {
     static unsigned long previousEncoderPublishTime = millis();
+
+    if (!leftMotor.isReady() || !rightMotor.isReady())
+        return false;
 
     unsigned long now = millis();
     // Handle clock overflow.
@@ -617,6 +763,9 @@ void publishEncoders()
 bool tryPublishIMU()
 {
     static unsigned long previousImuPublishTime = millis();
+
+    if (!imuReady)
+        return false;
 
     unsigned long now = millis();
     // Handle clock overflow.
@@ -666,11 +815,14 @@ bool tryPublishOdom()
 {
     static unsigned long previousOdomPublishTime = millis();
 
+    if (!odom.isReady())
+        return false;
+
     unsigned long now = millis();
     // Handle clock overflow.
     if ((now >= previousOdomPublishTime))
     {
-        // Check if 50ms passed so we can publish odometry.
+        // Check if 100ms passed so we can publish odometry.
         if (now - previousOdomPublishTime >= 100)
         {
             publishOdom();
@@ -723,7 +875,7 @@ bool forceWheelMovement(float leftNormalized, float rightNormalized, unsigned lo
 {
     if ((leftMotor.getMaxVelocity() == 0 && leftNormalized != 0) || (rightMotor.getMaxVelocity() == 0 && rightNormalized != 0))
     {
-        nh.logerror("Can't force movement of the wheels (Max velocity not set).");
+        nh.logerror("Can't force movement of the wheels (wheel_max_angular_velocity not set).");
         return false;
     }
 
