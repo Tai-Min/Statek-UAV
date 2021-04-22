@@ -3,7 +3,7 @@
     <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
 
     <!-- Launch static transform publisher -->
-    <include file="$(find statek_tf)/launch/transform_publishers.launch">
+    <include file="$(find statek_hw)/launch/transform_publishers.launch">
         <arg name="statek_name" value="$(arg statek_name)"/>
     </include>
 
@@ -23,6 +23,14 @@
             <param name="ignore_array" type="string" value="" />
             <param name="frequency" type="double" value="8"/>
             <param name="samp_rate" type="int" value="5"/>
+        </node>
+    </group>
+
+    <group ns="$(arg statek_name)/gps/">
+        <node name="gps_node" pkg="nmea_navsat_driver" type="nmea_serial_driver" output="screen" respawn="true">
+            <param name="port" type="string" value="/dev/ttyTHS1"/>
+            <param name="baud" type="int" value="9600"/>
+            <param name="frame_id" type="string" value="$(arg statek_name)/gps"/>
         </node>
     </group>
 

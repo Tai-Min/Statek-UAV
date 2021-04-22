@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   image_transport
   cv_bridge
+  message_generation
 )
 
 find_package(OpenCV)
@@ -15,6 +16,27 @@ include_directories(${roscpp_INCLUDE_DIRS})
 include_directories(${std_msgs_INCLUDE_DIRS})
 include_directories(${OpenCV_INCLUDE_DIRS})
 
+add_message_files(
+   FILES
+   Encoder.msg
+   Velocity.msg
+)
+
+add_service_files(
+  FILES
+  RunImuCalibration.srv
+  RunModelIdentification.srv
+  RunVelocityTest.srv
+  SetImuParams.srv
+  SetMotorParams.srv
+  SetOdomParams.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
 catkin_package(
     DEPENDS
     rospy
@@ -22,6 +44,7 @@ catkin_package(
     std_msgs
     image_transport
     cv_bridge
+    message_runtime
 )
 
 include_directories(

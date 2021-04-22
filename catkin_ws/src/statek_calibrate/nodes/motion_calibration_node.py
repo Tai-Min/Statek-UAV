@@ -30,29 +30,6 @@ def to_squared_array_string(items):
     result = "[" + ', '.join(map(str, items)) + "]"
     return result
 
-def send_motor_params(namespace, param_service, params):
-    full_service_name = "/" + namespace + param_service
-    rospy.loginfo("Sending parameters to %s" % (full_service_name))
-    rospy.wait_for_service(full_service_name)
-    try:
-        service = rospy.ServiceProxy(full_service_name, SetMotorParams)
-
-        req = SetMotorParamsRequest()
-        req.loop_update_rate_ms = params["loop_update_rate_ms"]
-        req.wheel_max_angular_velocity = params["wheel_max_angular_velocity"]
-        req.kp = params["kp"]
-        req.ki = params["ki"]
-        req.kd = params["kd"]
-
-        res = service(req)
-        if res.success == False:
-            rospy.logwarn("Failed to send parameters.")
-            return False
-    except:
-        rospy.logwarn("Exception occured! Failed to send parameters.")
-        return False
-    return True
-
 def velocity_test(namespace, service_name, test_time):
     print("Starting velocity test...")
     time.sleep(1)
@@ -299,14 +276,15 @@ max_angular_velocity = max_linear_velocity / (distance_between_wheels / 2)
 
 # CONTROL LOOP TUNING
 loop_rate = 30
+smoothing_factor = 0.19
 
-left_motor_step_response_data = step_response_identification(statek_name, left_motor_step_response_service_name, 600)
+left_motor_step_response_data = step_response_identification(statek_name, left_motor_step_response_service_name, 1000)
 if left_motor_step_response_data == -1:
     sys.exit(-1)
 left_model = rls(model_order, left_motor_step_response_data)
 left_motor_pid = tune_pid(model_order, left_model, left_motor_step_response_data["sampling_time"])
 
-right_motor_step_response_data = step_response_identification(statek_name, right_motor_step_response_service_name, 600)
+right_motor_step_response_data = step_response_identification(statek_name, right_motor_step_response_service_name, 1000)
 if right_motor_step_response_data == -1:
     sys.exit(-1)
 right_model = rls(model_order, right_motor_step_response_data)
@@ -335,6 +313,7 @@ max_angular_velocity: {max_angular_velocity} # How fast UAV can rotate around it
 
 # closed loop control
 loop_update_rate_ms : {loop_rate}
+smoothing_factor: {smoothing_factor}
 left_motor_pid: {left_motor_pid} # Kp, ki, kd.
 right_motor_pid: {right_motor_pid}
 
@@ -354,6 +333,7 @@ odom_update_rate_ms: {odom_update_rate_ms}
            max_linear_velocity=max_linear_velocity,
            max_angular_velocity=max_angular_velocity,
            loop_rate=loop_rate,
+           smoothing_factor=smoothing_factor,
            left_motor_pid=to_squared_array_string(left_motor_pid),
            right_motor_pid=to_squared_array_string(right_motor_pid),
            imu_update_rate_ms=imu_update_rate_ms,

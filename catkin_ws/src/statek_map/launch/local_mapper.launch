@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
+
+    <group ns="$(arg statek_name)/map/">
+        <!-- Launch camera driver -->
+        <node name="local_mapper_node" pkg="statek_map" type="static_map_generator_node" output="screen" respawn="true">
+            <param name="statek_name" value="$(arg statek_name)"/>
+        </node>
+    </group>
+
+</launch>

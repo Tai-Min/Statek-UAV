@@ -12,7 +12,7 @@
 
     <group ns="$(arg statek_name)/tf">
         <!-- base link to encoder and wheel links  -->
-        <node pkg="statek_tf" type="encoders_wheels_transforms_publisher.py" name="encoders_wheels_transforms_publisher" respawn="true">
+        <node pkg="statek_hw" type="encoders_wheels_transforms_publisher.py" name="encoders_wheels_transforms_publisher" respawn="true">
             <param name="statek_name" type="string" value="$(arg statek_name)" />
 
             <param name="left_encoder_topic" value="/real_time/motors/left/encoder"/>

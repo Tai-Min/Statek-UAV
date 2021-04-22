@@ -4,6 +4,6 @@
 
     <param name="$(arg statek_name)/robot_description" command="$(find xacro)/xacro $(find statek_config)/urdf/robot_description.urdf"/>
 
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find statek_rviz)/rviz/view.rviz"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find statek_rviz)/rviz/statek.rviz"/>
 
 </launch>
