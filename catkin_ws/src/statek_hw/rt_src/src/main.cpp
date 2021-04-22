@@ -24,7 +24,7 @@
 #include "../lib/ros_lib/tf/transform_broadcaster.h"
 #include "../lib/ros_lib/tf/tf.h"
 
-bool imuReady = false; //!< Whether IMU is ready.
+bool imuReady = false;           //!< Whether IMU is ready.
 unsigned long imuUpdateRate = 0; //!< IMU's sampling time.
 
 /**
@@ -212,9 +212,9 @@ void publishOdom();
 bool forceWheelMovement(float leftNormalized, float rightNormalized, unsigned long time);
 
 // SAFETY functions and variables
-bool SAFETY_serviceInProgress = false; //!< Should be set to true during service callback and to false at the end of it. Every service callback should firstly check whether this flag is set to true and if so then fail.
-bool SAFETY_stopMotorsFlag = false; //!< Any function related to motor movement should reset this flag as frequent as possible. If not, safety measurements will stop the motors.
-int SAFETY_motorsCommunicationFlowSupervisor(); //!< Check whether there is active communication flow between ROS master and this uC. 
+bool SAFETY_serviceInProgress = false;          //!< Should be set to true during service callback and to false at the end of it. Every service callback should firstly check whether this flag is set to true and if so then fail.
+bool SAFETY_stopMotorsFlag = false;             //!< Any function related to motor movement should reset this flag as frequent as possible. If not, safety measurements will stop the motors.
+int SAFETY_motorsCommunicationFlowSupervisor(); //!< Check whether there is active communication flow between ROS master and this uC.
 
 // ROS stuff
 ros::NodeHandle nh; //!< Manage all ROS stuff.
@@ -269,7 +269,9 @@ tf::TransformBroadcaster odomBroadcaster;
 
 MotorController leftMotor(LEFT_MOTOR_GPIO, LEFT_MOTOR_ENCODER_I2C_ADDRESS, true);
 MotorController rightMotor(RIGHT_MOTOR_GPIO, RIGHT_MOTOR_ENCODER_I2C_ADDRESS);
+
 MPU9250 imu;
+
 Odometry odom(leftMotor, rightMotor);
 
 void setup()
@@ -315,7 +317,12 @@ void setup()
     rightMotor.start();
     odom.start();
 
-    imu.setup(IMU_I2C_ADDRESS);
+    MPU9250Setting settings;
+    settings.accel_fs_sel = ACCEL_FS_SEL::A2G;
+    settings.gyro_fs_sel = GYRO_FS_SEL::G250DPS;
+    settings.mag_output_bits = MAG_OUTPUT_BITS::M16BITS;
+    settings.fifo_sample_rate = FIFO_SAMPLE_RATE::SMPL_125HZ;
+    imu.setup(IMU_I2C_ADDRESS, settings);
 }
 
 void loop()
@@ -679,7 +686,10 @@ void setImuParamsServiceCallback(const statek_hw::SetImuParamsRequest &req, stat
     imu.setGyroBias(req.gyro_bias[0], req.gyro_bias[1], req.gyro_bias[2]);
     imu.setMagBias(req.mag_bias[0], req.mag_bias[1], req.mag_bias[2]);
     imu.setMagScale(req.mag_scale[0], req.mag_scale[1], req.mag_scale[2]);
-    imu.setMagneticDeclination(req.magnetic_declination);
+
+    int degree = req.magnetic_declination;
+    float minute = (req.magnetic_declination - degree) * 10;
+    imu.setMagneticDeclination((float)(degree + minute / 60.0));
 
     imuUpdateRate = req.imu_update_rate_ms;
     if (req.imu_update_rate_ms > 0)
@@ -802,9 +812,9 @@ void publishIMU()
     imuMsg.angular_velocity.y = imu.getGyroY() * M_PI / 180;
     imuMsg.angular_velocity.z = imu.getGyroZ() * M_PI / 180;
 
-    imuMsg.linear_acceleration.x = imu.getAccX() / 9.81;
-    imuMsg.linear_acceleration.y = imu.getAccY() / 9.81;
-    imuMsg.linear_acceleration.z = imu.getAccZ() / 9.81;
+    imuMsg.linear_acceleration.x = imu.getLinearAccX() / 1000 * 9.8066; // From mg to m/s^2.
+    imuMsg.linear_acceleration.y = imu.getLinearAccY() / 1000 * 9.8066;
+    imuMsg.linear_acceleration.z = imu.getLinearAccZ() / 1000 * 9.8066;
 
     imuPublisher.publish(&imuMsg);
 
