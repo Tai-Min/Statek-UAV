@@ -72,7 +72,7 @@ private:
         float rightWheelLinearDistancePassed = this->angularDistanceToLinear(currentRightWheelPosition - this->latestRightWheelPosition);
 
         float centerLinearDistancePassed = (leftWheelLinearDistancePassed + rightWheelLinearDistancePassed) / 2.0;
-        this->dtheta = (leftWheelLinearDistancePassed + rightWheelLinearDistancePassed) / distanceBetweenWheels;
+        this->dtheta = (rightWheelLinearDistancePassed - leftWheelLinearDistancePassed) / distanceBetweenWheels;
 
         // Simple Pythagorean angle
         // Assuming that our update time is small enough,

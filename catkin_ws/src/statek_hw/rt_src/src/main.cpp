@@ -8,18 +8,18 @@
 
 #include "../include/ros.hpp"
 
-#include "../lib/ros_lib/statek_msgs/Velocity.h"
-#include "../lib/ros_lib/statek_msgs/Encoder.h"
-#include "../lib/ros_lib/statek_msgs/RunVelocityTest.h"
-#include "../lib/ros_lib/statek_msgs/SetMotorParams.h"
-#include "../lib/ros_lib/statek_msgs/RunModelIdentification.h"
+#include "../lib/ros_lib/statek_hw/Velocity.h"
+#include "../lib/ros_lib/statek_hw/Encoder.h"
+#include "../lib/ros_lib/statek_hw/RunVelocityTest.h"
+#include "../lib/ros_lib/statek_hw/SetMotorParams.h"
+#include "../lib/ros_lib/statek_hw/RunModelIdentification.h"
 #include "../lib/ros_lib/std_srvs/Trigger.h"
 
-#include "../lib/ros_lib/statek_msgs/SetImuParams.h"
-#include "../lib/ros_lib/statek_msgs/RunImuCalibration.h"
+#include "../lib/ros_lib/statek_hw/SetImuParams.h"
+#include "../lib/ros_lib/statek_hw/RunImuCalibration.h"
 #include "../lib/ros_lib/sensor_msgs/Imu.h"
 
-#include "../lib/ros_lib/statek_msgs/SetOdomParams.h"
+#include "../lib/ros_lib/statek_hw/SetOdomParams.h"
 #include "../lib/ros_lib/nav_msgs/Odometry.h"
 #include "../lib/ros_lib/tf/transform_broadcaster.h"
 #include "../lib/ros_lib/tf/tf.h"
@@ -81,7 +81,7 @@ void SAFETY();
  * @brief Called when ROS serial received new setpoint values from master.
  * @param setpoints Setpoints for both wheels.
  */
-void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints);
+void setpointsSubscriberCallback(const statek_hw::Velocity &setpoints);
 
 // Callbacks for services.
 /**
@@ -89,7 +89,7 @@ void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints);
  * @param req Request structure.
  * @param res Response structure.
  */
-void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &req, statek_msgs::RunVelocityTestResponse &res);
+void maxVelocityTestServiceCallback(const statek_hw::RunVelocityTestRequest &req, statek_hw::RunVelocityTestResponse &res);
 
 /**
  * @brief Called when user wants to identify some motor's dynamics. Collects 100 velocity step response samples for some time.
@@ -97,21 +97,21 @@ void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &r
  * @param req Request structure.
  * @param res Response structure.
  */
-void stepResponseIdentificationServiceCallback(MotorController &mot, const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res);
+void stepResponseIdentificationServiceCallback(MotorController &mot, const statek_hw::RunModelIdentificationRequest &req, statek_hw::RunModelIdentificationResponse &res);
 
 /**
  * @brief Perform step response identification on left motor.
  * @param req Request structure.
  * @param res Response structure.
  */
-void leftMotorStepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res);
+void leftMotorStepResponseIdentificationServiceCallback(const statek_hw::RunModelIdentificationRequest &req, statek_hw::RunModelIdentificationResponse &res);
 
 /**
  * @brief Perform step response identification on right motor.
  * @param req Request structure.
  * @param res Response structure.
  */
-void rightMotorStepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res);
+void rightMotorStepResponseIdentificationServiceCallback(const statek_hw::RunModelIdentificationRequest &req, statek_hw::RunModelIdentificationResponse &res);
 
 /**
  * @brief Called when user wants to switch to open loop control. Sets open loop control.
@@ -132,14 +132,14 @@ void setClosedLoopControlServiceCallback(const std_srvs::TriggerRequest &req, st
  * @param req Request structure.
  * @param res Response structure.
  */
-void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res);
+void setLeftMotorParamsCallback(const statek_hw::SetMotorParamsRequest &req, statek_hw::SetMotorParamsResponse &res);
 
 /**
  * @brief Called when user wants to set right motors params. Sets right motor's params.
  * @param req Request structure.
  * @param res Response structure.
  */
-void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res);
+void setRightMotorParamsCallback(const statek_hw::SetMotorParamsRequest &req, statek_hw::SetMotorParamsResponse &res);
 
 /**
  * @brief Called when user wants to calibrate IMU. Performs IMU calibration.
@@ -148,21 +148,21 @@ void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, 
  * @param req Request structure.
  * @param res Response structure.
  */
-void imuCalibrationServiceCallback(const statek_msgs::RunImuCalibrationRequest &req, statek_msgs::RunImuCalibrationResponse &res);
+void imuCalibrationServiceCallback(const statek_hw::RunImuCalibrationRequest &req, statek_hw::RunImuCalibrationResponse &res);
 
 /**
  * @brief Called when user wants to set IMU's parameters. Sets IMU's parameters.
  * @param req Request structure.
  * @param res Response structure.
  */
-void setImuParamsServiceCallback(const statek_msgs::SetImuParamsRequest &req, statek_msgs::SetImuParamsResponse &res);
+void setImuParamsServiceCallback(const statek_hw::SetImuParamsRequest &req, statek_hw::SetImuParamsResponse &res);
 
 /**
  * @brief Called when user wants to set odom's parameters. Sets odom's parameters.
  * @param req Request structure.
  * @param res Response structure.
  */
-void setOdomParamsCallback(const statek_msgs::SetOdomParamsRequest &req, statek_msgs::SetOdomParamsResponse &res);
+void setOdomParamsCallback(const statek_hw::SetOdomParamsRequest &req, statek_hw::SetOdomParamsResponse &res);
 
 // Publisher functions
 /**
@@ -219,17 +219,17 @@ int SAFETY_motorsCommunicationFlowSupervisor(); //!< Check whether there is acti
 // ROS stuff
 ros::NodeHandle nh; //!< Manage all ROS stuff.
 
-statek_msgs::Velocity setpoints;
-ros::Subscriber<statek_msgs::Velocity>
+statek_hw::Velocity setpoints;
+ros::Subscriber<statek_hw::Velocity>
     setpointsSubscriber(VELOCITY_SETPOINTS_TOPIC, &setpointsSubscriberCallback);
 
-ros::ServiceServer<statek_msgs::RunVelocityTestRequest, statek_msgs::RunVelocityTestResponse>
+ros::ServiceServer<statek_hw::RunVelocityTestRequest, statek_hw::RunVelocityTestResponse>
     maxVelocityTestService(VELOCITY_TEST_SERVICE, &maxVelocityTestServiceCallback);
 
-ros::ServiceServer<statek_msgs::RunModelIdentificationRequest, statek_msgs::RunModelIdentificationResponse>
+ros::ServiceServer<statek_hw::RunModelIdentificationRequest, statek_hw::RunModelIdentificationResponse>
     leftMotorStepResponseIdentificationService(LEFT_MOTOR_STEP_RESPONSE_IDENTIFICATION_SERVICE, &leftMotorStepResponseIdentificationServiceCallback);
 
-ros::ServiceServer<statek_msgs::RunModelIdentificationRequest, statek_msgs::RunModelIdentificationResponse>
+ros::ServiceServer<statek_hw::RunModelIdentificationRequest, statek_hw::RunModelIdentificationResponse>
     rightMotorStepResponseIdentificationService(RIGHT_MOTOR_STEP_RESPONSE_IDENTIFICATION_SERVICE, &rightMotorStepResponseIdentificationServiceCallback);
 
 ros::ServiceServer<std_srvs::TriggerRequest, std_srvs::TriggerResponse>
@@ -238,25 +238,25 @@ ros::ServiceServer<std_srvs::TriggerRequest, std_srvs::TriggerResponse>
 ros::ServiceServer<std_srvs::TriggerRequest, std_srvs::TriggerResponse>
     closedLoopControlService(PID_CONTROL_SERVICE, &setClosedLoopControlServiceCallback);
 
-ros::ServiceServer<statek_msgs::SetMotorParamsRequest, statek_msgs::SetMotorParamsResponse>
+ros::ServiceServer<statek_hw::SetMotorParamsRequest, statek_hw::SetMotorParamsResponse>
     setLeftMotorParamsService(LEFT_MOTOR_PARAM_SERVICE, &setLeftMotorParamsCallback);
 
-ros::ServiceServer<statek_msgs::SetMotorParamsRequest, statek_msgs::SetMotorParamsResponse>
+ros::ServiceServer<statek_hw::SetMotorParamsRequest, statek_hw::SetMotorParamsResponse>
     setrightMotorParamsService(RIGHT_MOTOR_PARAM_SERVICE, &setRightMotorParamsCallback);
 
-ros::ServiceServer<statek_msgs::RunImuCalibrationRequest, statek_msgs::RunImuCalibrationResponse>
+ros::ServiceServer<statek_hw::RunImuCalibrationRequest, statek_hw::RunImuCalibrationResponse>
     imuCalibrationService(IMU_CALIBRATION_SERVICE, &imuCalibrationServiceCallback);
 
-ros::ServiceServer<statek_msgs::SetImuParamsRequest, statek_msgs::SetImuParamsResponse>
+ros::ServiceServer<statek_hw::SetImuParamsRequest, statek_hw::SetImuParamsResponse>
     setImuParamsService(IMU_PARAM_SERVICE, &setImuParamsServiceCallback);
 
-ros::ServiceServer<statek_msgs::SetOdomParamsRequest, statek_msgs::SetOdomParamsResponse>
+ros::ServiceServer<statek_hw::SetOdomParamsRequest, statek_hw::SetOdomParamsResponse>
     setOdomParamsService(ODOM_PARAM_SERVICE, &setOdomParamsCallback);
 
-statek_msgs::Encoder leftEncoderMsg;
+statek_hw::Encoder leftEncoderMsg;
 ros::Publisher leftEncoderPublisher(LEFT_MOTOR_ENCODER_TOPIC, &leftEncoderMsg);
 
-statek_msgs::Encoder rightEncoderMsg;
+statek_hw::Encoder rightEncoderMsg;
 ros::Publisher rightEncoderPublisher(RIGHT_MOTOR_ENCODER_TOPIC, &rightEncoderMsg);
 
 sensor_msgs::Imu imuMsg;
@@ -394,7 +394,7 @@ void SAFETY()
 }
 
 // Callbacks for subscribers.
-void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints)
+void setpointsSubscriberCallback(const statek_hw::Velocity &setpoints)
 {
     // Don't disturb the service.
     if (SAFETY_serviceInProgress)
@@ -408,7 +408,7 @@ void setpointsSubscriberCallback(const statek_msgs::Velocity &setpoints)
 }
 
 // Callbacks for services.
-void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &req, statek_msgs::RunVelocityTestResponse &res)
+void maxVelocityTestServiceCallback(const statek_hw::RunVelocityTestRequest &req, statek_hw::RunVelocityTestResponse &res)
 {
     // Don't run the test when another callback is doing stuff.
     if (SAFETY_serviceInProgress)
@@ -465,7 +465,7 @@ void maxVelocityTestServiceCallback(const statek_msgs::RunVelocityTestRequest &r
     SAFETY_serviceInProgress = false;
 }
 
-void stepResponseIdentificationServiceCallback(MotorController &mot, const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res)
+void stepResponseIdentificationServiceCallback(MotorController &mot, const statek_hw::RunModelIdentificationRequest &req, statek_hw::RunModelIdentificationResponse &res)
 {
     const uint8_t numSamples = 100;
 
@@ -520,12 +520,12 @@ void stepResponseIdentificationServiceCallback(MotorController &mot, const state
     SAFETY_serviceInProgress = false;
 }
 
-void leftMotorStepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res)
+void leftMotorStepResponseIdentificationServiceCallback(const statek_hw::RunModelIdentificationRequest &req, statek_hw::RunModelIdentificationResponse &res)
 {
     stepResponseIdentificationServiceCallback(leftMotor, req, res);
 }
 
-void rightMotorStepResponseIdentificationServiceCallback(const statek_msgs::RunModelIdentificationRequest &req, statek_msgs::RunModelIdentificationResponse &res)
+void rightMotorStepResponseIdentificationServiceCallback(const statek_hw::RunModelIdentificationRequest &req, statek_hw::RunModelIdentificationResponse &res)
 {
     stepResponseIdentificationServiceCallback(rightMotor, req, res);
 }
@@ -566,7 +566,7 @@ void setClosedLoopControlServiceCallback(const std_srvs::TriggerRequest &req, st
     SAFETY_serviceInProgress = false;
 }
 
-void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res)
+void setLeftMotorParamsCallback(const statek_hw::SetMotorParamsRequest &req, statek_hw::SetMotorParamsResponse &res)
 {
     // Don't run the test when another callback is doing stuff.
     if (SAFETY_serviceInProgress)
@@ -587,7 +587,7 @@ void setLeftMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, s
     SAFETY_serviceInProgress = false;
 }
 
-void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, statek_msgs::SetMotorParamsResponse &res)
+void setRightMotorParamsCallback(const statek_hw::SetMotorParamsRequest &req, statek_hw::SetMotorParamsResponse &res)
 {
     // Don't run the test when another callback is doing stuff.
     if (SAFETY_serviceInProgress)
@@ -607,7 +607,7 @@ void setRightMotorParamsCallback(const statek_msgs::SetMotorParamsRequest &req, 
     SAFETY_serviceInProgress = false;
 }
 
-void imuCalibrationServiceCallback(const statek_msgs::RunImuCalibrationRequest &req, statek_msgs::RunImuCalibrationResponse &res)
+void imuCalibrationServiceCallback(const statek_hw::RunImuCalibrationRequest &req, statek_hw::RunImuCalibrationResponse &res)
 {
     // Don't run the test when another callback is doing stuff.
     if (SAFETY_serviceInProgress)
@@ -665,7 +665,7 @@ void imuCalibrationServiceCallback(const statek_msgs::RunImuCalibrationRequest &
     SAFETY_serviceInProgress = false;
 }
 
-void setImuParamsServiceCallback(const statek_msgs::SetImuParamsRequest &req, statek_msgs::SetImuParamsResponse &res)
+void setImuParamsServiceCallback(const statek_hw::SetImuParamsRequest &req, statek_hw::SetImuParamsResponse &res)
 {
     // Don't run the test when another callback is doing stuff.
     if (SAFETY_serviceInProgress)
@@ -692,7 +692,7 @@ void setImuParamsServiceCallback(const statek_msgs::SetImuParamsRequest &req, st
     SAFETY_serviceInProgress = false;
 }
 
-void setOdomParamsCallback(const statek_msgs::SetOdomParamsRequest &req, statek_msgs::SetOdomParamsResponse &res)
+void setOdomParamsCallback(const statek_hw::SetOdomParamsRequest &req, statek_hw::SetOdomParamsResponse &res)
 {
     // Don't run the test when another callback is doing stuff.
     if (SAFETY_serviceInProgress)
@@ -802,9 +802,9 @@ void publishIMU()
     imuMsg.angular_velocity.y = imu.getGyroY() * M_PI / 180;
     imuMsg.angular_velocity.z = imu.getGyroZ() * M_PI / 180;
 
-    imuMsg.linear_acceleration.x = imu.getLinearAccX() / 9.81;
-    imuMsg.linear_acceleration.y = imu.getLinearAccY() / 9.81;
-    imuMsg.linear_acceleration.z = imu.getLinearAccZ() / 9.81;
+    imuMsg.linear_acceleration.x = imu.getAccX() / 9.81;
+    imuMsg.linear_acceleration.y = imu.getAccY() / 9.81;
+    imuMsg.linear_acceleration.z = imu.getAccZ() / 9.81;
 
     imuPublisher.publish(&imuMsg);
 
