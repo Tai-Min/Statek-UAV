@@ -1,0 +1,4 @@
+map_size_meters: 6
+cell_size_meters: 0.05
+minimum_gap_size_meters: 0.8
+map_update_rate_ms: 500

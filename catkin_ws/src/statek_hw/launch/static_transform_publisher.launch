@@ -13,9 +13,6 @@
         <!-- base footprint to base link -->
         <node pkg="tf2_ros" type="static_transform_publisher" name="base_footprint_to_base_link" args="$(arg footprint_to_base) $(arg statek_name)/base_footprint $(arg statek_name)/base_link" respawn="true"/>
         
-        <!-- base footprint to local map link -->
-        <node pkg="tf2_ros" type="static_transform_publisher" name="base_footprint_to_local_map_link" args="$(arg footprint_to_local_map) $(arg statek_name)/base_footprint $(arg statek_name)/local_map" respawn="true"/>
-
         <!-- base link to lidar link -->
         <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_laser_link" args="$(arg base_to_laser) $(arg statek_name)/base_link $(arg statek_name)/laser/laser_link" respawn="true"/>
 

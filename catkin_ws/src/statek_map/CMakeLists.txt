@@ -6,6 +6,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  tf
   std_msgs
 )
 
@@ -28,5 +29,5 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(static_map_generator_node src/static_map_generator_node.cpp)
-target_link_libraries(static_map_generator_node ${catkin_LIBRARIES})
+add_executable(local_mapper_node src/local_mapper_node.cpp)
+target_link_libraries(local_mapper_node ${catkin_LIBRARIES})

@@ -7,20 +7,21 @@ class AbstractMap
 {
     friend class MapFuser;
 
-protected:
+public:
     enum CellType
     {
         UNKNOWN_CELL = -1,
         FREE_CELL = 0,
-        OBSTACLE_CELL = 1
+        FILLED_GAP = 90,
+        OBSTACLE_CELL = 100,
+
     };
 
-public:
     struct MapParams
     {
         double mapSizeMeters;
         double cellSizeMeters;
-        double minimumGapSizeMeters;
+        double minimumGapSizeMetersSquared;
         unsigned int numCellsPerRowCol;
     };
 
@@ -30,59 +31,59 @@ private:
 protected:
     static MapParams params;
 
+    virtual void reset()
+    {
+        std::fill(this->mapMatrix.begin(), this->mapMatrix.end(), CellType::UNKNOWN_CELL);
+    }
+
+    virtual std::vector<int8_t>::const_iterator begin() const
+    {
+        return mapMatrix.begin();
+    }
+
+    virtual std::vector<int8_t>::const_iterator end() const
+    {
+        return mapMatrix.end();
+    }
+
+    virtual int8_t operator[](const unsigned int index) const
+    {
+        return mapMatrix[index];
+    }
+
+    virtual void set(unsigned int y, unsigned int x, int8_t val)
+    {
+        mapMatrix[y * params.numCellsPerRowCol + x] = val;
+    }
+
+    virtual int8_t get(unsigned int y, unsigned int x) const
+    {
+        return mapMatrix[y * params.numCellsPerRowCol + x];
+    }
+
+    /*int8_t get(const AbstractMap &m, unsigned int y, unsigned int x) const
+    {
+        return m[y * params.numCellsPerRowCol + x];
+    }*/
+
+public:
+    AbstractMap()
+    {
+        this->resize();
+    }
+
     static unsigned int toIndex(double val)
     {
         val /= params.cellSizeMeters;
-        val += params.numCellsPerRowCol;
+        val += params.numCellsPerRowCol / 2.0;
         return val;
     }
 
     static double toMeters(unsigned int idx)
     {
         double result = idx;
-        result -= params.numCellsPerRowCol;
+        result -= params.numCellsPerRowCol / 2.0;
         return result * params.cellSizeMeters;
-    }
-
-    virtual void reset()
-    {
-        std::fill(this->mapMatrix.begin(), this->mapMatrix.end(), -1);
-    }
-
-    std::vector<int8_t>::const_iterator begin() const
-    {
-        return mapMatrix.begin();
-    }
-
-    std::vector<int8_t>::const_iterator end() const
-    {
-        return mapMatrix.end();
-    }
-
-    int8_t operator[](const unsigned int index) const
-    {
-        return mapMatrix[index];
-    }
-
-    void set(unsigned int y, unsigned int x, int8_t val)
-    {
-        mapMatrix[y * params.numCellsPerRowCol + x] = val;
-    }
-
-    int8_t get(unsigned int y, unsigned int x) const
-    {
-        return mapMatrix[y * params.numCellsPerRowCol + x];
-    }
-
-    int8_t get(const AbstractMap &m, unsigned int y, unsigned int x) const
-    {
-        return m[y * params.numCellsPerRowCol + x];
-    }
-
-public:
-    AbstractMap()
-    {
-        mapMatrix.resize(params.numCellsPerRowCol * params.numCellsPerRowCol);
     }
 
     static void setParams(const MapParams &_params)
@@ -90,10 +91,10 @@ public:
         params = _params;
     }
 
-    void resize()
+    virtual void resize()
     {
         mapMatrix.resize(params.numCellsPerRowCol * params.numCellsPerRowCol);
-        reset();
+        this->reset();
     }
 };
 

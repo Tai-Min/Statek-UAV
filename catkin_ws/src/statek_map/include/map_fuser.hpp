@@ -4,6 +4,8 @@
 
 #include <ros/ros.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <nav_msgs/Odometry.h>
+#include <tf/transform_broadcaster.h>
 
 #include "abstract_map.hpp"
 #include "laser_scan_map.hpp"
@@ -14,10 +16,15 @@ private:
     // ROS stuff.
     uint32_t msgSeq = 0;
     nav_msgs::OccupancyGrid mapMsg;
-    ros::Publisher mapPublisher;
+    tf::StampedTransform stampedTransform;
 
-    const double mapUpdateRateMs;
+    const int mapUpdateRateMs;
     std::chrono::time_point<std::chrono::high_resolution_clock> previousMapUpdateTime;
+
+    // Odometry memory for compensation.
+    double previousOdomX = 0;
+    double previousOdomY = 0;
+    double previousOdomTheta = 0;
 
     // Odometry compensation.
     double odomOffsetX = 0;
@@ -90,7 +97,8 @@ private:
                     d += bi;
                     x += xi;
                 }
-                if (this->get(y, x) == CellType::OBSTACLE_CELL)
+
+                if (this->get(y, x) == CellType::OBSTACLE_CELL || this->get(y, x) == CellType::FILLED_GAP)
                     return false;
                 this->set(y, x, cellType);
             }
@@ -114,7 +122,8 @@ private:
                     d += bi;
                     y += yi;
                 }
-                if (this->get(y, x) == CellType::OBSTACLE_CELL)
+
+                if (this->get(y, x) == CellType::OBSTACLE_CELL || this->get(y, x) == CellType::FILLED_GAP)
                     return false;
                 this->set(y, x, cellType);
             }
@@ -135,9 +144,11 @@ private:
     {
         double diffXMeters = toMeters(x1) - toMeters(x0);
         double diffXSquaredMeters = diffXMeters * diffXMeters;
+
         double diffYMeters = toMeters(y1) - toMeters(y0);
         double diffYSquaredMeters = diffYMeters * diffYMeters;
-        return sqrt(diffXSquaredMeters + diffYSquaredMeters) < params.minimumGapSizeMeters;
+
+        return (diffXSquaredMeters + diffYSquaredMeters) < params.minimumGapSizeMetersSquared;
     }
 
     /**
@@ -155,19 +166,21 @@ private:
                 if (this->get(currentPixelY, currentPixelX) != CellType::OBSTACLE_CELL)
                     continue;
 
-                for (int checkedPixelY = 0; checkedPixelY < params.numCellsPerRowCol; checkedPixelY++)
+                for (int checkedPixelY = currentPixelY; checkedPixelY < params.numCellsPerRowCol; checkedPixelY++)
                 {
                     for (int checkedPixelX = 0; checkedPixelX < params.numCellsPerRowCol; checkedPixelX++)
                     {
                         // Not an obstacle so nothing to check.
                         if (this->get(checkedPixelY, checkedPixelX) != CellType::OBSTACLE_CELL)
                             continue;
+
                         // There can't be gap between two neighbor pixels.
-                        if (abs(currentPixelY - checkedPixelY) == 1 || abs(currentPixelX - currentPixelX) == 1)
+                        if (abs(currentPixelY - checkedPixelY) == 1 && abs(currentPixelX - currentPixelX) == 1)
                             continue;
 
+                        // Ray trace filled gap from one pixel to another.
                         if (this->isSmallGap(currentPixelY, currentPixelX, checkedPixelY, checkedPixelX))
-                            this->rayTrace(currentPixelY, currentPixelX, checkedPixelY, checkedPixelX, CellType::OBSTACLE_CELL); // Ray trace obstacle from one pixel to another.
+                            this->rayTrace(currentPixelY, currentPixelX, checkedPixelY, checkedPixelX, CellType::FILLED_GAP);
                     }
                 }
             }
@@ -179,27 +192,45 @@ private:
      */
     void rayTraceFreeCells()
     {
+        // Ray trace free cells from center of the map to edges.
+        for (int currentPixelY = 0; currentPixelY < params.numCellsPerRowCol; currentPixelY++)
+        {
+            // Fill (y = first and every x) and (y = last and every x).
+            if (currentPixelY == 0 || currentPixelY == params.numCellsPerRowCol - 1)
+            {
+                for (int currentPixelX = 0; currentPixelX < params.numCellsPerRowCol; currentPixelX++)
+                {
+
+                    this->rayTrace(params.numCellsPerRowCol / 2.0, params.numCellsPerRowCol / 2.0, currentPixelY, currentPixelX, CellType::FREE_CELL); // Ray trace obstacle from one pixel to another.
+                }
+            }
+            // fill (every other y and x = first) and (every other y and x = last).
+            else
+            {
+                this->rayTrace(params.numCellsPerRowCol / 2.0, params.numCellsPerRowCol / 2.0, currentPixelY, 0, CellType::FREE_CELL); // Ray trace obstacle from one pixel to another.
+                this->rayTrace(params.numCellsPerRowCol / 2.0, params.numCellsPerRowCol / 2.0, currentPixelY, params.numCellsPerRowCol - 1, CellType::FREE_CELL);
+            }
+        }
     }
 
-    void generateMap()
+    void updateMap()
     {
         this->reset();
         this->fuseMaps();
         this->closeSmallGaps();
         this->rayTraceFreeCells();
-    }
 
-    void publishMap()
-    {
-        this->generateMap();
+        // Map generated so reset offset.
+        this->odomOffsetX = 0;
+        this->odomOffsetY = 0;
+        this->odomOffsetTheta = 0;
 
+        // Fill message with required data.
         this->mapMsg.header.stamp = ros::Time::now();
         this->mapMsg.header.seq = this->msgSeq;
-        this->mapMsg.info.origin.position.x -= params.mapSizeMeters / 2.0 + this->odomOffsetX;
-        this->mapMsg.info.origin.position.y -= params.mapSizeMeters / 2.0 + this->odomOffsetY;
-        this->mapMsg.info.origin.orientation.z -= this->odomOffsetTheta;
-        
-        this->mapPublisher.publish(this->mapMsg);
+        this->mapMsg.info.origin.position.x = -params.mapSizeMeters / 2.0;
+        this->mapMsg.info.origin.position.y = -params.mapSizeMeters / 2.0;
+        this->mapMsg.info.origin.orientation.z = this->odomOffsetTheta;
 
         this->msgSeq++;
     }
@@ -207,13 +238,32 @@ private:
 protected:
     void reset() override
     {
-        std::fill(this->mapMsg.data.begin(), this->mapMsg.data.end(), -1);
+        std::fill(this->mapMsg.data.begin(), this->mapMsg.data.end(), CellType::UNKNOWN_CELL);
+    }
+
+    std::vector<int8_t>::const_iterator end() const override
+    {
+        return this->mapMsg.data.end();
+    }
+
+    int8_t operator[](const unsigned int index) const override
+    {
+        return this->mapMsg.data[index];
+    }
+
+    void set(unsigned int y, unsigned int x, int8_t val) override
+    {
+        this->mapMsg.data[y * params.numCellsPerRowCol + x] = val;
+    }
+
+    int8_t get(unsigned int y, unsigned int x) const override
+    {
+        return this->mapMsg.data[y * params.numCellsPerRowCol + x];
     }
 
 public:
-    MapFuser(ros::NodeHandle &_nh, const std::string &mapTopic, const std::string &mapFrame, double mapUpdateRate, LaserScanMap &_laserScanMap)
-        : mapPublisher(_nh.advertise<nav_msgs::OccupancyGrid>(mapTopic, 1)),
-          mapUpdateRateMs(1 / mapUpdateRate * 1000), laserScanMap(_laserScanMap)
+    MapFuser(const std::string &odomFrame, const std::string &mapFrame, int _mapUpdateRateMs, LaserScanMap &_laserScanMap)
+        : mapUpdateRateMs(_mapUpdateRateMs), laserScanMap(_laserScanMap)
     {
         this->mapMsg.info.resolution = params.cellSizeMeters;
         this->mapMsg.info.width = params.numCellsPerRowCol;
@@ -221,11 +271,72 @@ public:
 
         this->mapMsg.header.frame_id = mapFrame;
 
-        this->mapMsg.data = std::vector<int8_t>(params.numCellsPerRowCol * params.numCellsPerRowCol, -1);
+        this->resize();
+
+        tf::Transform transform;
+        this->stampedTransform.child_frame_id_ = odomFrame;
+        this->stampedTransform.frame_id_ = mapFrame;
     }
 
-    void publish()
+    void onNewOdom(const nav_msgs::Odometry::ConstPtr &odom)
     {
-        this->publishMap();
+        // Convert to tf quaternion.
+        tf::Quaternion quat;
+        tf::quaternionMsgToTF(odom->pose.pose.orientation, quat);
+
+        // Convert to RPY angles.
+        double temp1, temp2, theta;
+        tf::Matrix3x3(quat).getRPY(temp1, temp2, theta);
+
+        double travelledDistanceX = odom->pose.pose.position.x - this->previousOdomX;
+        double travelledDistanceY = odom->pose.pose.position.y - this->previousOdomY;
+        double travelledDistanceTheta = theta - this->previousOdomTheta;
+
+        this->odomOffsetX += travelledDistanceX;
+        this->odomOffsetY += travelledDistanceY;
+        this->odomOffsetTheta += travelledDistanceTheta;
+
+        this->previousOdomX = odom->pose.pose.position.x;
+        this->previousOdomY = odom->pose.pose.position.y;
+        this->previousOdomTheta = theta;
+    }
+
+    void resize() override
+    {
+        this->mapMsg.data.resize(params.numCellsPerRowCol * params.numCellsPerRowCol);
+        this->reset();
+    }
+
+    const tf::StampedTransform &getTransform()
+    {
+        tf::Transform transform;
+        transform.setOrigin(tf::Vector3(this->previousOdomX + this->odomOffsetX, -this->previousOdomY + this->odomOffsetY, 0.0));
+        transform.setRotation(tf::Quaternion(0, 0, -this->previousOdomTheta + this->odomOffsetTheta - M_PI));
+
+        this->stampedTransform.stamp_ = ros::Time::now();
+        this->stampedTransform.setData(transform);
+
+        return this->stampedTransform;
+    }
+
+    const nav_msgs::OccupancyGrid &getMapMsg()
+    {
+        return this->mapMsg;
+    }
+
+    bool tryUpdateMap()
+    {
+        auto now = std::chrono::system_clock::now();
+        auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->previousMapUpdateTime);
+        unsigned int ms = milliseconds.count();
+
+        if (ms > this->mapUpdateRateMs)
+        {
+            this->updateMap();
+
+            this->previousMapUpdateTime = now;
+            return true;
+        }
+        return false;
     }
 };
