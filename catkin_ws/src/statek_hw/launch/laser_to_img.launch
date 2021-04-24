@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
+
+    <!-- Run node -->
+    <group ns="$(arg statek_name)/laser">
+        <node name="laser_to_img" pkg="statek_hw" type="laser_to_img_node">
+            <param name="statek_name" type="string" value="$(arg statek_name)" />
+
+            <param name="laser_img_frame" type="string" value="$(arg statek_name)/laser/laser_link" />
+            <param name="laser_topic" type="string" value="/$(arg statek_name)/laser/scan" />
+            <param name="laser_img_topic" type="string" value="/$(arg statek_name)/laser/scan_img" />
+            <param name="laser_img_info_topic" type="string" value="/$(arg statek_name)/laser/camera_info" />
+
+            <param name="width_meters" value="6" />
+            <param name="height_meters" value="6" />
+            <param name="width" value="255" />
+            <param name="height" value="255" />
+            
+            <param name="fps" value="15" />
+        </node>
+    </group>
+</launch>

@@ -53,3 +53,6 @@ include_directories(
 
 add_executable(vision_publisher_node src/vision_publisher_node.cpp src/camera.cpp src/ros_camera.cpp)
 target_link_libraries(vision_publisher_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+
+add_executable(laser_to_img_node src/laser_to_img_node.cpp)
+target_link_libraries(laser_to_img_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})

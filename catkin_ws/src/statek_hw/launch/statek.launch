@@ -26,6 +26,11 @@
         </node>
     </group>
 
+    <!-- Launch lidar to img converter -->
+    <include file="$(find statek_hw)/launch/laser_to_img.launch">
+        <arg name="statek_name" value="$(arg statek_name)"/>
+    </include>
+
     <group ns="$(arg statek_name)/gps/">
         <node name="gps_node" pkg="nmea_navsat_driver" type="nmea_serial_driver" output="screen" respawn="true">
             <param name="port" type="string" value="/dev/ttyTHS1"/>
