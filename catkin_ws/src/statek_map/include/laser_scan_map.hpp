@@ -5,10 +5,14 @@
 #include <cmath>
 
 #include "abstract_map.hpp"
-
+#include <iostream>
 class LaserScanMap : public AbstractMap
 {
 public:
+    /**
+     * @brief Callback called on new lidar data. Constructs new map and transforms it to footprint.
+     * @param scan Lidar data.
+     */
     void onNewData(const sensor_msgs::LaserScan::ConstPtr &scan)
     {
         this->reset();
@@ -26,8 +30,14 @@ public:
                 continue;
             }
 
-            unsigned int x = toIndex(ray * cos(currentAngle));
-            unsigned int y = toIndex(ray * sin(currentAngle));
+            double xMeters = ray * cos(currentAngle);
+            double yMeters = ray * sin(currentAngle);
+            double zMeters = 0; // Unused but required for translation.
+
+            this->transformToFootprint(xMeters, yMeters, zMeters);
+
+            int x = toIndex(xMeters);
+            int y = toIndex(yMeters);
 
             // Out of bounds.
             if (x < 0 || y < 0 || x >= params.numCellsPerRowCol || y >= params.numCellsPerRowCol)

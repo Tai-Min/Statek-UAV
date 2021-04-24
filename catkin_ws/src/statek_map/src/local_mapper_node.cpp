@@ -1,16 +1,32 @@
-// TODO
-/**
- * ODPALIC TO TAK ZEBY DZIALALO
- * SPRAWDZIC CZY TF = X * TRANS * ROT DZIALA JAK NALEZY NA PODSTAWIE NP LASER BASE LINK
- * JAK DZIALA TO KOMPENSOWAC W LASER MAP TRANSFORMACJE DO BASE FOOTPRINTA
- * ODCZYTYWAC OFFSET Z ODOMETRII I GO POTWIERDZIC
- * RAYCAST WOLNEJ PRZESTRZENI
- */
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <tf2/transform_datatypes.h>
 
-#include <tf/transform_broadcaster.h>
+//#include <tf2_bullet/tf2_bullet.h>
 
 #include "../include/laser_scan_map.hpp"
 #include "../include/map_fuser.hpp"
+
+geometry_msgs::TransformStamped getTransform(const std::string &frameId, const std::string &childFrameId, bool &ok)
+{
+    static tf2_ros::Buffer tfBuffer;
+    static tf2_ros::TransformListener transformListener(tfBuffer);
+
+    geometry_msgs::TransformStamped result;
+
+    ok = true;
+    try
+    {
+        result = tfBuffer.lookupTransform(frameId, childFrameId, ros::Time(0));
+    }
+    catch (tf::TransformException ex)
+    {
+        ok = false;
+    }
+
+    return result;
+}
 
 int main(int argc, char **argv)
 {
@@ -22,7 +38,7 @@ int main(int argc, char **argv)
     std::string statekName;
     nh.param<std::string>("statek_name", statekName, "statek");
 
-    std::string footprintFrame = "/" + statekName + "/base_footprint";
+    std::string footprintFrame = statekName + "/base_footprint";
 
     std::string odomTopic = "/" + statekName + "/real_time/odom";
     std::string odomFrame = statekName + "/odom/odom_link";
@@ -54,24 +70,34 @@ int main(int argc, char **argv)
 
     // Create all mapping objects.
     LaserScanMap laserScanMap;
-    MapFuser fuser(odomFrame, mapFrame, mapUpdateRateMs, laserScanMap);
+
+    // Map fuser.
+    MapFuser fuser(odomFrame, mapFrame, mapUpdateRateMs, {laserScanMap});
 
     // Init subscribers and publishers.
     ros::Subscriber laserSub = nh.subscribe(laserTopic, 1, &LaserScanMap::onNewData, &laserScanMap);
     ros::Subscriber odomSub = nh.subscribe(odomTopic, 1, &MapFuser::onNewOdom, &fuser);
     ros::Publisher mapPublisher = nh.advertise<nav_msgs::OccupancyGrid>(mapTopic, 1);
-    tf::TransformBroadcaster transformBroadcaster;
+    tf2_ros::TransformBroadcaster transformBroadcaster;
 
     // The main loop.
     ros::Rate rate = ros::Rate(20);
     while (ros::ok())
     {
+        // Update transforms
+        bool ok;
+        geometry_msgs::TransformStamped t = getTransform(footprintFrame, laserFrame, ok);
+        if (ok)
+            laserScanMap.setTransform(t);
+
+        // Update map.
         if (fuser.tryUpdateMap())
         {
             mapPublisher.publish(fuser.getMapMsg());
         }
 
-        transformBroadcaster.sendTransform(fuser.getTransform());
+        // Send new transforms.
+        transformBroadcaster.sendTransform(fuser.getTransformMsg());
 
         ros::spinOnce();
         rate.sleep();

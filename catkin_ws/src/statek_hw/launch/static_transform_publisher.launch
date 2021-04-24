@@ -3,9 +3,9 @@
     <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
 
     <arg name="footprint_to_base" value="$(eval open(find('statek_config') + '/tf/footprint_to_base').read())"/>
-    <arg name="footprint_to_local_map" value="$(eval open(find('statek_config') + '/tf/footprint_to_local_map').read())"/>
     <arg name="base_to_laser" value="$(eval open(find('statek_config') + '/tf/base_to_laser').read())"/>
     <arg name="base_to_imu" value="$(eval open(find('statek_config') + '/tf/base_to_imu').read())"/>
+    <arg name="base_to_gps" value="$(eval open(find('statek_config') + '/tf/base_to_gps').read())"/>
     <arg name="base_to_left_camera" value="$(eval open(find('statek_config') + '/tf/base_to_left_camera').read())"/>
     <arg name="base_to_right_camera" value="$(eval open(find('statek_config') + '/tf/base_to_right_camera').read())"/>
 
@@ -18,6 +18,9 @@
 
         <!-- base link to imu link -->
         <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_imu_link" args="$(arg base_to_imu) $(arg statek_name)/base_link $(arg statek_name)/imu/imu_link" respawn="true"/>
+
+        <!-- base link to gps link -->
+        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_gps_link" args="$(arg base_to_gps) $(arg statek_name)/base_link $(arg statek_name)/gps/gps_link" respawn="true"/>
 
         <!-- base link to camera links -->
         <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_left_camera_link" args="$(arg base_to_left_camera) $(arg statek_name)/base_link $(arg statek_name)/stereo/left_link" respawn="true"/>
