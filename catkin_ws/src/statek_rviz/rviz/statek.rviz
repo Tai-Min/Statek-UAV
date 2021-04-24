@@ -6,6 +6,8 @@ Panels:
       Expanded:
         - /Global Options1
         - /TF1/Tree1
+        - /MarkerArray1/Namespaces1
+        - /Map1
       Splitter Ratio: 0.5
     Tree Height: 421
   - Class: rviz/Selection
@@ -132,6 +134,8 @@ Visualization Manager:
           Value: true
         statek/base_link:
           Value: true
+        statek/gps/gps_link:
+          Value: true
         statek/imu/imu_link:
           Value: true
         statek/laser/laser_link:
@@ -163,29 +167,32 @@ Visualization Manager:
       Show Names: true
       Tree:
         statek/map/local_map:
-          statek/odom/odom_link:
-            statek/base_footprint:
-              statek/base_link:
-                statek/imu/imu_link:
-                  {}
-                statek/laser/laser_link:
-                  {}
-                statek/motors/left_link:
-                  {}
-                statek/motors/right_link:
-                  {}
-                statek/stereo/left_link:
-                  {}
-                statek/stereo/right_link:
-                  {}
-                statek/wheels/left_back_link:
-                  {}
-                statek/wheels/left_front_link:
-                  {}
-                statek/wheels/right_back_link:
-                  {}
-                statek/wheels/right_front_link:
-                  {}
+          {}
+        statek/odom/odom_link:
+          statek/base_footprint:
+            statek/base_link:
+              statek/gps/gps_link:
+                {}
+              statek/imu/imu_link:
+                {}
+              statek/laser/laser_link:
+                {}
+              statek/motors/left_link:
+                {}
+              statek/motors/right_link:
+                {}
+              statek/stereo/left_link:
+                {}
+              statek/stereo/right_link:
+                {}
+              statek/wheels/left_back_link:
+                {}
+              statek/wheels/left_front_link:
+                {}
+              statek/wheels/right_back_link:
+                {}
+              statek/wheels/right_front_link:
+                {}
       Update Interval: 0
       Value: true
     - Class: rviz/Camera
@@ -219,13 +226,13 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /visualization_marker_array
       Name: MarkerArray
       Namespaces:
         {}
-      Queue Size: 100
-      Value: true
+      Queue Size: 1
+      Value: false
     - Alpha: 1
       Class: rviz/Map
       Color Scheme: map
@@ -270,7 +277,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: statek/base_footprint
+    Fixed Frame: statek/odom/odom_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -294,25 +301,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.855245113372803
+      Distance: 2.1567115783691406
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.37097296118736267
-        Y: -0.12500183284282684
-        Z: -0.39797186851501465
+        X: 0
+        Y: 0
+        Z: 0
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8547963500022888
+      Pitch: 0.49039822816848755
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.465395927429199
+      Yaw: 1.0253983736038208
     Saved: ~
 Window Geometry:
   Camera:
