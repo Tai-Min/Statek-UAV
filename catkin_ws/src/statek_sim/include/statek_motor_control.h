@@ -5,8 +5,8 @@
 #include <gazebo/physics/physics.hh>
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
-#include <ros/subscribe_options.h>
-#include "statek_msgs/Velocity.h"
+#include <statek_hw/Velocity.h>
+
 namespace gazebo
 {
     /**
@@ -122,7 +122,7 @@ namespace gazebo
         *
         * @param _msg Target speed for wheels in rad/s.
         */
-        void OnVelCmd(const statek_msgs::Velocity::ConstPtr &_msg);
+        void OnVelCmd(const statek_hw::Velocity::ConstPtr &_msg);
     public:
         /**
         * @brief Class constructor.

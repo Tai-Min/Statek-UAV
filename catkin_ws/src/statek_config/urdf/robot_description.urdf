@@ -12,11 +12,6 @@
   <xacro:property name="motion_config" value="${load_yaml('$(find statek_config)/yaml/motion_config.yaml')}"/>
   <xacro:property name="max_velocity_rads" value="${motion_config['wheel_max_angular_velocity']}"/>
 
-  <!--<xacro:property name="encoder_config" value="${load_yaml('$(find statek_config)/yaml/encoder_config.yaml')}"/>
-  <xacro:property name="encoder_update_rate" value="${encoder_config['update_rate']}"/>
-  <xacro:property name="encoder_std_dev" value="${encoder_config['standard_deviation']}"/>
-  <xacro:property name="encoder_mean" value="${encoder_config['mean']}"/>-->
-
   <xacro:property name="camera_config" value="${load_yaml('$(find statek_config)/yaml/camera_config.yaml')}"/>
   <xacro:property name="camera_width" value="${camera_config['width']}"/>
   <xacro:property name="camera_height" value="${camera_config['height']}"/>
@@ -315,10 +310,6 @@
       <ki>2.5</ki>
       <kd>0</kd>
       <motor_namespace>real_time/motors</motor_namespace>
-      <!--<sensor_dev>${encoder_std_dev}</sensor_dev>
-      <sensor_mean>${encoder_mean}</sensor_mean>
-      <sensor_namespace>encoders</sensor_namespace>
-      <sensor_publish_rate>${encoder_update_rate}</sensor_publish_rate>-->
       <left_motor_tf_frame>$(arg statek_name)/motors/left_link</left_motor_tf_frame>
       <right_motor_tf_frame>$(arg statek_name)/motors/right_link</right_motor_tf_frame>
     </plugin>

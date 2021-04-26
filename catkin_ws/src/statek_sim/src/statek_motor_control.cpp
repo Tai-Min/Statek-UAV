@@ -1,5 +1,5 @@
 #include "../include/statek_motor_control.h"
-#include "statek_msgs/Encoder.h"
+#include <statek_hw/Encoder.h>
 #include <math.h>
 
 namespace gazebo
@@ -73,8 +73,8 @@ namespace gazebo
       ns = _sdf->Get<std::string>("motor_namespace");
 
     ros::SubscribeOptions motorOptions =
-        ros::SubscribeOptions::create<statek_msgs::Velocity>(
-            "/" + this->model->GetName() + "/" + ns + "/vel_cmd",
+        ros::SubscribeOptions::create<statek_hw::Velocity>(
+            "/" + this->model->GetName() + "/" + ns + "/real_time/motors/vel_cmd",
             10,
             boost::bind(&MotorControlPlugin::OnVelCmd, this, _1),
             ros::VoidPtr(), &this->rosQueue);
@@ -83,18 +83,14 @@ namespace gazebo
 
   void MotorControlPlugin::CreatePublishers(sdf::ElementPtr _sdf)
   {
-    std::string ns = "";
-    if (_sdf->HasElement("sensor_namespace"))
-      ns = _sdf->Get<std::string>("sensor_namespace");
-
     this->leftMotorRawData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/motors/left/encoder/raw", 10);
+        this->rosNode->advertise<statek_hw::Encoder>("/" + this->model->GetName() + "/real_time/motors/left/encoder/raw", 1);
     this->rightMotorRawData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/motors/right/encoder/raw", 10);
+        this->rosNode->advertise<statek_hw::Encoder>("/" + this->model->GetName() + "/real_time/motors/right/encoder/raw", 1);
     this->leftMotorFilteredData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/motors/left/encoder/filtered", 10);
+        this->rosNode->advertise<statek_hw::Encoder>("/" + this->model->GetName() + "/real_time/motors/left/encoder/filtered", 1);
     this->rightMotorFilteredData =
-        this->rosNode->advertise<statek_msgs::Encoder>("/" + this->model->GetName() + "/" + ns + "/motors/right/encoder/filtered", 10);
+        this->rosNode->advertise<statek_hw::Encoder>("/" + this->model->GetName() + "/real_time/motors/right/encoder/filtered", 1);
   }
 
   void MotorControlPlugin::StartRosThread()
@@ -221,28 +217,28 @@ namespace gazebo
     uint32_t cntr = 0;
     while (this->rosNode->ok() && !this->rosStop)
     {
-      statek_msgs::Encoder rawLeft;
+      statek_hw::Encoder rawLeft;
       rawLeft.header.seq = cntr;
       rawLeft.header.stamp = ros::Time::now();
       rawLeft.header.frame_id = this->left_motor_tf;
       rawLeft.velocity = this->leftVelocity + GenerateNoiseSample();
       rawLeft.position = this->leftPosition + GenerateNoiseSample();
 
-      statek_msgs::Encoder rawRight;
+      statek_hw::Encoder rawRight;
       rawRight.header.seq = cntr;
       rawRight.header.stamp = ros::Time::now();
       rawRight.header.frame_id = this->right_motor_tf;
       rawRight.velocity = this->rightVelocity + GenerateNoiseSample();
       rawRight.position = this->rightPosition + GenerateNoiseSample();
 
-      statek_msgs::Encoder filteredLeft;
+      statek_hw::Encoder filteredLeft;
       filteredLeft.header.seq = cntr;
       filteredLeft.header.stamp = ros::Time::now();
       filteredLeft.header.frame_id = this->left_motor_tf;
       filteredLeft.velocity = this->leftVelocity;
       filteredLeft.position = this->leftPosition;
 
-      statek_msgs::Encoder filteredRight;
+      statek_hw::Encoder filteredRight;
       filteredRight.header.seq = cntr;
       filteredRight.header.stamp = ros::Time::now();
       filteredRight.header.frame_id = this->right_motor_tf;
@@ -261,7 +257,7 @@ namespace gazebo
     }
   }
 
-  void MotorControlPlugin::OnVelCmd(const statek_msgs::Velocity::ConstPtr &_msg)
+  void MotorControlPlugin::OnVelCmd(const statek_hw::Velocity::ConstPtr &_msg)
   {
     float left = _msg->left;
     float right = _msg->right;
