@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   gazebo_ros
+  statek_hw
 )
 
 find_package(gazebo REQUIRED)
@@ -22,4 +23,5 @@ catkin_package(
     roscpp
     std_msgs
     gazebo_ros
+    statek_hw
 )
