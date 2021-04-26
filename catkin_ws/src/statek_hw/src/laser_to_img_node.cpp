@@ -88,8 +88,8 @@ int main(int argc, char **argv)
 
     nh.param<double>("width_meters", imgWidthMeters, 6.0);
     nh.param<double>("height_meters", imgHeightMeters, 6.0);
-    nh.param<int>("width", imgWidth, 255);
-    nh.param<int>("height", imgHeight, 255);
+    nh.param<int>("width", imgWidth, 256);
+    nh.param<int>("height", imgHeight, 256);
 
     int updateRate;
     nh.param<int>("fps", updateRate, 15);

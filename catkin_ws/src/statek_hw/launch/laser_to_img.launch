@@ -14,8 +14,8 @@
 
             <param name="width_meters" value="6" />
             <param name="height_meters" value="6" />
-            <param name="width" value="255" />
-            <param name="height" value="255" />
+            <param name="width" value="256" />
+            <param name="height" value="256" />
             
             <param name="fps" value="15" />
         </node>
