@@ -120,14 +120,7 @@ private:
                     x += xi;
                 }
 
-                if (this->get(y, x) == CellType::OBSTACLE_CELL)
-                    return false;
-
-                if (this->get(y, x) == CellType::FILLED_GAP && stopOnFilled)
-                    return false;
-
-                this->set(y, x, cellType);
-
+                // Draw additional pixels to make line bold.
                 if (bold && makeBold)
                 {
                     int boldX = x;
@@ -140,6 +133,14 @@ private:
                     if (isInRange(boldY, boldX, sizeY, sizeX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
                         this->set(boldY, boldX, cellType);
                 }
+
+                // Stop on obstacle.
+                if (this->get(y, x) == CellType::OBSTACLE_CELL)
+                    return false;
+
+                // Stop on filled gap if required.
+                if (this->get(y, x) == CellType::FILLED_GAP && stopOnFilled)
+                    return false;
             }
         }
         else
@@ -164,14 +165,7 @@ private:
                     y += yi;
                 }
 
-                if (this->get(y, x) == CellType::OBSTACLE_CELL)
-                    return false;
-
-                if (this->get(y, x) == CellType::FILLED_GAP && stopOnFilled)
-                    return false;
-
-                this->set(y, x, cellType);
-
+                // Draw additional pixels to make line bold.
                 if (bold && makeBold)
                 {
                     int boldX = x;
@@ -184,6 +178,16 @@ private:
                     if (isInRange(boldY, boldX, sizeY, sizeX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
                         this->set(boldY, boldX, cellType);
                 }
+
+                // Stop on obstacle.
+                if (this->get(y, x) == CellType::OBSTACLE_CELL)
+                    return false;
+
+                // Stop on filled gap if required.
+                if (this->get(y, x) == CellType::FILLED_GAP && stopOnFilled)
+                    return false;
+
+                this->set(y, x, cellType);
             }
         }
         return true;
