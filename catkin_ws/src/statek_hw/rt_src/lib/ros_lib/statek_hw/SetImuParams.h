@@ -19,12 +19,7 @@ static const char SETIMUPARAMS[] = "statek_hw/SetImuParams";
       float gyro_bias[3];
       float mag_bias[3];
       float mag_scale[3];
-      typedef float _magnetic_declination_degree_type;
-      _magnetic_declination_degree_type magnetic_declination_degree;
-      typedef float _magnetic_declination_minute_type;
-      _magnetic_declination_minute_type magnetic_declination_minute;
-      typedef float _magnetic_declination_second_type;
-      _magnetic_declination_second_type magnetic_declination_second;
+      int16_t mag_dec[3];
 
     SetImuParamsRequest():
       imu_update_rate_ms(0),
@@ -32,9 +27,7 @@ static const char SETIMUPARAMS[] = "statek_hw/SetImuParams";
       gyro_bias(),
       mag_bias(),
       mag_scale(),
-      magnetic_declination_degree(0),
-      magnetic_declination_minute(0),
-      magnetic_declination_second(0)
+      mag_dec()
     {
     }
 
@@ -58,9 +51,16 @@ static const char SETIMUPARAMS[] = "statek_hw/SetImuParams";
       for( uint32_t i = 0; i < 3; i++){
       offset += serializeAvrFloat64(outbuffer + offset, this->mag_scale[i]);
       }
-      offset += serializeAvrFloat64(outbuffer + offset, this->magnetic_declination_degree);
-      offset += serializeAvrFloat64(outbuffer + offset, this->magnetic_declination_minute);
-      offset += serializeAvrFloat64(outbuffer + offset, this->magnetic_declination_second);
+      for( uint32_t i = 0; i < 3; i++){
+      union {
+        int16_t real;
+        uint16_t base;
+      } u_mag_deci;
+      u_mag_deci.real = this->mag_dec[i];
+      *(outbuffer + offset + 0) = (u_mag_deci.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_mag_deci.base >> (8 * 1)) & 0xFF;
+      offset += sizeof(this->mag_dec[i]);
+      }
       return offset;
     }
 
@@ -84,14 +84,22 @@ static const char SETIMUPARAMS[] = "statek_hw/SetImuParams";
       for( uint32_t i = 0; i < 3; i++){
       offset += deserializeAvrFloat64(inbuffer + offset, &(this->mag_scale[i]));
       }
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->magnetic_declination_degree));
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->magnetic_declination_minute));
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->magnetic_declination_second));
+      for( uint32_t i = 0; i < 3; i++){
+      union {
+        int16_t real;
+        uint16_t base;
+      } u_mag_deci;
+      u_mag_deci.base = 0;
+      u_mag_deci.base |= ((uint16_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_mag_deci.base |= ((uint16_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      this->mag_dec[i] = u_mag_deci.real;
+      offset += sizeof(this->mag_dec[i]);
+      }
      return offset;
     }
 
     virtual const char * getType() override { return SETIMUPARAMS; };
-    virtual const char * getMD5() override { return "2dbbb8d8c467a6d3978b169a354d4930"; };
+    virtual const char * getMD5() override { return "5b52e44d9a6cc076ecccb46df6d4a341"; };
 
   };
 

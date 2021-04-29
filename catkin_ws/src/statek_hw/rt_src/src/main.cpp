@@ -578,6 +578,7 @@ void setLeftMotorParamsCallback(const statek_hw::SetMotorParamsRequest &req, sta
     static bool alreadySet = false;
     if (alreadySet)
     {
+        res.success = false;
         return;
     }
 
@@ -607,6 +608,7 @@ void setRightMotorParamsCallback(const statek_hw::SetMotorParamsRequest &req, st
     static bool alreadySet = false;
     if (alreadySet)
     {
+        res.success = false;
         return;
     }
 
@@ -693,6 +695,7 @@ void setImuParamsServiceCallback(const statek_hw::SetImuParamsRequest &req, stat
     static bool alreadySet = false;
     if (alreadySet)
     {
+        res.success = false;
         return;
     }
 
@@ -702,6 +705,7 @@ void setImuParamsServiceCallback(const statek_hw::SetImuParamsRequest &req, stat
         res.success = false;
         return;
     }
+
     SAFETY_serviceInProgress = true;
 
     imu.setAccBias(req.acc_bias[0], req.acc_bias[1], req.acc_bias[2]);
@@ -709,10 +713,11 @@ void setImuParamsServiceCallback(const statek_hw::SetImuParamsRequest &req, stat
     imu.setMagBias(req.mag_bias[0], req.mag_bias[1], req.mag_bias[2]);
     imu.setMagScale(req.mag_scale[0], req.mag_scale[1], req.mag_scale[2]);
 
-    float degree = req.magnetic_declination_degree;
-    float minute = req.magnetic_declination_minute;
-    float second = req.magnetic_declination_second;
-    imu.setMagneticDeclination((degree + minute / 60.0 + second / 3600.0));
+    float degree = req.mag_dec[0];
+    float minute = req.mag_dec[1];
+    float second = req.mag_dec[2];
+
+    imu.setMagneticDeclination(degree + minute / 60.0 + second / 3600.0);
 
     imuUpdateRate = req.imu_update_rate_ms;
     if (req.imu_update_rate_ms > 0)
@@ -732,6 +737,7 @@ void setOdomParamsCallback(const statek_hw::SetOdomParamsRequest &req, statek_hw
     static bool alreadySet = false;
     if (alreadySet)
     {
+        res.success = false;
         return;
     }
 
