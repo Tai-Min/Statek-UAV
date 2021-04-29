@@ -3,7 +3,7 @@ import rospy
 import time
 
 from ds4_driver.msg import Status
-from statek_msgs.msg import Velocity
+from statek_hw.msg import Velocity
 
 def ds4_callback(status, args):
     wheel_max_angular_velocity = args[0]

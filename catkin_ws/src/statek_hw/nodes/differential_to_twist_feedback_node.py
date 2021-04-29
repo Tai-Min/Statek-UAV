@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from statek_msgs.msg import Encoder
+from statek_hw.msg import Encoder
 from geometry_msgs.msg import TwistStamped
 
 def differential_to_twist(left_ang_velocity, right_ang_velocity, params):

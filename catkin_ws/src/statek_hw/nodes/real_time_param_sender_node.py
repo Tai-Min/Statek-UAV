@@ -1,14 +1,13 @@
 #!/usr/bin/env python
-
 import time
 import rospy
-from statek_msgs.srv import SetMotorParams
-from statek_msgs.srv import SetImuParams
-from statek_msgs.srv import SetOdomParams
+from statek_hw.srv import SetMotorParams
+from statek_hw.srv import SetImuParams
+from statek_hw.srv import SetOdomParams
 
-from statek_msgs.srv import SetMotorParamsRequest
-from statek_msgs.srv import SetImuParamsRequest
-from statek_msgs.srv import SetOdomParamsRequest
+from statek_hw.srv import SetMotorParamsRequest
+from statek_hw.srv import SetImuParamsRequest
+from statek_hw.srv import SetOdomParamsRequest
 
 def send_motor_params(namespace, param_service, params):
     full_service_name = "/" + namespace + param_service
@@ -38,7 +37,8 @@ def send_imu_params(namespace, param_service, params):
     full_service_name = "/" + namespace + param_service
     rospy.loginfo("Sending parameters to %s" % (full_service_name))
     rospy.wait_for_service(full_service_name)
-    try:
+    #try:
+    if True:
         service = rospy.ServiceProxy(full_service_name, SetImuParams)
 
         req = SetImuParamsRequest()
@@ -47,15 +47,17 @@ def send_imu_params(namespace, param_service, params):
         req.gyro_bias = params["gyro_bias"]
         req.mag_bias = params["mag_bias"]
         req.mag_scale = params["mag_scale"]
-        req.magnetic_declination = params["magnetic_declination"]
+        req.magnetic_declination_degree = params["magnetic_declination_degree"]
+        req.magnetic_declination_minute = params["magnetic_declination_minute"]
+        req.magnetic_declination_second = params["magnetic_declination_second"]
 
         res = service(req)
         if res.success == False:
             rospy.logwarn("Failed to send parameters.")
             return False
-    except:
-        rospy.logwarn("Exception occured! Failed to send parameters.")
-        return False
+    #except:
+    #    rospy.logwarn("Exception occured! Failed to send parameters.")
+    #    return False
     return True
 
 def send_odom_params(namespace, param_service, params):
@@ -115,7 +117,9 @@ imu_params = {
     "gyro_bias": rospy.get_param("~gyro_bias", [0,0,0]),
     "mag_bias": rospy.get_param("~mag_bias", [0,0,0]),
     "mag_scale": rospy.get_param("~mag_scale", [0,0,0]),
-    "magnetic_declination": rospy.get_param("~magnetic_declination", 0)
+    "magnetic_declination_degree": rospy.get_param("~magnetic_declination_degree", 0),
+    "magnetic_declination_minute": rospy.get_param("~magnetic_declination_minute", 0),
+    "magnetic_declination_second": rospy.get_param("~magnetic_declination_second", 0)
 }
 
 odom_params = {

@@ -10,8 +10,8 @@ max_angular_velocity: 0.0 # How fast UAV can rotate around it's center in [rad/s
 # closed loop control
 loop_update_rate_ms : 30
 smoothing_factor: 0.19
-left_motor_pid: [0.59548606, 5.44140023, 0.0] # Kp, ki, kd.
-right_motor_pid: [0.59548606, 5.44140023, 0.0]
+left_motor_pid: [1, 5.44140023, 0.0] # Kp, ki, kd.
+right_motor_pid: [1, 5.44140023, 0.0]
 
 # imu config
 imu_update_rate_ms: 30
@@ -19,7 +19,9 @@ acc_bias: [24859.7910156, 19768.7460938, -6333.76464844]
 gyro_bias: [-407.208129883, -211.160003662, -68.2262496948]
 mag_bias: [1012.87866211, 577.100952148, 105.396537781]
 mag_scale: [0.979166686535, 1.11904764175, 0.921568632126]
-magnetic_declination: 6.9
+magnetic_declination_degree: 6.0
+magnetic_declination_minute: 10.0
+magnetic_declination_second: 0
 
 # odom config
 odom_update_rate_ms: 30

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from statek_msgs.msg import Velocity
+from statek_hw.msg import Velocity
 from geometry_msgs.msg import Twist
 import time
 
