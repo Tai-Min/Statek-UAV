@@ -31,11 +31,12 @@
         <arg name="statek_name" value="$(arg statek_name)"/>
     </include>
 
+    <!-- GPS -->
     <group ns="$(arg statek_name)/gps/">
         <node name="gps_node" pkg="nmea_navsat_driver" type="nmea_serial_driver" output="screen" respawn="true">
             <param name="port" type="string" value="/dev/ttyTHS1"/>
             <param name="baud" type="int" value="9600"/>
-            <param name="frame_id" type="string" value="$(arg statek_name)/gps"/>
+            <param name="frame_id" type="string" value="$(arg statek_name)/gps/gps_link"/>
         </node>
     </group>
 

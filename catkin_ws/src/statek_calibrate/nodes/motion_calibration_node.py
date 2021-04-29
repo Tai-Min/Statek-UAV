@@ -245,7 +245,7 @@ def tune_pid(order, model, sampling_time):
     print("Starting PI optimizer...")
     solution = opt.least_squares(simulate_object, [0, 0], bounds=([0,0],[10,10]), max_nfev=1000, ftol=None, xtol=None, args=(order, model, sampling_time))
     print("Optimal solution found: {solution}, Performance criteria: {ise}".format(solution=solution.x, ise=solution.cost))
-    return np.append(solution.x * 0.4, 0) # Lower the gains to slow down the response
+    return np.append(solution.x * 0.6, 0) # Lower the gains to slow down the response
 
 rospy.init_node("motion_calibration_node", anonymous=True)
 

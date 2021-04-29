@@ -120,7 +120,7 @@ private:
                     x += xi;
                 }
 
-                // Draw additional pixels to make line bold.
+                // Draw additional pixels to make line bolder if requested.
                 if (bold && makeBold)
                 {
                     int boldX = x;
@@ -138,9 +138,11 @@ private:
                 if (this->get(y, x) == CellType::OBSTACLE_CELL)
                     return false;
 
-                // Stop on filled gap if required.
+                // Stop on filled gap if requested.
                 if (this->get(y, x) == CellType::FILLED_GAP && stopOnFilled)
                     return false;
+
+                this->set(y, x, cellType);
             }
         }
         else
@@ -165,7 +167,7 @@ private:
                     y += yi;
                 }
 
-                // Draw additional pixels to make line bold.
+                // Draw additional pixels to make line bolder if requested.
                 if (bold && makeBold)
                 {
                     int boldX = x;
@@ -183,7 +185,7 @@ private:
                 if (this->get(y, x) == CellType::OBSTACLE_CELL)
                     return false;
 
-                // Stop on filled gap if required.
+                // Stop on filled gap if requested.
                 if (this->get(y, x) == CellType::FILLED_GAP && stopOnFilled)
                     return false;
 
@@ -241,7 +243,7 @@ private:
                             this->rayTrace(currentPixelY, currentPixelX,
                                            checkedPixelY, checkedPixelX,
                                            params.numCellsPerRowCol, params.numCellsPerRowCol,
-                                           CellType::FILLED_GAP, true, true);
+                                           CellType::FILLED_GAP, true, false);
                     }
                 }
             }
