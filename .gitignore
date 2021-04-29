@@ -54,7 +54,6 @@ ds4_driver/
 ds4drv/
 ydlidar_ros/
 rosserial/
-ros_lib/
 
 .pio
 .vscode/.browse.c_cpp.db*

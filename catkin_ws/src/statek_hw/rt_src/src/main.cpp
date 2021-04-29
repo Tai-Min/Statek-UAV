@@ -575,6 +575,12 @@ void setClosedLoopControlServiceCallback(const std_srvs::TriggerRequest &req, st
 
 void setLeftMotorParamsCallback(const statek_hw::SetMotorParamsRequest &req, statek_hw::SetMotorParamsResponse &res)
 {
+    static bool alreadySet = false;
+    if (alreadySet)
+    {
+        return;
+    }
+
     // Don't run the test when another callback is doing stuff.
     if (SAFETY_serviceInProgress)
     {
@@ -589,6 +595,8 @@ void setLeftMotorParamsCallback(const statek_hw::SetMotorParamsRequest &req, sta
 
     leftMotor.setMotorParams(params);
 
+    alreadySet = true;
+
     res.success = true;
 
     SAFETY_serviceInProgress = false;
@@ -596,6 +604,12 @@ void setLeftMotorParamsCallback(const statek_hw::SetMotorParamsRequest &req, sta
 
 void setRightMotorParamsCallback(const statek_hw::SetMotorParamsRequest &req, statek_hw::SetMotorParamsResponse &res)
 {
+    static bool alreadySet = false;
+    if (alreadySet)
+    {
+        return;
+    }
+
     // Don't run the test when another callback is doing stuff.
     if (SAFETY_serviceInProgress)
     {
@@ -608,6 +622,8 @@ void setRightMotorParamsCallback(const statek_hw::SetMotorParamsRequest &req, st
         req.kp, req.ki, req.kd, req.smoothing_factor, req.loop_update_rate_ms, req.wheel_max_angular_velocity};
 
     rightMotor.setMotorParams(params);
+
+    alreadySet = true;
 
     res.success = true;
 
@@ -674,6 +690,12 @@ void imuCalibrationServiceCallback(const statek_hw::RunImuCalibrationRequest &re
 
 void setImuParamsServiceCallback(const statek_hw::SetImuParamsRequest &req, statek_hw::SetImuParamsResponse &res)
 {
+    static bool alreadySet = false;
+    if (alreadySet)
+    {
+        return;
+    }
+
     // Don't run the test when another callback is doing stuff.
     if (SAFETY_serviceInProgress)
     {
@@ -687,15 +709,18 @@ void setImuParamsServiceCallback(const statek_hw::SetImuParamsRequest &req, stat
     imu.setMagBias(req.mag_bias[0], req.mag_bias[1], req.mag_bias[2]);
     imu.setMagScale(req.mag_scale[0], req.mag_scale[1], req.mag_scale[2]);
 
-    int degree = req.magnetic_declination;
-    float minute = (req.magnetic_declination - degree) * 10;
-    imu.setMagneticDeclination((float)(degree + minute / 60.0));
+    float degree = req.magnetic_declination_degree;
+    float minute = req.magnetic_declination_minute;
+    float second = req.magnetic_declination_second;
+    imu.setMagneticDeclination((degree + minute / 60.0 + second / 3600.0));
 
     imuUpdateRate = req.imu_update_rate_ms;
     if (req.imu_update_rate_ms > 0)
         imuReady = true;
     else
         imuReady = 0;
+
+    alreadySet = true;
 
     res.success = true;
 
@@ -704,6 +729,12 @@ void setImuParamsServiceCallback(const statek_hw::SetImuParamsRequest &req, stat
 
 void setOdomParamsCallback(const statek_hw::SetOdomParamsRequest &req, statek_hw::SetOdomParamsResponse &res)
 {
+    static bool alreadySet = false;
+    if (alreadySet)
+    {
+        return;
+    }
+
     // Don't run the test when another callback is doing stuff.
     if (SAFETY_serviceInProgress)
     {
@@ -713,6 +744,8 @@ void setOdomParamsCallback(const statek_hw::SetOdomParamsRequest &req, statek_hw
     SAFETY_serviceInProgress = true;
 
     odom.setOdomParams({req.wheel_radius, req.distance_between_wheels, req.odom_update_rate_ms});
+
+    alreadySet = true;
 
     res.success = true;
 
@@ -732,7 +765,7 @@ bool tryPublishEncoders()
     if ((now >= previousEncoderPublishTime) && leftMotor.isReady() && rightMotor.isReady())
     {
         // Check if 100ms passed so we can publish encoders.
-        if (now - previousEncoderPublishTime >= 100)
+        if (now - previousEncoderPublishTime >= 50)
         {
             publishEncoders();
             previousEncoderPublishTime = now;
@@ -782,7 +815,7 @@ bool tryPublishIMU()
     if ((now >= previousImuPublishTime))
     {
         // Check if 100ms passed so we can publish imu data.
-        if (now - previousImuPublishTime >= 100)
+        if (now - previousImuPublishTime >= 50)
         {
             publishIMU();
             previousImuPublishTime = now;
@@ -833,7 +866,7 @@ bool tryPublishOdom()
     if ((now >= previousOdomPublishTime))
     {
         // Check if 100ms passed so we can publish odometry.
-        if (now - previousOdomPublishTime >= 100)
+        if (now - previousOdomPublishTime >= 50)
         {
             publishOdom();
             previousOdomPublishTime = now;
