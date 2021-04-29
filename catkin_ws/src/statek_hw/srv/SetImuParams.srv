@@ -3,8 +3,8 @@ float64[3] acc_bias # Some value from calibrated MPU9250.
 float64[3] gyro_bias # Some value from calibrated MPU9250.
 float64[3] mag_bias # Some value from calibrated MPU9250.
 float64[3] mag_scale # Some value from calibrated MPU9250.
-float64 magnetic_declination_degree # From internet or whatever.
-float64 magnetic_declination_minute
-float64 magnetic_declination_second
+float64 mag_dec_deg # From internet or whatever.
+float64 mag_dec_min
+float64 mag_dec_sec
 ---
 bool success # Set to true on success.
