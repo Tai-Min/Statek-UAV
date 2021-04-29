@@ -26,8 +26,8 @@ def send_motor_params(namespace, param_service, params):
 
         res = service(req)
         if res.success == False:
-            rospy.logwarn("Failed to send parameters.")
-            return False
+            rospy.logwarn("Params already sent.")
+            return True
     except:
         rospy.logwarn("Exception occured! Failed to send parameters.")
         return False
@@ -37,11 +37,11 @@ def send_imu_params(namespace, param_service, params):
     full_service_name = "/" + namespace + param_service
     rospy.loginfo("Sending parameters to %s" % (full_service_name))
     rospy.wait_for_service(full_service_name)
-    #try:
-    if True:
+    try:
         service = rospy.ServiceProxy(full_service_name, SetImuParams)
 
         req = SetImuParamsRequest()
+        
         req.imu_update_rate_ms = params["imu_update_rate_ms"]
         req.acc_bias = params["acc_bias"]
         req.gyro_bias = params["gyro_bias"]
@@ -50,14 +50,16 @@ def send_imu_params(namespace, param_service, params):
         req.magnetic_declination_degree = params["magnetic_declination_degree"]
         req.magnetic_declination_minute = params["magnetic_declination_minute"]
         req.magnetic_declination_second = params["magnetic_declination_second"]
+        print(req)
 
         res = service(req)
+
         if res.success == False:
-            rospy.logwarn("Failed to send parameters.")
-            return False
-    #except:
-    #    rospy.logwarn("Exception occured! Failed to send parameters.")
-    #    return False
+            rospy.logwarn("Params already sent.")
+            return True
+    except:
+        rospy.logwarn("Exception occured! Failed to send parameters.")
+        return False
     return True
 
 def send_odom_params(namespace, param_service, params):
@@ -74,8 +76,8 @@ def send_odom_params(namespace, param_service, params):
 
         res = service(req)
         if res.success == False:
-            rospy.logwarn("Failed to send parameters.")
-            return False
+            rospy.logwarn("Params already sent.")
+            return True
     except:
         rospy.logwarn("Exception occured! Failed to send parameters.")
         return False

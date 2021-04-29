@@ -2,25 +2,22 @@
 <launch>
     <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
 
-
-
     <!-- Real time hardware -->
     <group ns="$(arg statek_name)/real_time">
         <node name="rosserial" pkg="rosserial_python" type="serial_node.py" output="screen" respawn="true">
             <param name="port" value="/dev/stm"/>
             <param name="baud" value="57600"/>
-            <rosparam command="load" file="$(find statek_config)/yaml/motion_config.yaml"/>
         </node>
 
         <!-- Param sender -->
-        <node name="real_time_param_sender" pkg="statek_hw" type="real_time_param_sender_node.py" output="screen" respawn="false">
+        <!--<node name="real_time_param_sender" pkg="statek_hw" type="real_time_param_sender_node.py" output="screen" respawn="false">
             <param name="statek_name" value="$(arg statek_name)"/>
             <param name="left_motor_param_service_name" value="/real_time/motors/left/set_params"/>
             <param name="right_motor_param_service_name" value="/real_time/motors/right/set_params"/>
             <param name="imu_param_service_name" value="/real_time/imu/set_params"/>
             <param name="odom_param_service_name" value="/real_time/odom/set_params"/>
             <rosparam command="load" file="$(find statek_config)/yaml/motion_config.yaml"/>
-        </node>
+        </node>-->
     </group>
 
 </launch>
