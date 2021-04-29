@@ -1,0 +1,8 @@
+uint32 loop_update_rate_ms # In ms. Set to 0 to ignore.
+float64 wheel_max_angular_velocity # In rad/s. Set to negative to ignore.
+float64 smoothing_factor # Between 0 and 1. Set to negative to ignore.
+float64 kp # Set to negative to ignore.
+float64 ki # Set to negative to ignore.
+float64 kd # Set to negative to ignore.
+---
+bool success # Set to true on success.

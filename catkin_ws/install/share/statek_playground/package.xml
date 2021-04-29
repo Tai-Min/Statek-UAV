@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>statek_playground</name>
+  <version>0.0.0</version>
+  <description>The statek_playground package</description>
+
+  <maintainer email="mateusz@todo.todo">mateusz</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export></export>
+</package>

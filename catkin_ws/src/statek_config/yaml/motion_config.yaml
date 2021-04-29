@@ -19,9 +19,7 @@ acc_bias: [24859.7910156, 19768.7460938, -6333.76464844]
 gyro_bias: [-407.208129883, -211.160003662, -68.2262496948]
 mag_bias: [1012.87866211, 577.100952148, 105.396537781]
 mag_scale: [0.979166686535, 1.11904764175, 0.921568632126]
-magnetic_declination_degree: 6.0
-magnetic_declination_minute: 10.0
-magnetic_declination_second: 0
+mag_dec: [6, 10, 0]
 
 # odom config
 odom_update_rate_ms: 30

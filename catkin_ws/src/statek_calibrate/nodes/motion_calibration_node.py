@@ -297,9 +297,9 @@ raw_input("Press anything to proceed or Ctrl + C to exit.")
 imu_update_rate_ms = loop_rate
 imu_config = imu_calibration(statek_name, imu_calibration_service_name)
 
-magnetic_declination_degree = type_float("Type degrees of magnetic declination in your area as N,E (i.e from here https://www.magnetic-declination.com/): ")
-magnetic_declination_minute = type_float("Type minutes of magnetic declination in your area as N,E (i.e from here https://www.magnetic-declination.com/): ")
-magnetic_declination_second = type_float("Type seconds of magnetic declination in your area as N,E (i.e from here https://www.magnetic-declination.com/): ")
+magnetic_declination_degree = type_int("Type degrees of magnetic declination in your area as N,E (i.e from here https://www.magnetic-declination.com/): ")
+magnetic_declination_minute = type_int("Type minutes of magnetic declination in your area as N,E (i.e from here https://www.magnetic-declination.com/): ")
+magnetic_declination_second = type_int("Type seconds of magnetic declination in your area as N,E (i.e from here https://www.magnetic-declination.com/): ")
 
 # ODOM CONFIG
 odom_update_rate_ms = loop_rate
@@ -325,9 +325,7 @@ acc_bias: {acc_bias}
 gyro_bias: {gyro_bias}
 mag_bias: {mag_bias}
 mag_scale: {mag_scale}
-magnetic_declination_degree: {magnetic_declination_degree}
-magnetic_declination_minute: {magnetic_declination_minute}
-magnetic_declination_second: {magnetic_declination_second}
+mag_dec: [{magnetic_declination_degree}, {magnetic_declination_minute}, {magnetic_declination_second}]
 
 # odom config
 odom_update_rate_ms: {odom_update_rate_ms}

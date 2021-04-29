@@ -47,10 +47,7 @@ def send_imu_params(namespace, param_service, params):
         req.gyro_bias = params["gyro_bias"]
         req.mag_bias = params["mag_bias"]
         req.mag_scale = params["mag_scale"]
-        req.magnetic_declination_degree = params["magnetic_declination_degree"]
-        req.magnetic_declination_minute = params["magnetic_declination_minute"]
-        req.magnetic_declination_second = params["magnetic_declination_second"]
-        print(req)
+        req.mag_dec = params["mag_dec"]
 
         res = service(req)
 
@@ -119,9 +116,7 @@ imu_params = {
     "gyro_bias": rospy.get_param("~gyro_bias", [0,0,0]),
     "mag_bias": rospy.get_param("~mag_bias", [0,0,0]),
     "mag_scale": rospy.get_param("~mag_scale", [0,0,0]),
-    "magnetic_declination_degree": rospy.get_param("~magnetic_declination_degree", 0),
-    "magnetic_declination_minute": rospy.get_param("~magnetic_declination_minute", 0),
-    "magnetic_declination_second": rospy.get_param("~magnetic_declination_second", 0)
+    "mag_dec": rospy.get_param("~mag_dec", [0, 0, 0])
 }
 
 odom_params = {

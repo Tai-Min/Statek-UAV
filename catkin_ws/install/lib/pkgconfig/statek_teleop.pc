@@ -1,0 +1,8 @@
+prefix=/home/statek/ros/catkin_ws/install
+
+Name: statek_teleop
+Description: Description of statek_teleop
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

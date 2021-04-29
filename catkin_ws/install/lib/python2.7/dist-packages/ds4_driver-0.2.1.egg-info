@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: ds4_driver
+Version: 0.2.1
+Summary: ROS driver for the DualShock 4 controller
+Home-page: http://wiki.ros.org/ds4_driver
+Author: Naoki Mizuno
+Author-email: naoki.mizuno.256@gmail.com
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN
