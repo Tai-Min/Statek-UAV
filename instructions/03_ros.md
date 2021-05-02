@@ -1,6 +1,6 @@
 # ROS
 ## Install Ipopt and  MUMPS
-Install Ipopt and MUMPS as described [here](https://coin-or.github.io/Ipopt/INSTALL.html).
+Install Ipopt and MUMPS as described [here](https://coin-or.github.io/Ipopt/INSTALL.html) (Perform MUMPS steps in home directory).
 For Ipopt's configure step type:
 ```
 ldconfig
