@@ -6,7 +6,7 @@ For Ipopt's configure step type:
 ldconfig
 export CPLUS_INCLUDE_PATH=/usr/include/mpi:$CPLUS_INCLUDE_PATH
 export LIBRARY_PATH=/usr/lib/openmpi/lib:$LIBRARY_PATH
-../configure --with-mumps-cflags="-I$HOME/ThirdParty-Mumps/MUMPS/include -DCMAKE_CXX_COMPILER=/usr/bin/mpic++" --with-mumps-lflags="-pthread -L/usr//lib -L/usr/lib/aarch64-linux-gnu/openmpi/lib -lmpi -lmpi_cxx -lcoinmumps" --without-hsl
+../configure --with-mumps-cflags="-I$HOME/ThirdParty-Mumps/MUMPS/include -DCMAKE_CXX_COMPILER=/usr/bin/mpic++" --with-mumps-lflags="-pthread -L/usr//lib -L/usr/lib/aarch64-linux-gnu/openmpi/lib -lmpi_cxx -lcoinmumps" --without-hsl
 ```
 
 ## Setting up ROS 
