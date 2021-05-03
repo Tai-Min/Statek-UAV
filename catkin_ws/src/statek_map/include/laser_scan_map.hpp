@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include "abstract_map.hpp"
-#include <iostream>
+
 class LaserScanMap : public AbstractMap
 {
 public:

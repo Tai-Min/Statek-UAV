@@ -5,6 +5,9 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /TF1/Tree1
+        - /Left camera rect1
+        - /Odometry1
+        - /Odometry1/Shape1
       Splitter Ratio: 0.5
     Tree Height: 872
   - Class: rviz/Selection
@@ -133,33 +136,33 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        statek/base_link:
-          statek/gps/gps_link:
-            {}
-          statek/imu/imu_link:
-            {}
-          statek/laser/laser_link:
-            {}
-          statek/motors/left_link:
-            {}
-          statek/motors/right_link:
-            {}
-          statek/stereo/left_link:
-            {}
-          statek/stereo/right_link:
-            {}
-          statek/wheels/left_back_link:
-            {}
-          statek/wheels/left_front_link:
-            {}
-          statek/wheels/right_back_link:
-            {}
-          statek/wheels/right_front_link:
-            {}
         statek/map/local_map:
-          statek/odom/odom_link:
-            statek/base_footprint:
-              {}
+          {}
+        statek/odom/odom_link:
+          statek/base_footprint:
+            statek/base_link:
+              statek/gps/gps_link:
+                {}
+              statek/imu/imu_link:
+                {}
+              statek/laser/laser_link:
+                {}
+              statek/motors/left_link:
+                {}
+              statek/motors/right_link:
+                {}
+              statek/stereo/left_link:
+                {}
+              statek/stereo/right_link:
+                {}
+              statek/wheels/left_back_link:
+                {}
+              statek/wheels/left_front_link:
+                {}
+              statek/wheels/right_back_link:
+                {}
+              statek/wheels/right_front_link:
+                {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -197,7 +200,7 @@ Visualization Manager:
       Image Rendering: overlay
       Image Topic: /statek/stereo/left/image_rect_color
       Name: Left camera rect
-      Overlay Alpha: 1
+      Overlay Alpha: 0.75
       Queue Size: 2
       Transport Hint: compressed
       Unreliable: false
@@ -209,6 +212,7 @@ Visualization Manager:
         Lidar img: true
         Local map: true
         Local map markers: true
+        Odometry: true
         RobotModel: false
         Stereo camera points: true
         TF: false
@@ -283,6 +287,40 @@ Visualization Manager:
         {}
       Queue Size: 1
       Value: false
+    - Angle Tolerance: 0.10000000149011612
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Keep: 10
+      Name: Odometry
+      Position Tolerance: 0.10000000149011612
+      Shape:
+        Alpha: 1
+        Axes Length: 1.5
+        Axes Radius: 0.05000000074505806
+        Color: 255; 25; 0
+        Head Length: 0.30000001192092896
+        Head Radius: 0.10000000149011612
+        Shaft Length: 1
+        Shaft Radius: 0.05000000074505806
+        Value: Axes
+      Topic: /statek/real_time/odom
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -311,25 +349,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 6.686718940734863
+      Distance: 5.227226734161377
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.8960639834403992
-        Y: -0.26527294516563416
-        Z: 0.12308546900749207
+        X: 0.5184213519096375
+        Y: -0.02173876203596592
+        Z: 0.39343684911727905
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8047963380813599
+      Pitch: 0.5547966361045837
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.1672091484069824
+      Yaw: 1.4372109174728394
     Saved: ~
 Window Geometry:
   Displays:

@@ -179,11 +179,6 @@ protected:
         std::fill(this->mapMatrix.begin(), this->mapMatrix.end(), CellType::UNKNOWN_CELL);
     }
 
-    /*int8_t get(const AbstractMap &m, unsigned int y, unsigned int x) const
-    {
-        return m[y * params.numCellsPerRowCol + x];
-    }*/
-
 public:
     /**
      * @brief Class constructor. AbstractMap::setParams must be called before this constructor.

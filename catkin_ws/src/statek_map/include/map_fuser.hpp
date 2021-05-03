@@ -98,6 +98,11 @@ private:
             dy = y0 - y1;
         }
 
+        // First free cell should be drawn.
+        if(cellType == FREE_CELL){
+            this->set(y, x, cellType);
+        }
+
         if (dx > dy)
         {
             ai = (dy - dx) * 2;

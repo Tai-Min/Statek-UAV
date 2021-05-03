@@ -25,7 +25,7 @@ catkin_package(
     rospy
     roscpp
     std_msgs
-)
+) 
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
@@ -34,5 +34,5 @@ include_directories(
 add_executable(local_mapper_node src/local_mapper_node.cpp)
 target_link_libraries(local_mapper_node ${catkin_LIBRARIES})
 
-add_executable(voronoi_mapper_node src/local_mapper_node.cpp)
-target_link_libraries(voronoi_mapper_node ${catkin_LIBRARIES})
+add_executable(voronoi_mapper_node src/voronoi_mapper_node.cpp)
+target_link_libraries(voronoi_mapper_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
