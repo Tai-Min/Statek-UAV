@@ -22,9 +22,6 @@ Now, install third party packages:
 * [ydlidar_ros](https://github.com/YDLIDAR/ydlidar_ros)
 * [nmea_navsat_driver](http://wiki.ros.org/nmea_navsat_driver)
 * [rosserial](https://github.com/ros-drivers/rosserial) (select melodic branch to clone)
-* [tuw_multi_robot](https://github.com/tuw-robotics/tuw_multi_robot)
-* [tuw_msgs](https://github.com/tuw-robotics/tuw_msgs)
-* [tuw_geometry](https://github.com/tuw-robotics/tuw_geometry)
 
 cd into rosserial:
 ```
