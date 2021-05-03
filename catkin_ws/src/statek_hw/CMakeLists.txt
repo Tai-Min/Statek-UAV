@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   message_generation
 )
-find_package(OpenCV)
+find_package(OpenCV 4 REQUIRED)
 
 include_directories(${roscpp_INCLUDE_DIRS})
 include_directories(${std_msgs_INCLUDE_DIRS})

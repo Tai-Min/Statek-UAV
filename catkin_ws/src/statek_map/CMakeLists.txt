@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   std_msgs
 )
-
+find_package(OpenCV 3)
 
 include_directories(${roscpp_INCLUDE_DIRS})
 include_directories(${std_msgs_INCLUDE_DIRS})
@@ -33,3 +33,6 @@ include_directories(
 
 add_executable(local_mapper_node src/local_mapper_node.cpp)
 target_link_libraries(local_mapper_node ${catkin_LIBRARIES})
+
+add_executable(voronoi_mapper_node src/local_mapper_node.cpp)
+target_link_libraries(voronoi_mapper_node ${catkin_LIBRARIES})

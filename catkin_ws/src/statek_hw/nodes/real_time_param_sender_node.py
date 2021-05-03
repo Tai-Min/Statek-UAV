@@ -50,7 +50,6 @@ def send_imu_params(namespace, param_service, params):
         req.mag_dec = params["mag_dec"]
 
         res = service(req)
-
         if res.success == False:
             rospy.logwarn("Params already sent.")
             return True

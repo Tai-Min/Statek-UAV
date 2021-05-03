@@ -1,17 +1,17 @@
 # wheel config
-wheel_radius: 0.12 # In [m].
+wheel_radius: 0.13 # In [m].
 wheel_max_angular_velocity: 1.9 # How fast wheels can rotate in [rad/s].
 
 # kinematic config
-distance_between_wheels: 0.62 # In [m].
-max_linear_velocity: 0.0 # How fast UAV can move forward in m/s defined as wheel_radius*wheel_max_angular_velocity.
-max_angular_velocity: 0.0 # How fast UAV can rotate around it's center in [rad/s] defined as max_linear_velocity / (distance_between_wheels / 2).
+distance_between_wheels: 0.615 # In [m].
+max_linear_velocity: 0.247 # How fast UAV can move forward in m/s defined as wheel_radius*wheel_max_angular_velocity.
+max_angular_velocity: 0.8033 # How fast UAV can rotate around it's center in [rad/s] defined as max_linear_velocity / (distance_between_wheels / 2).
 
 # closed loop control
 loop_update_rate_ms : 30
 smoothing_factor: 0.19
-left_motor_pid: [1, 5.44140023, 0.0] # Kp, ki, kd.
-right_motor_pid: [1, 5.44140023, 0.0]
+left_motor_pid: [2, 2.44140023, 0.0] # Kp, ki, kd.
+right_motor_pid: [2, 2.44140023, 0.0]
 
 # imu config
 imu_update_rate_ms: 30
