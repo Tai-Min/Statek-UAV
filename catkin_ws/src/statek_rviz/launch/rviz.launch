@@ -6,4 +6,8 @@
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find statek_rviz)/rviz/statek.rviz"/>
 
+    <include file="$(find statek_rviz)/launch/map_to_markers.launch">
+        <arg name="statek_name" value="$(arg statek_name)"/>
+    </include>
+
 </launch>

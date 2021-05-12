@@ -6,9 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /TF1/Tree1
-        - /Left camera rect1
-        - /Local map1
-        - /Odometry1
         - /Odometry1/Shape1
       Splitter Ratio: 0.5
     Tree Height: 872
@@ -106,15 +103,13 @@ Visualization Manager:
           Value: true
         statek/base_link:
           Value: true
-        statek/earth:
-          Value: true
         statek/gps/gps_link:
           Value: true
         statek/imu/imu_link:
           Value: true
         statek/laser/laser_link:
           Value: true
-        statek/map/local_map_link:
+        statek/map/local_map:
           Value: true
         statek/motors/left_link:
           Value: true
@@ -140,35 +135,32 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        statek/base_link:
-          statek/gps/gps_link:
-            {}
-          statek/imu/imu_link:
-            {}
-          statek/laser/laser_link:
-            {}
-          statek/motors/left_link:
-            {}
-          statek/motors/right_link:
-            {}
-          statek/stereo/left_link:
-            {}
-          statek/stereo/right_link:
-            {}
-          statek/wheels/left_back_link:
-            {}
-          statek/wheels/left_front_link:
-            {}
-          statek/wheels/right_back_link:
-            {}
-          statek/wheels/right_front_link:
-            {}
-        statek/earth:
-          statek/map/local_map_link:
-            {}
-        statek/odom/odom_link:
-          statek/base_footprint:
-            {}
+        statek/map/local_map:
+          statek/odom/odom_link:
+            statek/base_footprint:
+              statek/base_link:
+                statek/gps/gps_link:
+                  {}
+                statek/imu/imu_link:
+                  {}
+                statek/laser/laser_link:
+                  {}
+                statek/motors/left_link:
+                  {}
+                statek/motors/right_link:
+                  {}
+                statek/stereo/left_link:
+                  {}
+                statek/stereo/right_link:
+                  {}
+                statek/wheels/left_back_link:
+                  {}
+                statek/wheels/left_front_link:
+                  {}
+                statek/wheels/right_back_link:
+                  {}
+                statek/wheels/right_front_link:
+                  {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -310,7 +302,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: false
+      Enabled: true
       Keep: 10
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -326,7 +318,7 @@ Visualization Manager:
         Value: Axes
       Topic: /statek/real_time/odom
       Unreliable: false
-      Value: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -355,25 +347,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 11.147102355957031
+      Distance: 4.555549144744873
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.5513193607330322
-        Y: -0.6083000898361206
-        Z: -0.8749209642410278
+        X: -0.4436613917350769
+        Y: -0.11406456679105759
+        Z: -0.44595736265182495
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.254796028137207
+      Pitch: 0.9347962737083435
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.6640288829803467
+      Yaw: 0.9240290522575378
     Saved: ~
 Window Geometry:
   Displays:
