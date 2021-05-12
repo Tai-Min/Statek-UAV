@@ -7,15 +7,16 @@
 
 #include "opencv2/videoio.hpp"
 
-class Camera {
+class Camera
+{
 private:
-    std::atomic_bool stopFlag = {false}; //!< Flag used to stop camera thread.
+    std::atomic_bool stopFlag = {false};       //!< Flag used to stop camera thread.
     std::atomic_bool firstFrameRead = {false}; //!< Flag to indicate that first frame was read.
-    std::mutex frameMutex; //!< Mutex to block cv::Mat frame.
-    std::thread cameraThread; //!< Thread to continuously read frames from the camera.
+    std::mutex frameMutex;                     //!< Mutex to block cv::Mat frame.
+    std::thread cameraThread;                  //!< Thread to continuously read frames from the camera.
 
     cv::VideoCapture cam; //!< Camera object.
-    cv::Mat frame; //!< Current frame read from camera.
+    cv::Mat frame;        //!< Current frame read from camera.
 
     /**
      * @brief Start camera thread. Stops until camera thread reads first frame.

@@ -13,20 +13,20 @@ class RosCamera
 private:
     // For image and info publishers.
     unsigned long long cntr = 0; //!< Sequence counter for header.
-    int width; //!< Camera's width.
-    int height; //!< Camera's height.
-    std::string position; //!< Position on robot (either left or right).
-    std::string tfLink; //!< Camera's tf link.
+    int width;                   //!< Camera's width.
+    int height;                  //!< Camera's height.
+    std::string position;        //!< Position on robot (either left or right).
+    std::string tfLink;          //!< Camera's tf link.
 
     // To locate camera's parameters in parameter server.
     std::string cameraParamNamespace; //!< Namespace for camera's parameters.
 
     // ROS stuff.
-    ros::NodeHandle &nh; //!< Shared ros node handle.
+    ros::NodeHandle &nh;                        //!< Shared ros node handle.
     image_transport::Publisher imgRawPublisher; //!< Image publisher.
-    ros::Publisher infoPublisher; //!< Camera info publisher.
-    ros::ServiceServer setInfoService; //!< Set camera info service.
-    sensor_msgs::CameraInfo infoMsg; //!< Camera info to be published.
+    ros::Publisher infoPublisher;               //!< Camera info publisher.
+    ros::ServiceServer setInfoService;          //!< Set camera info service.
+    sensor_msgs::CameraInfo infoMsg;            //!< Camera info to be published.
 
     // Hardware drivers.
     Camera camera; //!< Camera device.
@@ -37,8 +37,9 @@ private:
      * @param info Info to parse.
      * 
      * @return Yaml string.
-     */ 
+     */
     std::string getCameraInfoYamlString(const sensor_msgs::CameraInfo &info);
+
 public:
     /**
      * @brief Starts camera device and ROS image / info publishers along with set info service.
@@ -53,7 +54,7 @@ public:
      * @param flip How to flip camera's result (value between 0 and 3).
      */
     RosCamera(ros::NodeHandle &_nh, image_transport::ImageTransport &it, std::string rosNamespace, std::string _position, int _width, int _height, int framerate, int flip);
-    
+
     /**
      * @brief Class destructor. Releases the camera device.
      */

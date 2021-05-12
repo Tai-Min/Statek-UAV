@@ -1,4 +1,4 @@
-#include "../include/ros_camera.hpp"
+#include "../../include/vision_publisher/ros_camera.hpp"
 
 #include <algorithm>
 #include <sstream>

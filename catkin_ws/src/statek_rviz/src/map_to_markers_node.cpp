@@ -24,7 +24,6 @@ enum CellType
     FREE_CELL = 0,
     FILLED_GAP = 90,
     OBSTACLE_CELL = 100,
-
 };
 
 double toMeters(unsigned int idx)
@@ -42,7 +41,7 @@ visualization_msgs::Marker createMarker(
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = mapFrame;
 
-    marker.ns = statekName;
+    marker.ns = statekName + "/map";
     marker.id = id;
     marker.type = 1;
     marker.action = 0;
@@ -98,12 +97,13 @@ int main(int argc, char **argv)
 
     nh.param<std::string>("statek_name", statekName, "statek");
 
-    mapTopic = "/" + statekName + "/map/local_map";
-    mapFrame = statekName + "/map/local_map";
+    nh.param<std::string>("map_topic", mapTopic, "/" + statekName + "/map/local_map");
+    nh.param<std::string>("map_frame", mapFrame, statekName + "/map/local_map");
 
     nh.param<double>("map_size_meters", mapSizeMeters, 7);
     nh.param<double>("cell_size_meters", cellSizeMeters, 0.1);
     nh.param<int>("map_update_rate_ms", mapUpdateRateMs, 0);
+    
     numCellsPerRowCol = mapSizeMeters / cellSizeMeters;
 
     mapSub = nh.subscribe(mapTopic, 1, &publishMarkers);

@@ -1,4 +1,4 @@
-#include "../include/camera.hpp"
+#include "../../include/vision_publisher/camera.hpp"
 #include <sstream>
 #include <chrono>
 

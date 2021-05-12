@@ -188,17 +188,17 @@ class PI:
         derivative = (error - self.previous_error) / self.dt
         control_val = self.kp * error + self.ki * self.integral
 
-        sat = False
+        sat = 0
         if control_val > 1:
             if((error > 0 and control_val > 0) or (error < 0 and control_val < 0)):
                 self.integral = self.integral - error * self.dt
+            sat = control_val - 1
             control_val = 1
-            sat = True
         elif control_val < -1:
             if((error > 0 and control_val > 0) or (error < 0 and control_val < 0)):
                 self.integral = self.integral - error * self.dt
+            sat = -(control_val + 1)
             control_val = -1
-            sat = True
 
         self.previous_error = error
         self.previous_control_val = control_val
@@ -225,8 +225,7 @@ def simulate_object(pi_params, *args):
 
         result = reg.read(error)
         # Punish PI saturation
-        if result["saturation"]:
-            penalty += (np.abs(result["control_val"]) - 1)
+        penalty += np.abs(result["control_val"])
 
         control_val = result["control_val"]
 

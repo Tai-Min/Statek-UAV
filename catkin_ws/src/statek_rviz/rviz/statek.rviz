@@ -4,8 +4,10 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Global Options1
         - /TF1/Tree1
         - /Left camera rect1
+        - /Local map1
         - /Odometry1
         - /Odometry1/Shape1
       Splitter Ratio: 0.5
@@ -28,7 +30,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Left camera rect
+    SyncSource: Lidar
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -104,13 +106,15 @@ Visualization Manager:
           Value: true
         statek/base_link:
           Value: true
+        statek/earth:
+          Value: true
         statek/gps/gps_link:
           Value: true
         statek/imu/imu_link:
           Value: true
         statek/laser/laser_link:
           Value: true
-        statek/map/local_map:
+        statek/map/local_map_link:
           Value: true
         statek/motors/left_link:
           Value: true
@@ -136,33 +140,35 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        statek/map/local_map:
-          {}
+        statek/base_link:
+          statek/gps/gps_link:
+            {}
+          statek/imu/imu_link:
+            {}
+          statek/laser/laser_link:
+            {}
+          statek/motors/left_link:
+            {}
+          statek/motors/right_link:
+            {}
+          statek/stereo/left_link:
+            {}
+          statek/stereo/right_link:
+            {}
+          statek/wheels/left_back_link:
+            {}
+          statek/wheels/left_front_link:
+            {}
+          statek/wheels/right_back_link:
+            {}
+          statek/wheels/right_front_link:
+            {}
+        statek/earth:
+          statek/map/local_map_link:
+            {}
         statek/odom/odom_link:
           statek/base_footprint:
-            statek/base_link:
-              statek/gps/gps_link:
-                {}
-              statek/imu/imu_link:
-                {}
-              statek/laser/laser_link:
-                {}
-              statek/motors/left_link:
-                {}
-              statek/motors/right_link:
-                {}
-              statek/stereo/left_link:
-                {}
-              statek/stereo/right_link:
-                {}
-              statek/wheels/left_back_link:
-                {}
-              statek/wheels/left_front_link:
-                {}
-              statek/wheels/right_back_link:
-                {}
-              statek/wheels/right_front_link:
-                {}
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -304,7 +310,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 10
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -320,12 +326,12 @@ Visualization Manager:
         Value: Axes
       Topic: /statek/real_time/odom
       Unreliable: false
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: statek/base_link
+    Fixed Frame: statek/base_footprint
     Frame Rate: 30
   Name: root
   Tools:
@@ -349,25 +355,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.227226734161377
+      Distance: 11.147102355957031
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.5184213519096375
-        Y: -0.02173876203596592
-        Z: 0.39343684911727905
+        X: 0.5513193607330322
+        Y: -0.6083000898361206
+        Z: -0.8749209642410278
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5547966361045837
+      Pitch: 1.254796028137207
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.4372109174728394
+      Yaw: 1.6640288829803467
     Saved: ~
 Window Geometry:
   Displays:

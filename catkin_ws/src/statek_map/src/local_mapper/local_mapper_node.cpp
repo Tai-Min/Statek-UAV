@@ -1,14 +1,19 @@
-#include <tf2_ros/transform_broadcaster.h>
+#include <ros/ros.h>
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <tf2/transform_datatypes.h>
 
-//#include <tf2_bullet/tf2_bullet.h>
+#include "../../include/local_mapper/laser_scan_map.hpp"
+#include "../../include/local_mapper/map_fuser.hpp"
 
-#include "../include/laser_scan_map.hpp"
-#include "../include/map_fuser.hpp"
-
-geometry_msgs::TransformStamped getTransform(const std::string &frameId, const std::string &childFrameId, bool &ok)
+/**
+ * @brief Get some transform.
+ * @param targetFrame Target of transform.
+ * @param sourceFrame Source of transform.
+ * @param ok Set to true on success, false otherwise.
+ * @return If ok then requested transform, otherwise unspecified.
+ */
+geometry_msgs::TransformStamped getTransform(const std::string &targetFrame, const std::string &sourceFrame, bool &ok)
 {
     static tf2_ros::Buffer tfBuffer;
     static tf2_ros::TransformListener transformListener(tfBuffer);
@@ -18,7 +23,7 @@ geometry_msgs::TransformStamped getTransform(const std::string &frameId, const s
     ok = true;
     try
     {
-        result = tfBuffer.lookupTransform(frameId, childFrameId, ros::Time(0));
+        result = tfBuffer.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
     }
     catch (tf::TransformException ex)
     {
@@ -36,33 +41,39 @@ int main(int argc, char **argv)
 
     // Get all the params.
     std::string statekName;
-    nh.param<std::string>("statek_name", statekName, "statek");
 
-    std::string footprintFrame = statekName + "/base_footprint";
-
-    std::string odomTopic = "/" + statekName + "/real_time/odom";
-    std::string odomFrame = statekName + "/odom/odom_link";
-
-    std::string laserTopic = "/" + statekName + "/laser/scan";
-    std::string laserFrame = statekName + "/laser/laser_link";
-
-    std::string mapTopic = "/" + statekName + "/map/local_map";
-    std::string mapFrame = statekName + "/map/local_map";
+    std::string footprintFrame;
+    std::string odomTopic;
+    std::string odomFrame;
+    std::string laserTopic;
+    std::string laserFrame;
+    std::string mapTopic;
+    std::string mapFrame;
 
     double mapSizeMeters;
     double cellSizeMeters;
     double minimumGapSizeMeters;
 
+    int mapUpdateRateMs;
+
+    nh.param<std::string>("statek_name", statekName, "statek");
+
+    nh.param<std::string>("footprint_frame", footprintFrame, statekName + "/base_footprint");
+    nh.param<std::string>("odom_topic", odomTopic, "/" + statekName + "/real_time/odom");
+    nh.param<std::string>("odom_frame", odomFrame, statekName + "/odom/odom_link");
+    nh.param<std::string>("laser_topic", laserTopic, "/" + statekName + "/laser/scan");
+    nh.param<std::string>("laser_frame", laserFrame, statekName + "/laser/laser_link");
+    nh.param<std::string>("local_map_topic", mapTopic, "/" + statekName + "/map/local_map");
+    nh.param<std::string>("local_map_frame", mapFrame, statekName + "/map/local_map");
+
     nh.param<double>("map_size_meters", mapSizeMeters, 7);
     nh.param<double>("cell_size_meters", cellSizeMeters, 0.1);
     nh.param<double>("minimum_gap_size_meters", minimumGapSizeMeters, 1.1);
 
-    unsigned int numCellsPerRowCol = mapSizeMeters / cellSizeMeters;
-
-    int mapUpdateRateMs;
-    nh.param<int>("map_update_rate_ms", mapUpdateRateMs, 0);
+    nh.param<int>("map_update_rate_ms", mapUpdateRateMs, 20);
 
     // Save parameters so all mapping objects can access them.
+    unsigned int numCellsPerRowCol = mapSizeMeters / cellSizeMeters;
     AbstractMap::setParams({mapSizeMeters,
                             cellSizeMeters,
                             minimumGapSizeMeters * minimumGapSizeMeters,
