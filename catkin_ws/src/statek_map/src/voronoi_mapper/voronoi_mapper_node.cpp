@@ -52,19 +52,8 @@ int main(int argc, char **argv)
     ros::NodeHandle nh("~");
 
     // Get all the params.
-    std::string statekName;
-
-    std::string shortTermGoalTopic;
-    std::string voronoiMapTopic;
-    std::string localMapTopic;
-
-    std::string earthFrame;
-    std::string localMapFrame;
-    std::string footprintFrame;
-
-    double mapSizeMeters;
-    double cellSizeMeters;
-    double minimumGapSizeMeters;
+    std::string statekName, shortTermGoalTopic, voronoiMapTopic, localMapTopic, earthFrame, localMapFrame, footprintFrame;
+    double mapSizeMeters, cellSizeMeters, minimumGapSizeMeters;
 
     nh.param<std::string>("statek_name", statekName, "statek");
 

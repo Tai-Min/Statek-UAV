@@ -39,30 +39,30 @@ int main(int argc, char **argv)
     ros::NodeHandle nh("~");
 
     // Get all the params.
-    std::string statekName;
+    std::string statekName, gpsTopic, odomTopic, imuTopic, gpsFrame, mapFrame, earthFrame;
+    double originLonDeg, originLonMin, originLonSec, originLatDeg, originLatMin, originLatSec;
+
     nh.param<std::string>("statek_name", statekName, "statek");
 
-    double originLonDeg, originLonMin, originLonSec, originLon;
+    nh.param<std::string>("gps_topic", gpsTopic, "/" + statekName + "/gps/fix");
+    nh.param<std::string>("odom_topic", odomTopic, "/" + statekName + "/real_time/odom");
+    nh.param<std::string>("imu_topic", imuTopic, "/" + statekName + "/real_time/imu");
+
+    nh.param<std::string>("gps_frame", gpsFrame, statekName + "/gps/gps_link");
+    nh.param<std::string>("map_frame", mapFrame, statekName + "/map/local_map_link");
+    nh.param<std::string>("earth_frame", earthFrame, statekName + "/earth");
+
     nh.param<double>("origin_lon_deg", originLonDeg, 0.0);
     nh.param<double>("origin_lon_min", originLonMin, 0.0);
     nh.param<double>("origin_lon_sec", originLonSec, 0.0);
-    originLon = originLonDeg + originLonMin / 60.0 + originLonSec / 3600.0;
 
-    double originLatDeg, originLatMin, originLatSec, originLat;
     nh.param<double>("origin_lat_deg", originLatDeg, 0.0);
     nh.param<double>("origin_lat_min", originLatMin, 0.0);
     nh.param<double>("origin_lat_sec", originLatSec, 0.0);
-    originLat = originLatDeg + originLatMin / 60.0 + originLatSec / 3600.0;
-
-    std::string gpsTopic = "/" + statekName + "/gps/fix";
-    std::string odomTopic = "/" + statekName + "/real_time/odom";
-    std::string imuTopic = "/" + statekName + "/real_time/imu";
-
-    std::string gpsFrame = statekName + "/gps/gps_link";
-    std::string mapFrame = statekName + "/map/local_map_link";
-    std::string earthFrame = statekName + "/earth";
 
     // The converter.
+    double originLat = originLatDeg + originLatMin / 60.0 + originLatSec / 3600.0;
+    double originLon = originLonDeg + originLonMin / 60.0 + originLonSec / 3600.0;
     FixToTf converter(originLat, originLon, mapFrame, earthFrame);
 
     // Subscribers.
@@ -73,6 +73,7 @@ int main(int argc, char **argv)
     tf2_ros::TransformBroadcaster transformBroadcaster;
 
     // The main loop.
+    ros::Rate rate = ros::Rate(20);
     while (ros::ok())
     {
         // Update transforms.
@@ -85,6 +86,7 @@ int main(int argc, char **argv)
         }
 
         ros::spinOnce();
+        rate.sleep();
     }
     return 0;
 }

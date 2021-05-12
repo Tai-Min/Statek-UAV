@@ -39,20 +39,8 @@ int main(int argc, char **argv)
     ros::NodeHandle nh("~");
 
     // Get all the params.
-    std::string statekName;
-
-    std::string footprintFrame;
-    std::string odomTopic;
-    std::string odomFrame;
-    std::string laserTopic;
-    std::string laserFrame;
-    std::string mapTopic;
-    std::string mapFrame;
-
-    double mapSizeMeters;
-    double cellSizeMeters;
-    double minimumGapSizeMeters;
-
+    std::string statekName, footprintFrame, odomTopic, odomFrame, laserTopic, laserFrame, mapTopic, mapFrame;
+    double mapSizeMeters, cellSizeMeters, minimumGapSizeMeters;
     int mapUpdateRateMs;
 
     nh.param<std::string>("statek_name", statekName, "statek");
@@ -63,7 +51,7 @@ int main(int argc, char **argv)
     nh.param<std::string>("laser_topic", laserTopic, "/" + statekName + "/laser/scan");
     nh.param<std::string>("laser_frame", laserFrame, statekName + "/laser/laser_link");
     nh.param<std::string>("local_map_topic", mapTopic, "/" + statekName + "/map/local_map");
-    nh.param<std::string>("local_map_frame", mapFrame, statekName + "/map/local_map");
+    nh.param<std::string>("local_map_frame", mapFrame, statekName + "/map/local_map_link");
 
     nh.param<double>("map_size_meters", mapSizeMeters, 7);
     nh.param<double>("cell_size_meters", cellSizeMeters, 0.1);

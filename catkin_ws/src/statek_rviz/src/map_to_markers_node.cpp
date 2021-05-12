@@ -98,7 +98,7 @@ int main(int argc, char **argv)
     nh.param<std::string>("statek_name", statekName, "statek");
 
     nh.param<std::string>("map_topic", mapTopic, "/" + statekName + "/map/local_map");
-    nh.param<std::string>("map_frame", mapFrame, statekName + "/map/local_map");
+    nh.param<std::string>("map_frame", mapFrame, statekName + "/map/local_map_link");
 
     nh.param<double>("map_size_meters", mapSizeMeters, 7);
     nh.param<double>("cell_size_meters", cellSizeMeters, 0.1);
