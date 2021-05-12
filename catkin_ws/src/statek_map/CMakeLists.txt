@@ -47,6 +47,7 @@ add_executable(voronoi_mapper_node
 target_link_libraries(voronoi_mapper_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_executable(gps_to_tf_node 
-  src/gps_to_tf_node.cpp
+  src/gps_to_tf/gps_to_tf_node.cpp
+  src/gps_to_tf/fix_to_tf.cpp
 )
 target_link_libraries(gps_to_tf_node ${catkin_LIBRARIES})

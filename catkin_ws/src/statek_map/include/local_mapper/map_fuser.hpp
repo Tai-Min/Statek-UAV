@@ -2,10 +2,10 @@
 
 #include <chrono>
 
-#include <ros/ros.h>
+
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
-#include <tf/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
 
 #include "../abstract_map.hpp"
 #include "laser_scan_map.hpp"
@@ -15,8 +15,6 @@ class MapFuser : AbstractMap
 private:
     // ROS stuff.
     nav_msgs::OccupancyGrid mapMsg;                   //!< Stores map and it's stuff.
-    geometry_msgs::TransformStamped stampedTransform; //!< Stores transform from map to robot footprint.
-
     const int mapUpdateRateMs;                                                         //!< Time in ms that should pass between map updates.
     std::chrono::time_point<std::chrono::high_resolution_clock> previousMapUpdateTime; //!< Stores time of previous map update.
 

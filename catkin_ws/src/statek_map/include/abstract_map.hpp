@@ -1,10 +1,7 @@
 #pragma once
 
-#include <string>
 #include <vector>
 #include <geometry_msgs/TransformStamped.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2/transform_datatypes.h>
 
 class AbstractMap
 {

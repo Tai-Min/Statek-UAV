@@ -1,4 +1,6 @@
 #include "../../include/local_mapper/map_fuser.hpp"
+#include <ros/ros.h>
+#include <tf/transform_broadcaster.h>
 
 MapFuser::MapFuser(const std::string &odomFrame, const std::string &mapFrame,
                    int _mapUpdateRateMs, const std::vector<std::reference_wrapper<AbstractMap>> _maps)
@@ -9,8 +11,8 @@ MapFuser::MapFuser(const std::string &odomFrame, const std::string &mapFrame,
     this->mapMsg.info.height = params.numCellsPerRowCol;
     this->mapMsg.header.frame_id = mapFrame;
 
-    this->stampedTransform.header.frame_id = mapFrame;
-    this->stampedTransform.child_frame_id = odomFrame;
+    this->transform.header.frame_id = mapFrame;
+    this->transform.child_frame_id = odomFrame;
 
     this->resize();
 }
@@ -334,25 +336,25 @@ const nav_msgs::OccupancyGrid &MapFuser::getMapMsg()
 
 const geometry_msgs::TransformStamped &MapFuser::getTransformMsg()
 {
-    this->stampedTransform.header.stamp = ros::Time::now();
+    this->transform.header.stamp = ros::Time::now();
 
     // Accommodate odometry and it's offset.
-    this->stampedTransform.transform.translation.x = this->latestOdomX - this->odomOffsetX;
-    this->stampedTransform.transform.translation.y = this->latestOdomY - this->odomOffsetY;
+    this->transform.transform.translation.x = this->latestOdomX - this->odomOffsetX;
+    this->transform.transform.translation.y = this->latestOdomY - this->odomOffsetY;
 
     tf2::Quaternion q;
     q.setRPY(0, 0, this->latestOdomTheta - this->odomOffsetTheta);
-    this->stampedTransform.transform.rotation.x = q.x();
-    this->stampedTransform.transform.rotation.y = q.y();
-    this->stampedTransform.transform.rotation.z = q.z();
-    this->stampedTransform.transform.rotation.w = q.w();
+    this->transform.transform.rotation.x = q.x();
+    this->transform.transform.rotation.y = q.y();
+    this->transform.transform.rotation.z = q.z();
+    this->transform.transform.rotation.w = q.w();
 
     // The transform created above is valid for odom to map transform
     // but we need from map to odom.
     // So we need to invert it.
     tf::Transform tfTransform;
-    tf::transformMsgToTF(this->stampedTransform.transform, tfTransform);
-    tf::transformTFToMsg(tfTransform.inverse(), this->stampedTransform.transform);
+    tf::transformMsgToTF(this->transform.transform, tfTransform);
+    tf::transformTFToMsg(tfTransform.inverse(), this->transform.transform);
 
-    return this->stampedTransform;
+    return this->transform;
 }

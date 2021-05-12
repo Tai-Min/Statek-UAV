@@ -1,9 +1,6 @@
 #pragma once
 
 #include <sensor_msgs/LaserScan.h>
-
-#include <cmath>
-
 #include "../abstract_map.hpp"
 
 class LaserScanMap : public AbstractMap

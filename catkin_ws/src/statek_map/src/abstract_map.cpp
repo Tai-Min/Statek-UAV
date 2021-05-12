@@ -1,4 +1,6 @@
 #include "../include/abstract_map.hpp"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/transform_datatypes.h>
 
 AbstractMap::MapParams AbstractMap::params = {0, 0, 0, 0};
 

@@ -2,11 +2,7 @@
 
 #include <nav_msgs/OccupancyGrid.h>
 #include <geometry_msgs/Transform.h>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <vector>
-
+#include <opencv2/core/mat.hpp>
 #include "../abstract_map.hpp"
 
 class VoronoiMap : public AbstractMap

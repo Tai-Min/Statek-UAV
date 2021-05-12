@@ -1,7 +1,6 @@
 #include <ros/ros.h>
 #include <tf2_ros/transform_listener.h>
-#include <geometry_msgs/TransformStamped.h>
-#include <tf2/transform_datatypes.h>
+#include <tf/transform_broadcaster.h>
 
 #include "../../include/local_mapper/laser_scan_map.hpp"
 #include "../../include/local_mapper/map_fuser.hpp"

@@ -1,4 +1,7 @@
 #include "../../include/voronoi_mapper/voronoi_map.hpp"
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 
 void VoronoiMap::occupancyGridToMat(const mapType &grid, cv::Mat &mat)
 {
@@ -19,7 +22,7 @@ void VoronoiMap::occupancyGridToMat(const mapType &grid, cv::Mat &mat)
 void VoronoiMap::extractObstacleCorners(const cv::Mat &map, std::vector<cv::Point> &corners)
 {
     std::vector<std::vector<cv::Point>> contours;
-    cv::findContours(map, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+    cv::findContours(map, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
     std::vector<std::vector<cv::Point>> contoursApprox;
     contoursApprox.resize(contours.size());
@@ -159,7 +162,7 @@ void VoronoiMap::onNewLocalMap(const nav_msgs::OccupancyGrid::ConstPtr &map)
     // TODO: Connect voronoi.
 
     // Display!
-    cv::cvtColor(mat, mat, CV_GRAY2BGR);
+    cv::cvtColor(mat, mat, cv::COLOR_GRAY2BGR);
 
     for (int i = 0; i < corners.size(); i++)
     {

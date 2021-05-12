@@ -1,4 +1,5 @@
 #include "../../include/local_mapper/laser_scan_map.hpp"
+#include <cmath>
 
 void LaserScanMap::onNewData(const sensor_msgs::LaserScan::ConstPtr &scan)
 {
