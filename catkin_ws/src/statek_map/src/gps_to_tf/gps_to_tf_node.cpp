@@ -39,8 +39,8 @@ int main(int argc, char **argv)
     ros::NodeHandle nh("~");
 
     // Get all the params.
-    std::string statekName, gpsTopic, odomTopic, imuTopic, gpsFrame, mapFrame, earthFrame;
-    double originLonDeg, originLonMin, originLonSec, originLatDeg, originLatMin, originLatSec;
+    std::string statekName, gpsTopic, odomTopic, imuTopic, gpsFrame, mapFrame, earthFrame, geoToEnuService, enuToGeoService;
+    double originLonDeg, originLonMin, originLonSec, originLatDeg, originLatMin, originLatSec, northCompensation;
 
     nh.param<std::string>("statek_name", statekName, "statek");
 
@@ -52,6 +52,9 @@ int main(int argc, char **argv)
     nh.param<std::string>("map_frame", mapFrame, statekName + "/map/local_map_link");
     nh.param<std::string>("earth_frame", earthFrame, statekName + "/earth");
 
+    nh.param<std::string>("geo_to_enu_service", geoToEnuService, statekName + "/geodetic_to_enu");
+    nh.param<std::string>("enu_to_geo_service", enuToGeoService, statekName + "/enu_to_geodetic");
+
     nh.param<double>("origin_lon_deg", originLonDeg, 0.0);
     nh.param<double>("origin_lon_min", originLonMin, 0.0);
     nh.param<double>("origin_lon_sec", originLonSec, 0.0);
@@ -60,16 +63,23 @@ int main(int argc, char **argv)
     nh.param<double>("origin_lat_min", originLatMin, 0.0);
     nh.param<double>("origin_lat_sec", originLatSec, 0.0);
 
+    nh.param<double>("north_compensation", northCompensation, 2.3561944902);
+
     // The converter.
     double originLat = originLatDeg + originLatMin / 60.0 + originLatSec / 3600.0;
     double originLon = originLonDeg + originLonMin / 60.0 + originLonSec / 3600.0;
-    FixToTf converter(originLat, originLon, mapFrame, earthFrame);
+    FixToTf converter(originLat, originLon, northCompensation, mapFrame, earthFrame);
 
     // Subscribers.
     ros::Subscriber gpsFixSub = nh.subscribe(gpsTopic, 1, &FixToTf::onNewFix, &converter);
     ros::Subscriber odomSub = nh.subscribe(odomTopic, 1, &FixToTf::onNewOdom, &converter);
     ros::Subscriber imuSub = nh.subscribe(imuTopic, 1, &FixToTf::onNewImu, &converter);
 
+    // Services.
+    ros::ServiceServer geoToEnuSrv = nh.advertiseService(geoToEnuService, &FixToTf::geodeticToEnuService, &converter);
+    ros::ServiceServer enuToGeoSrv = nh.advertiseService(enuToGeoService, &FixToTf::enuToGeodeticService, &converter);
+
+    // TF.
     tf2_ros::TransformBroadcaster transformBroadcaster;
 
     // The main loop.
