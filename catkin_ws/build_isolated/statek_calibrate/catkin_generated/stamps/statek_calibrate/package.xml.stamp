@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>statek_calibrate</name>
+  <version>0.0.0</version>
+  <description>The statek_calibrate package</description>
+
+  <maintainer email="statek@todo.todo">statek</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>camera_calibration</build_depend>
+  <build_depend>statek_hw</build_depend>
+  <build_export_depend>camera_calibration</build_export_depend>
+  <build_export_depend>statek_hw</build_export_depend>
+  <exec_depend>camera_calibration</exec_depend>
+  <exec_depend>statek_hw</exec_depend>
+
+  <export></export>
+</package>

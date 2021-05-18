@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/mateusz/ros/catkin_ws/devel_isolated/statek_config/setup.sh

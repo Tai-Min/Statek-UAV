@@ -41,7 +41,7 @@ visualization_msgs::Marker createMarker(
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = mapFrame;
 
-    marker.ns = statekName + "/map";
+    marker.ns = statekName + "/local_map";
     marker.id = id;
     marker.type = 1;
     marker.action = 0;

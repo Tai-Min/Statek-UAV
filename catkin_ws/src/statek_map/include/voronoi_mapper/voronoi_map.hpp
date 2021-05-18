@@ -2,6 +2,7 @@
 
 #include <nav_msgs/OccupancyGrid.h>
 #include <geometry_msgs/Transform.h>
+#include <statek_map/Graph.h>
 #include <opencv2/core/mat.hpp>
 #include "../abstract_map.hpp"
 
@@ -9,9 +10,10 @@ class VoronoiMap : public AbstractMap
 {
 private:
     double minimumGapSizeMeters;
-
-    int goalX; //!< X index position of goal from center of local map.
-    int goalY; //!< Y index position of goal from center of local map.
+    bool updatedSinceLastGet = false; //!< Flag to check whether map was updated since last map retreive using getGraph.
+    statek_map::Graph voronoiGraph;   //!< Stores voronoi graph ready to be published.
+    int goalX;                        //!< X index position of goal from center of local map.
+    int goalY;                        //!< Y index position of goal from center of local map.
 
     /**
      * @brief Convert ROS OccupancyGrid vector into OpenCV's Mat.
@@ -81,4 +83,8 @@ public:
      * @param y Y position in meters from the center of earth's tangent plane (from earth link).
      */
     void setGoalPosition(double y, double x);
+
+    bool newGraphAvailable();
+
+    const statek_map::Graph &getGraph();
 };

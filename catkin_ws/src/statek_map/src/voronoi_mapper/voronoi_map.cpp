@@ -161,6 +161,19 @@ void VoronoiMap::onNewLocalMap(const nav_msgs::OccupancyGrid::ConstPtr &map)
 
     // TODO: Connect voronoi.
 
+    // Add nodes to message.
+    this->voronoiGraph.nodes.clear();
+    for (int i = 0; i < voronoi.size(); i++)
+    {
+        statek_map::GraphNode node;
+        node.id = i;
+        node.point.x = this->toMeters(voronoi[i].x);
+        node.point.y = this->toMeters(voronoi[i].y);
+        this->voronoiGraph.nodes.push_back(node);
+    }
+
+    this->updatedSinceLastGet = true;
+
     // Display!
     cv::cvtColor(mat, mat, cv::COLOR_GRAY2BGR);
 
@@ -188,6 +201,15 @@ void VoronoiMap::setGoalPosition(double y, double x)
 
     this->goalX = toIndex(x);
     this->goalY = toIndex(y);
+}
 
-    std::cout << this->goalX << ", " << this->goalY << std::endl;
+bool VoronoiMap::newGraphAvailable()
+{
+    return this->updatedSinceLastGet;
+}
+
+const statek_map::Graph &VoronoiMap::getGraph()
+{
+    this->updatedSinceLastGet = false;
+    return this->voronoiGraph;
 }

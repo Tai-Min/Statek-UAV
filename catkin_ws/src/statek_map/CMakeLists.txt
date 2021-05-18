@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   std_msgs
+  message_generation
 )
 find_package(OpenCV)
 
@@ -20,12 +21,25 @@ include_directories(${visualization_msgs_INCLUDE_DIRS})
 include_directories(${nav_msgs_INCLUDE_DIRS})
 include_directories(${OpenCV_INCLUDE_DIRS})
 
+add_message_files(
+   FILES
+   GraphNode.msg
+   Graph.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+)
+
 catkin_package(
     DEPENDS
     rospy
     roscpp
     std_msgs
-) 
+    message_runtime
+)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}

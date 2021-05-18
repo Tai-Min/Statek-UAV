@@ -1,0 +1,8 @@
+prefix=/home/mateusz/ros/catkin_ws/devel_isolated/statek_config
+
+Name: statek_config
+Description: Description of statek_config
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

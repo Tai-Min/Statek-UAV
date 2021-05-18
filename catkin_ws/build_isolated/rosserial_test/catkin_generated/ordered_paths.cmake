@@ -1,0 +1,1 @@
+set(ORDERED_PATHS "/home/mateusz/ros/catkin_ws/devel_isolated/rosserial_server/lib;/opt/ros/melodic/lib")

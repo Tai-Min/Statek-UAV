@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/mateusz/ros/catkin_ws/devel_isolated/rosserial_windows/setup.sh

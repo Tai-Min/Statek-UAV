@@ -8,6 +8,7 @@
 
   <license>MIT</license>
 
+  <build_depend>statek_map</build_depend>
   <buildtool_depend>catkin</buildtool_depend>
 
   <export></export>

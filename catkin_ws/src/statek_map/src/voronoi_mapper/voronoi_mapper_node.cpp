@@ -2,6 +2,7 @@
 #include "../../include/voronoi_mapper/voronoi_map.hpp"
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <statek_map/Graph.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2/transform_datatypes.h>
@@ -81,6 +82,7 @@ int main(int argc, char **argv)
     // Init subscribers and publishers.
     ros::Subscriber mapSub = nh.subscribe(localMapTopic, 1, &VoronoiMap::onNewLocalMap, &mapper);
     ros::Subscriber shortTermGoalSub = nh.subscribe(shortTermGoalTopic, 1, &onNewShortTermGoal);
+    ros::Publisher voronoiPublisher = nh.advertise<statek_map::Graph>(voronoiMapTopic, 1);
     tf2_ros::TransformBroadcaster transformBroadcaster;
 
     // Main loop.
@@ -94,6 +96,11 @@ int main(int argc, char **argv)
             mapper.setTransform(t);
             mapper.setGoalPosition(goalX, goalY);
         }
+        
+        if(mapper.newGraphAvailable()){
+            voronoiPublisher.publish(mapper.getGraph());
+        }
+
         ros::spinOnce();
         rate.sleep();
     }
