@@ -1,4 +1,15 @@
 # ROS
+## Install Eigen
+In user directory:
+```
+git clone https://gitlab.com/libeigen/eigen.git
+cd eigen
+mkdir build
+cd build
+cmake ..
+make
+sudo make install 
+```
 ## Install Ipopt and  MUMPS
 Install Ipopt and MUMPS as described [here](https://coin-or.github.io/Ipopt/INSTALL.html) (Perform MUMPS steps in home directory).
 For Ipopt's configure step type:
