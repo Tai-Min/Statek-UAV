@@ -12,3 +12,5 @@ Package with nodes required for teleoperation.
     | results |
     |-|
     | Opens Rviz with statek.rviz config file. |
+
+Human model: https://sketchfab.com/3d-models/low-poly-male-human-0985ce27cfcc4911afcfba71f84df1ad

@@ -48,6 +48,13 @@ void loop();
 void update(bool rosPublish = true);
 
 /**
+ * @brief Try update ROS.
+ * @param publish Whether ROS is allowed to publish data.
+ * @return True if updated.
+ */
+bool tryUpdateROS(bool publish = true);
+
+/**
  * @brief Update ROS stuff.
  * @param publish Whether ROS is allowed to publish data.
  */
@@ -321,7 +328,8 @@ void setup()
     settings.accel_fs_sel = ACCEL_FS_SEL::A2G;
     settings.gyro_fs_sel = GYRO_FS_SEL::G250DPS;
     settings.mag_output_bits = MAG_OUTPUT_BITS::M16BITS;
-    settings.fifo_sample_rate = FIFO_SAMPLE_RATE::SMPL_125HZ;
+    settings.fifo_sample_rate = FIFO_SAMPLE_RATE::SMPL_200HZ;
+    imu.selectFilter(QuatFilterSel::MADGWICK);
     imu.setup(IMU_I2C_ADDRESS, settings);
 }
 
@@ -332,9 +340,31 @@ void loop()
 
 void update(bool rosPublish)
 {
-    updateROS(rosPublish);
+    tryUpdateROS(rosPublish);
     tryUpdateHardware();
     SAFETY();
+}
+
+bool tryUpdateROS(bool publish){
+    static unsigned long previousRosUpdateTime = millis();
+
+    unsigned long now = millis();
+    // Handle clock overflow.
+    if ((now >= previousRosUpdateTime))
+    {
+        // Check if some time passed so we can update ROS.
+        if (now - previousRosUpdateTime >= 20)
+        {
+            updateROS(publish);
+            previousRosUpdateTime = now;
+            return true;
+        }
+    }
+    else
+    {
+        previousRosUpdateTime = now;
+    }
+    return false;
 }
 
 void updateROS(bool publish)
@@ -389,7 +419,9 @@ bool tryUpdateHardware()
 
     leftMotor.tryUpdate();
     rightMotor.tryUpdate();
-    tryUpdateImu();
+    //tryUpdateImu();
+    if(imuReady)
+        imu.update();
     odom.tryUpdate();
 
     return true;
@@ -723,10 +755,9 @@ void setImuParamsServiceCallback(const statek_hw::SetImuParamsRequest &req, stat
     if (req.imu_update_rate_ms > 0)
         imuReady = true;
     else
-        imuReady = 0;
+        imuReady = false;
 
     alreadySet = true;
-
     res.success = true;
 
     SAFETY_serviceInProgress = false;
@@ -752,7 +783,6 @@ void setOdomParamsCallback(const statek_hw::SetOdomParamsRequest &req, statek_hw
     odom.setOdomParams({req.wheel_radius, req.distance_between_wheels, req.odom_update_rate_ms});
 
     alreadySet = true;
-
     res.success = true;
 
     SAFETY_serviceInProgress = false;
@@ -770,7 +800,7 @@ bool tryPublishEncoders()
     // Handle clock overflow.
     if ((now >= previousEncoderPublishTime) && leftMotor.isReady() && rightMotor.isReady())
     {
-        // Check if 100ms passed so we can publish encoders.
+        // Check if 50ms passed so we can publish encoders.
         if (now - previousEncoderPublishTime >= 50)
         {
             publishEncoders();
@@ -820,7 +850,7 @@ bool tryPublishIMU()
     // Handle clock overflow.
     if ((now >= previousImuPublishTime))
     {
-        // Check if 100ms passed so we can publish imu data.
+        // Check if 50ms passed so we can publish imu data.
         if (now - previousImuPublishTime >= 50)
         {
             publishIMU();
@@ -871,7 +901,7 @@ bool tryPublishOdom()
     // Handle clock overflow.
     if ((now >= previousOdomPublishTime))
     {
-        // Check if 100ms passed so we can publish odometry.
+        // Check if 50ms passed so we can publish odometry.
         if (now - previousOdomPublishTime >= 50)
         {
             publishOdom();
