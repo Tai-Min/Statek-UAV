@@ -203,7 +203,7 @@ Visualization Manager:
       Image Topic: /statek/stereo/left/image_rect_color
       Name: Left camera rect
       Overlay Alpha: 0.75
-      Queue Size: 2
+      Queue Size: 1
       Transport Hint: compressed
       Unreliable: false
       Value: true
@@ -352,7 +352,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: statek/earth
+    Fixed Frame: statek/base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -376,25 +376,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.482104778289795
+      Distance: 5.291081428527832
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.2978129386901855
-        Y: 0.40954896807670593
-        Z: 1.0100468397140503
+        X: 1.1271483898162842
+        Y: -0.2912672460079193
+        Z: 0.2918943762779236
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.764796793460846
+      Pitch: 0.9897966384887695
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.347215175628662
+      Yaw: 3.909027576446533
     Saved: ~
 Window Geometry:
   Displays:
