@@ -34,9 +34,36 @@ namespace statek_hw
     {
       int offset = 0;
       offset += this->header.serialize(outbuffer + offset);
-      offset += serializeAvrFloat64(outbuffer + offset, this->acceleration);
-      offset += serializeAvrFloat64(outbuffer + offset, this->velocity);
-      offset += serializeAvrFloat64(outbuffer + offset, this->position);
+      union {
+        float real;
+        uint32_t base;
+      } u_acceleration;
+      u_acceleration.real = this->acceleration;
+      *(outbuffer + offset + 0) = (u_acceleration.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_acceleration.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_acceleration.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_acceleration.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->acceleration);
+      union {
+        float real;
+        uint32_t base;
+      } u_velocity;
+      u_velocity.real = this->velocity;
+      *(outbuffer + offset + 0) = (u_velocity.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_velocity.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_velocity.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_velocity.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->velocity);
+      union {
+        float real;
+        uint32_t base;
+      } u_position;
+      u_position.real = this->position;
+      *(outbuffer + offset + 0) = (u_position.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_position.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_position.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_position.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->position);
       return offset;
     }
 
@@ -44,14 +71,44 @@ namespace statek_hw
     {
       int offset = 0;
       offset += this->header.deserialize(inbuffer + offset);
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->acceleration));
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->velocity));
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->position));
+      union {
+        float real;
+        uint32_t base;
+      } u_acceleration;
+      u_acceleration.base = 0;
+      u_acceleration.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_acceleration.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_acceleration.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_acceleration.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->acceleration = u_acceleration.real;
+      offset += sizeof(this->acceleration);
+      union {
+        float real;
+        uint32_t base;
+      } u_velocity;
+      u_velocity.base = 0;
+      u_velocity.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_velocity.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_velocity.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_velocity.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->velocity = u_velocity.real;
+      offset += sizeof(this->velocity);
+      union {
+        float real;
+        uint32_t base;
+      } u_position;
+      u_position.base = 0;
+      u_position.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_position.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_position.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_position.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->position = u_position.real;
+      offset += sizeof(this->position);
      return offset;
     }
 
     virtual const char * getType() override { return "statek_hw/Encoder"; };
-    virtual const char * getMD5() override { return "72b8bd04d914e248fb0847af003c28c1"; };
+    virtual const char * getMD5() override { return "3b5fe3e02a92e7aceda4e72c6ccf33c7"; };
 
   };
 

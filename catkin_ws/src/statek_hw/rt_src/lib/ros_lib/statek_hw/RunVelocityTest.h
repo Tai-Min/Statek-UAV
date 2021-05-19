@@ -72,7 +72,16 @@ static const char RUNVELOCITYTEST[] = "statek_hw/RunVelocityTest";
       u_success.real = this->success;
       *(outbuffer + offset + 0) = (u_success.base >> (8 * 0)) & 0xFF;
       offset += sizeof(this->success);
-      offset += serializeAvrFloat64(outbuffer + offset, this->velocity);
+      union {
+        float real;
+        uint32_t base;
+      } u_velocity;
+      u_velocity.real = this->velocity;
+      *(outbuffer + offset + 0) = (u_velocity.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_velocity.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_velocity.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_velocity.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->velocity);
       return offset;
     }
 
@@ -87,12 +96,22 @@ static const char RUNVELOCITYTEST[] = "statek_hw/RunVelocityTest";
       u_success.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
       this->success = u_success.real;
       offset += sizeof(this->success);
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->velocity));
+      union {
+        float real;
+        uint32_t base;
+      } u_velocity;
+      u_velocity.base = 0;
+      u_velocity.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_velocity.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_velocity.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_velocity.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->velocity = u_velocity.real;
+      offset += sizeof(this->velocity);
      return offset;
     }
 
     virtual const char * getType() override { return RUNVELOCITYTEST; };
-    virtual const char * getMD5() override { return "738dd6bd6e6687eab1176abf1ea50abc"; };
+    virtual const char * getMD5() override { return "fd8c3887cd2bcd109dc6726a81e70a92"; };
 
   };
 

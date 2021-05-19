@@ -226,60 +226,60 @@ int SAFETY_motorsCommunicationFlowSupervisor(); //!< Check whether there is acti
 // ROS stuff
 ros::NodeHandle nh; //!< Manage all ROS stuff.
 
-statek_hw::Velocity setpoints;
+statek_hw::Velocity setpoints; //!< Message for setpoints.
 ros::Subscriber<statek_hw::Velocity>
-    setpointsSubscriber(VELOCITY_SETPOINTS_TOPIC, &setpointsSubscriberCallback);
+    setpointsSubscriber(VELOCITY_SETPOINTS_TOPIC, &setpointsSubscriberCallback); //!< Setpoint subscriber object.
 
 ros::ServiceServer<statek_hw::RunVelocityTestRequest, statek_hw::RunVelocityTestResponse>
-    maxVelocityTestService(VELOCITY_TEST_SERVICE, &maxVelocityTestServiceCallback);
+    maxVelocityTestService(VELOCITY_TEST_SERVICE, &maxVelocityTestServiceCallback); //!< Max velocity test service object.
 
 ros::ServiceServer<statek_hw::RunModelIdentificationRequest, statek_hw::RunModelIdentificationResponse>
-    leftMotorStepResponseIdentificationService(LEFT_MOTOR_STEP_RESPONSE_IDENTIFICATION_SERVICE, &leftMotorStepResponseIdentificationServiceCallback);
+    leftMotorStepResponseIdentificationService(LEFT_MOTOR_STEP_RESPONSE_IDENTIFICATION_SERVICE, &leftMotorStepResponseIdentificationServiceCallback); //!< Step identification for left motor service object.
 
 ros::ServiceServer<statek_hw::RunModelIdentificationRequest, statek_hw::RunModelIdentificationResponse>
-    rightMotorStepResponseIdentificationService(RIGHT_MOTOR_STEP_RESPONSE_IDENTIFICATION_SERVICE, &rightMotorStepResponseIdentificationServiceCallback);
+    rightMotorStepResponseIdentificationService(RIGHT_MOTOR_STEP_RESPONSE_IDENTIFICATION_SERVICE, &rightMotorStepResponseIdentificationServiceCallback); //!< Step identification for right motor service object.
 
 ros::ServiceServer<std_srvs::TriggerRequest, std_srvs::TriggerResponse>
-    directControlService(DIRECT_CONTROL_SERVICE, &setDirectControlServiceCallback);
+    directControlService(DIRECT_CONTROL_SERVICE, &setDirectControlServiceCallback); //!< Direct control service object.
 
 ros::ServiceServer<std_srvs::TriggerRequest, std_srvs::TriggerResponse>
-    closedLoopControlService(PID_CONTROL_SERVICE, &setClosedLoopControlServiceCallback);
+    closedLoopControlService(PID_CONTROL_SERVICE, &setClosedLoopControlServiceCallback); //!< PID control service object.
 
 ros::ServiceServer<statek_hw::SetMotorParamsRequest, statek_hw::SetMotorParamsResponse>
-    setLeftMotorParamsService(LEFT_MOTOR_PARAM_SERVICE, &setLeftMotorParamsCallback);
+    setLeftMotorParamsService(LEFT_MOTOR_PARAM_SERVICE, &setLeftMotorParamsCallback); //!< Set left motor params service object.
 
 ros::ServiceServer<statek_hw::SetMotorParamsRequest, statek_hw::SetMotorParamsResponse>
-    setrightMotorParamsService(RIGHT_MOTOR_PARAM_SERVICE, &setRightMotorParamsCallback);
+    setrightMotorParamsService(RIGHT_MOTOR_PARAM_SERVICE, &setRightMotorParamsCallback); //!< Set right motor param service object.
 
 ros::ServiceServer<statek_hw::RunImuCalibrationRequest, statek_hw::RunImuCalibrationResponse>
-    imuCalibrationService(IMU_CALIBRATION_SERVICE, &imuCalibrationServiceCallback);
+    imuCalibrationService(IMU_CALIBRATION_SERVICE, &imuCalibrationServiceCallback); //!< IMU calibration service object.
 
 ros::ServiceServer<statek_hw::SetImuParamsRequest, statek_hw::SetImuParamsResponse>
-    setImuParamsService(IMU_PARAM_SERVICE, &setImuParamsServiceCallback);
+    setImuParamsService(IMU_PARAM_SERVICE, &setImuParamsServiceCallback); //!< Set IMU params service object.
 
 ros::ServiceServer<statek_hw::SetOdomParamsRequest, statek_hw::SetOdomParamsResponse>
-    setOdomParamsService(ODOM_PARAM_SERVICE, &setOdomParamsCallback);
+    setOdomParamsService(ODOM_PARAM_SERVICE, &setOdomParamsCallback); //!< Set odom params service object.
 
-statek_hw::Encoder leftEncoderMsg;
-ros::Publisher leftEncoderPublisher(LEFT_MOTOR_ENCODER_TOPIC, &leftEncoderMsg);
+statek_hw::Encoder leftEncoderMsg;                                              //!< Message for left encoder publisher.
+ros::Publisher leftEncoderPublisher(LEFT_MOTOR_ENCODER_TOPIC, &leftEncoderMsg); //!< Left encoder publisher object.
 
-statek_hw::Encoder rightEncoderMsg;
-ros::Publisher rightEncoderPublisher(RIGHT_MOTOR_ENCODER_TOPIC, &rightEncoderMsg);
+statek_hw::Encoder rightEncoderMsg;                                                //!< Message for right encoder publisher.
+ros::Publisher rightEncoderPublisher(RIGHT_MOTOR_ENCODER_TOPIC, &rightEncoderMsg); //!< Right encoder publisher object.
 
-sensor_msgs::Imu imuMsg;
-ros::Publisher imuPublisher(IMU_TOPIC, &imuMsg);
+sensor_msgs::Imu imuMsg;                         //!< Message for IMU publisher.
+ros::Publisher imuPublisher(IMU_TOPIC, &imuMsg); //!< IMU publisher object.
 
-nav_msgs::Odometry odomMsg;
-ros::Publisher odomPublisher(ODOM_TOPIC, &odomMsg);
-geometry_msgs::TransformStamped odomTrans;
-tf::TransformBroadcaster odomBroadcaster;
+nav_msgs::Odometry odomMsg;                         //!< Message for odom publisher.
+ros::Publisher odomPublisher(ODOM_TOPIC, &odomMsg); //!< Odom publisher object.
+geometry_msgs::TransformStamped odomTrans;          //!< Odom transform message.
+tf::TransformBroadcaster odomBroadcaster;           //!< Odom transform broadcaster.
 
-MotorController leftMotor(LEFT_MOTOR_GPIO, LEFT_MOTOR_ENCODER_I2C_ADDRESS, true);
-MotorController rightMotor(RIGHT_MOTOR_GPIO, RIGHT_MOTOR_ENCODER_I2C_ADDRESS);
+MotorController leftMotor(LEFT_MOTOR_GPIO, LEFT_MOTOR_ENCODER_I2C_ADDRESS, true); //!< Left motor control loop.
+MotorController rightMotor(RIGHT_MOTOR_GPIO, RIGHT_MOTOR_ENCODER_I2C_ADDRESS);    //!< Right motor control loop.
 
-MPU9250 imu;
+MPU9250 imu; //!< IMU.
 
-Odometry odom(leftMotor, rightMotor);
+Odometry odom(leftMotor, rightMotor); //!< Odometry.
 
 void setup()
 {
@@ -328,7 +328,7 @@ void setup()
     settings.accel_fs_sel = ACCEL_FS_SEL::A2G;
     settings.gyro_fs_sel = GYRO_FS_SEL::G250DPS;
     settings.mag_output_bits = MAG_OUTPUT_BITS::M16BITS;
-    settings.fifo_sample_rate = FIFO_SAMPLE_RATE::SMPL_200HZ;
+    settings.fifo_sample_rate = FIFO_SAMPLE_RATE::SMPL_125HZ;
     imu.selectFilter(QuatFilterSel::MADGWICK);
     imu.setup(IMU_I2C_ADDRESS, settings);
 }
@@ -345,7 +345,8 @@ void update(bool rosPublish)
     SAFETY();
 }
 
-bool tryUpdateROS(bool publish){
+bool tryUpdateROS(bool publish)
+{
     static unsigned long previousRosUpdateTime = millis();
 
     unsigned long now = millis();
@@ -420,7 +421,7 @@ bool tryUpdateHardware()
     leftMotor.tryUpdate();
     rightMotor.tryUpdate();
     //tryUpdateImu();
-    if(imuReady)
+    if (imuReady)
         imu.update();
     odom.tryUpdate();
 

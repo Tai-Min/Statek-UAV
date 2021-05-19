@@ -35,8 +35,26 @@ static const char SETODOMPARAMS[] = "statek_hw/SetOdomParams";
       *(outbuffer + offset + 2) = (this->odom_update_rate_ms >> (8 * 2)) & 0xFF;
       *(outbuffer + offset + 3) = (this->odom_update_rate_ms >> (8 * 3)) & 0xFF;
       offset += sizeof(this->odom_update_rate_ms);
-      offset += serializeAvrFloat64(outbuffer + offset, this->distance_between_wheels);
-      offset += serializeAvrFloat64(outbuffer + offset, this->wheel_radius);
+      union {
+        float real;
+        uint32_t base;
+      } u_distance_between_wheels;
+      u_distance_between_wheels.real = this->distance_between_wheels;
+      *(outbuffer + offset + 0) = (u_distance_between_wheels.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_distance_between_wheels.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_distance_between_wheels.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_distance_between_wheels.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->distance_between_wheels);
+      union {
+        float real;
+        uint32_t base;
+      } u_wheel_radius;
+      u_wheel_radius.real = this->wheel_radius;
+      *(outbuffer + offset + 0) = (u_wheel_radius.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_wheel_radius.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_wheel_radius.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_wheel_radius.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->wheel_radius);
       return offset;
     }
 
@@ -48,13 +66,33 @@ static const char SETODOMPARAMS[] = "statek_hw/SetOdomParams";
       this->odom_update_rate_ms |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
       this->odom_update_rate_ms |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
       offset += sizeof(this->odom_update_rate_ms);
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->distance_between_wheels));
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->wheel_radius));
+      union {
+        float real;
+        uint32_t base;
+      } u_distance_between_wheels;
+      u_distance_between_wheels.base = 0;
+      u_distance_between_wheels.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_distance_between_wheels.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_distance_between_wheels.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_distance_between_wheels.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->distance_between_wheels = u_distance_between_wheels.real;
+      offset += sizeof(this->distance_between_wheels);
+      union {
+        float real;
+        uint32_t base;
+      } u_wheel_radius;
+      u_wheel_radius.base = 0;
+      u_wheel_radius.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_wheel_radius.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_wheel_radius.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_wheel_radius.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->wheel_radius = u_wheel_radius.real;
+      offset += sizeof(this->wheel_radius);
      return offset;
     }
 
     virtual const char * getType() override { return SETODOMPARAMS; };
-    virtual const char * getMD5() override { return "c2c1b0d7cf2d7ec7ca5237bbb9467136"; };
+    virtual const char * getMD5() override { return "204411d7142fcd5b0ec6385108a0f6c2"; };
 
   };
 

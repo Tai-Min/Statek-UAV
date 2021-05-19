@@ -40,16 +40,52 @@ static const char SETIMUPARAMS[] = "statek_hw/SetImuParams";
       *(outbuffer + offset + 3) = (this->imu_update_rate_ms >> (8 * 3)) & 0xFF;
       offset += sizeof(this->imu_update_rate_ms);
       for( uint32_t i = 0; i < 3; i++){
-      offset += serializeAvrFloat64(outbuffer + offset, this->acc_bias[i]);
+      union {
+        float real;
+        uint32_t base;
+      } u_acc_biasi;
+      u_acc_biasi.real = this->acc_bias[i];
+      *(outbuffer + offset + 0) = (u_acc_biasi.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_acc_biasi.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_acc_biasi.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_acc_biasi.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->acc_bias[i]);
       }
       for( uint32_t i = 0; i < 3; i++){
-      offset += serializeAvrFloat64(outbuffer + offset, this->gyro_bias[i]);
+      union {
+        float real;
+        uint32_t base;
+      } u_gyro_biasi;
+      u_gyro_biasi.real = this->gyro_bias[i];
+      *(outbuffer + offset + 0) = (u_gyro_biasi.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_gyro_biasi.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_gyro_biasi.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_gyro_biasi.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->gyro_bias[i]);
       }
       for( uint32_t i = 0; i < 3; i++){
-      offset += serializeAvrFloat64(outbuffer + offset, this->mag_bias[i]);
+      union {
+        float real;
+        uint32_t base;
+      } u_mag_biasi;
+      u_mag_biasi.real = this->mag_bias[i];
+      *(outbuffer + offset + 0) = (u_mag_biasi.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_mag_biasi.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_mag_biasi.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_mag_biasi.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->mag_bias[i]);
       }
       for( uint32_t i = 0; i < 3; i++){
-      offset += serializeAvrFloat64(outbuffer + offset, this->mag_scale[i]);
+      union {
+        float real;
+        uint32_t base;
+      } u_mag_scalei;
+      u_mag_scalei.real = this->mag_scale[i];
+      *(outbuffer + offset + 0) = (u_mag_scalei.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_mag_scalei.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_mag_scalei.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_mag_scalei.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->mag_scale[i]);
       }
       for( uint32_t i = 0; i < 3; i++){
       union {
@@ -73,16 +109,56 @@ static const char SETIMUPARAMS[] = "statek_hw/SetImuParams";
       this->imu_update_rate_ms |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
       offset += sizeof(this->imu_update_rate_ms);
       for( uint32_t i = 0; i < 3; i++){
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->acc_bias[i]));
+      union {
+        float real;
+        uint32_t base;
+      } u_acc_biasi;
+      u_acc_biasi.base = 0;
+      u_acc_biasi.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_acc_biasi.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_acc_biasi.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_acc_biasi.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->acc_bias[i] = u_acc_biasi.real;
+      offset += sizeof(this->acc_bias[i]);
       }
       for( uint32_t i = 0; i < 3; i++){
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->gyro_bias[i]));
+      union {
+        float real;
+        uint32_t base;
+      } u_gyro_biasi;
+      u_gyro_biasi.base = 0;
+      u_gyro_biasi.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_gyro_biasi.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_gyro_biasi.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_gyro_biasi.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->gyro_bias[i] = u_gyro_biasi.real;
+      offset += sizeof(this->gyro_bias[i]);
       }
       for( uint32_t i = 0; i < 3; i++){
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->mag_bias[i]));
+      union {
+        float real;
+        uint32_t base;
+      } u_mag_biasi;
+      u_mag_biasi.base = 0;
+      u_mag_biasi.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_mag_biasi.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_mag_biasi.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_mag_biasi.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->mag_bias[i] = u_mag_biasi.real;
+      offset += sizeof(this->mag_bias[i]);
       }
       for( uint32_t i = 0; i < 3; i++){
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->mag_scale[i]));
+      union {
+        float real;
+        uint32_t base;
+      } u_mag_scalei;
+      u_mag_scalei.base = 0;
+      u_mag_scalei.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_mag_scalei.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_mag_scalei.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_mag_scalei.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->mag_scale[i] = u_mag_scalei.real;
+      offset += sizeof(this->mag_scale[i]);
       }
       for( uint32_t i = 0; i < 3; i++){
       union {
@@ -99,7 +175,7 @@ static const char SETIMUPARAMS[] = "statek_hw/SetImuParams";
     }
 
     virtual const char * getType() override { return SETIMUPARAMS; };
-    virtual const char * getMD5() override { return "5b52e44d9a6cc076ecccb46df6d4a341"; };
+    virtual const char * getMD5() override { return "847b3ce54e37ee7588c2ff61ac88af8b"; };
 
   };
 

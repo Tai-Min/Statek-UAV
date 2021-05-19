@@ -44,11 +44,56 @@ static const char SETMOTORPARAMS[] = "statek_hw/SetMotorParams";
       *(outbuffer + offset + 2) = (this->loop_update_rate_ms >> (8 * 2)) & 0xFF;
       *(outbuffer + offset + 3) = (this->loop_update_rate_ms >> (8 * 3)) & 0xFF;
       offset += sizeof(this->loop_update_rate_ms);
-      offset += serializeAvrFloat64(outbuffer + offset, this->wheel_max_angular_velocity);
-      offset += serializeAvrFloat64(outbuffer + offset, this->smoothing_factor);
-      offset += serializeAvrFloat64(outbuffer + offset, this->kp);
-      offset += serializeAvrFloat64(outbuffer + offset, this->ki);
-      offset += serializeAvrFloat64(outbuffer + offset, this->kd);
+      union {
+        float real;
+        uint32_t base;
+      } u_wheel_max_angular_velocity;
+      u_wheel_max_angular_velocity.real = this->wheel_max_angular_velocity;
+      *(outbuffer + offset + 0) = (u_wheel_max_angular_velocity.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_wheel_max_angular_velocity.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_wheel_max_angular_velocity.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_wheel_max_angular_velocity.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->wheel_max_angular_velocity);
+      union {
+        float real;
+        uint32_t base;
+      } u_smoothing_factor;
+      u_smoothing_factor.real = this->smoothing_factor;
+      *(outbuffer + offset + 0) = (u_smoothing_factor.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_smoothing_factor.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_smoothing_factor.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_smoothing_factor.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->smoothing_factor);
+      union {
+        float real;
+        uint32_t base;
+      } u_kp;
+      u_kp.real = this->kp;
+      *(outbuffer + offset + 0) = (u_kp.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_kp.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_kp.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_kp.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->kp);
+      union {
+        float real;
+        uint32_t base;
+      } u_ki;
+      u_ki.real = this->ki;
+      *(outbuffer + offset + 0) = (u_ki.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_ki.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_ki.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_ki.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->ki);
+      union {
+        float real;
+        uint32_t base;
+      } u_kd;
+      u_kd.real = this->kd;
+      *(outbuffer + offset + 0) = (u_kd.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_kd.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_kd.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_kd.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->kd);
       return offset;
     }
 
@@ -60,16 +105,66 @@ static const char SETMOTORPARAMS[] = "statek_hw/SetMotorParams";
       this->loop_update_rate_ms |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
       this->loop_update_rate_ms |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
       offset += sizeof(this->loop_update_rate_ms);
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->wheel_max_angular_velocity));
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->smoothing_factor));
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->kp));
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->ki));
-      offset += deserializeAvrFloat64(inbuffer + offset, &(this->kd));
+      union {
+        float real;
+        uint32_t base;
+      } u_wheel_max_angular_velocity;
+      u_wheel_max_angular_velocity.base = 0;
+      u_wheel_max_angular_velocity.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_wheel_max_angular_velocity.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_wheel_max_angular_velocity.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_wheel_max_angular_velocity.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->wheel_max_angular_velocity = u_wheel_max_angular_velocity.real;
+      offset += sizeof(this->wheel_max_angular_velocity);
+      union {
+        float real;
+        uint32_t base;
+      } u_smoothing_factor;
+      u_smoothing_factor.base = 0;
+      u_smoothing_factor.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_smoothing_factor.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_smoothing_factor.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_smoothing_factor.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->smoothing_factor = u_smoothing_factor.real;
+      offset += sizeof(this->smoothing_factor);
+      union {
+        float real;
+        uint32_t base;
+      } u_kp;
+      u_kp.base = 0;
+      u_kp.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_kp.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_kp.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_kp.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->kp = u_kp.real;
+      offset += sizeof(this->kp);
+      union {
+        float real;
+        uint32_t base;
+      } u_ki;
+      u_ki.base = 0;
+      u_ki.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_ki.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_ki.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_ki.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->ki = u_ki.real;
+      offset += sizeof(this->ki);
+      union {
+        float real;
+        uint32_t base;
+      } u_kd;
+      u_kd.base = 0;
+      u_kd.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_kd.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_kd.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_kd.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->kd = u_kd.real;
+      offset += sizeof(this->kd);
      return offset;
     }
 
     virtual const char * getType() override { return SETMOTORPARAMS; };
-    virtual const char * getMD5() override { return "b8b46f7af46e051c167d322324998b79"; };
+    virtual const char * getMD5() override { return "b2fa7ecfe95991cb18a44515bf75cd52"; };
 
   };
 
