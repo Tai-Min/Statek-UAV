@@ -39,14 +39,15 @@ int main(int argc, char **argv)
     ros::NodeHandle nh("~");
 
     // Get all the params.
-    std::string statekName, gpsTopic, odomTopic, imuTopic, gpsFrame, mapFrame, earthFrame, geoToEnuService, enuToGeoService;
-    double originLonDeg, originLonMin, originLonSec, originLatDeg, originLatMin, originLatSec, northCompensation;
+    std::string statekName, gpsTopic, odomTopic, imuTopic, fixFilteredTopic, gpsFrame, mapFrame, earthFrame, geoToEnuService, enuToGeoService;
+    double originLonDeg, originLonMin, originLonSec, originLatDeg, originLatMin, originLatSec, northCompensation, processVariance, measurementVariance;
 
     nh.param<std::string>("statek_name", statekName, "statek");
 
     nh.param<std::string>("gps_topic", gpsTopic, "/" + statekName + "/gps/fix");
     nh.param<std::string>("odom_topic", odomTopic, "/" + statekName + "/real_time/odom");
     nh.param<std::string>("imu_topic", imuTopic, "/" + statekName + "/real_time/imu");
+    nh.param<std::string>("fix_filtered_topic", fixFilteredTopic, "/" + statekName + "/gps/fix_filtered");
 
     nh.param<std::string>("gps_frame", gpsFrame, statekName + "/gps/gps_link");
     nh.param<std::string>("map_frame", mapFrame, statekName + "/map/local_map_link");
@@ -63,17 +64,23 @@ int main(int argc, char **argv)
     nh.param<double>("origin_lat_min", originLatMin, 0.0);
     nh.param<double>("origin_lat_sec", originLatSec, 0.0);
 
-    nh.param<double>("north_compensation", northCompensation, 2.3561944902);
+    nh.param<double>("north_compensation", northCompensation, 5.86);
+
+    nh.param<double>("process_variance", processVariance, 0.001);
+    nh.param<double>("measurement_variance", measurementVariance, 5);
 
     // The converter.
     double originLat = originLatDeg + originLatMin / 60.0 + originLatSec / 3600.0;
     double originLon = originLonDeg + originLonMin / 60.0 + originLonSec / 3600.0;
-    FixToTf converter(originLat, originLon, northCompensation, mapFrame, earthFrame);
+    FixToTf converter(originLat, originLon, northCompensation, processVariance, measurementVariance, mapFrame, earthFrame);
 
     // Subscribers.
     ros::Subscriber gpsFixSub = nh.subscribe(gpsTopic, 1, &FixToTf::onNewFix, &converter);
     ros::Subscriber odomSub = nh.subscribe(odomTopic, 1, &FixToTf::onNewOdom, &converter);
     ros::Subscriber imuSub = nh.subscribe(imuTopic, 1, &FixToTf::onNewImu, &converter);
+
+    // Publishers.
+    ros::Publisher fixFilteredPub = nh.advertise<sensor_msgs::NavSatFix>(fixFilteredTopic, 1);
 
     // Services.
     ros::ServiceServer geoToEnuSrv = nh.advertiseService(geoToEnuService, &FixToTf::geodeticToEnuService, &converter);
@@ -94,7 +101,9 @@ int main(int argc, char **argv)
             // Send new transforms.
             transformBroadcaster.sendTransform(converter.getTransformMsg(t.transform));
         }
-
+        if(converter.newFixAvailable()){
+            fixFilteredPub.publish(converter.getFilteredFixMsg());
+        }
         ros::spinOnce();
         rate.sleep();
     }

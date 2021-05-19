@@ -1,8 +1,0 @@
-prefix=/home/mateusz/ros/catkin_ws/devel_isolated/statek_hw
-
-Name: statek_hw
-Description: Description of statek_hw
-Version: 0.0.0
-Cflags: -I/home/mateusz/ros/catkin_ws/devel_isolated/statek_hw/include
-Libs: -L${prefix}/lib 
-Requires: rospy roscpp std_msgs image_transport cv_bridge message_runtime

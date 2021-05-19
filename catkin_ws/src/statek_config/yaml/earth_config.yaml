@@ -7,3 +7,7 @@ origin_lat_sec: 21.8
 origin_lon_deg: 18
 origin_lon_min: 35
 origin_lon_msec: 7.5
+
+# GPS sensor config.
+process_variance: 0.001
+measurement_variance: 5

@@ -1,2 +1,0 @@
-set(statek_hw_MESSAGE_FILES "/home/mateusz/ros/catkin_ws/src/statek_hw/msg/Encoder.msg;/home/mateusz/ros/catkin_ws/src/statek_hw/msg/Velocity.msg")
-set(statek_hw_SERVICE_FILES "/home/mateusz/ros/catkin_ws/src/statek_hw/srv/RunImuCalibration.srv;/home/mateusz/ros/catkin_ws/src/statek_hw/srv/RunModelIdentification.srv;/home/mateusz/ros/catkin_ws/src/statek_hw/srv/RunVelocityTest.srv;/home/mateusz/ros/catkin_ws/src/statek_hw/srv/SetImuParams.srv;/home/mateusz/ros/catkin_ws/src/statek_hw/srv/SetMotorParams.srv;/home/mateusz/ros/catkin_ws/src/statek_hw/srv/SetOdomParams.srv")

@@ -1,8 +1,8 @@
 uint32 imu_update_rate_ms
-float64[3] acc_bias # Some value from calibrated MPU9250.
-float64[3] gyro_bias # Some value from calibrated MPU9250.
-float64[3] mag_bias # Some value from calibrated MPU9250.
-float64[3] mag_scale # Some value from calibrated MPU9250.
+float32[3] acc_bias # Some value from calibrated MPU9250.
+float32[3] gyro_bias # Some value from calibrated MPU9250.
+float32[3] mag_bias # Some value from calibrated MPU9250.
+float32[3] mag_scale # Some value from calibrated MPU9250.
 int16[3] mag_dec # Deg, min, sec.
 ---
 bool success # Set to true on success.
