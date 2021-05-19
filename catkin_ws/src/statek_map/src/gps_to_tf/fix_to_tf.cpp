@@ -157,7 +157,7 @@ void FixToTf::onNewImu(const sensor_msgs::Imu::ConstPtr &imu)
     double temp1, temp2, theta;
     tf::Matrix3x3(quat).getRPY(temp1, temp2, theta);
     this->latestYaw = 1.5 * M_PI + theta - this->northCompensation;
-
+    std::cout << this->latestYaw * 180.0 / M_PI << std::endl;
     // Use filter only after first fix to get good initial values.
     if (!fstFix)
     {
@@ -183,7 +183,7 @@ void FixToTf::onNewFix(const sensor_msgs::NavSatFix::ConstPtr &fix)
     if (isnan(fix->latitude) || isnan(fix->longitude))
         return;
 
-    std::cout << fix->latitude << ", " << fix->longitude << std::endl;
+    //std::cout << fix->latitude << ", " << fix->longitude << std::endl;
     geodeticToEnu(fix->latitude, fix->longitude, this->latestTangentX, this->latestTangentY, this->latestTangentZ);
 
     Kalman::Estimates estimates = this->filter.update({(double)this->latestAccelerationEast, (double)this->latestAccelerationNorth, (double)this->odomOffsetTheta},
@@ -199,7 +199,7 @@ void FixToTf::onNewFix(const sensor_msgs::NavSatFix::ConstPtr &fix)
     fixFiltered.latitude = fix->latitude;
     fixFiltered.longitude = fix->longitude;
 
-    std::cout << fixFiltered.latitude << ", " << fixFiltered.longitude << std::endl;
+    //std::cout << fixFiltered.latitude << ", " << fixFiltered.longitude << std::endl;
 
     // Fix updated so reset offsets.
     this->odomOffsetX = 0;
