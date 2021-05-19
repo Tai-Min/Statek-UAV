@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(statek_map)
 
 add_compile_options(-std=c++11)
+add_compile_options(-std=gnu++11)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
