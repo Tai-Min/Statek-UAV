@@ -11,6 +11,7 @@ Install required python modules:
 sudo apt-get install python-numpy python-scipy python-matplotlib ipython python-pandas python-sympy python-nose
 sudo apt-get install gfortran
 pip2 install scipy
+pip2 install astar
 ```
 ## Configure wifi
 Find name of your wifi device:
