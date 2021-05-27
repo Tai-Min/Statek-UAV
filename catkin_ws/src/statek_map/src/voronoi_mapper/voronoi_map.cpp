@@ -2,6 +2,15 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <iostream>
+#include <chrono>
+
+double VoronoiMap::minimumGapSizeMeters = 0;
+
+VoronoiMap::VoronoiMap()
+{
+    this->minimumGapSizeMeters = sqrt(params.minimumGapSizeMetersSquared);
+}
 
 void VoronoiMap::occupancyGridToMat(const mapType &grid, cv::Mat &mat)
 {
@@ -9,10 +18,10 @@ void VoronoiMap::occupancyGridToMat(const mapType &grid, cv::Mat &mat)
 
     for (int i = 0; i < data.size(); i++)
     {
-        if (data[i] == 0)
-            data[i] = 255;
-        else
+        if (data[i] == CellType::FREE_CELL || data[i] == CellType::UNKNOWN_CELL)
             data[i] = 0;
+        else
+            data[i] = 255;
     }
 
     mat.create(params.numCellsPerRowCol, params.numCellsPerRowCol, CV_8UC1);
@@ -78,58 +87,205 @@ void VoronoiMap::getVoronoiPoints(const std::vector<cv::Point> &corners, std::ve
     }
 }
 
-double VoronoiMap::getDistanceToObstacle(unsigned int y, unsigned int x)
+bool VoronoiMap::pointTooCloseToObstacle(unsigned int y, unsigned int x, const mapType &grid)
 {
-}
+    // Increment ray tracing by more pixels for performance.
+    // This will add some error but w/e for bigger maps.
+    static const int increment = 5;
 
-bool VoronoiMap::pointTooCloseToObstacle(unsigned int y, unsigned int x)
-{
     // Ray trace free cells from center of the map to edges.
-    for (int currentPixelY = 0; currentPixelY < params.numCellsPerRowCol; currentPixelY++)
+    for (int currentPixelY = 0; currentPixelY < params.numCellsPerRowCol; currentPixelY += increment)
     {
         // Check point to top and bottom edge of the map (y = first and every x) and (y = last and every x).
         if (currentPixelY == 0 || currentPixelY == params.numCellsPerRowCol - 1)
         {
-            for (int currentPixelX = 0; currentPixelX < params.numCellsPerRowCol; currentPixelX++)
+            for (int currentPixelX = 0; currentPixelX < params.numCellsPerRowCol; currentPixelX += increment)
             {
+                double distance;
+                distance = rayTrace(y, x, 0, currentPixelX, grid, increment, false);
+                if (distance >= 0 && distance * params.cellSizeMeters < minimumGapSizeMeters * 0.5)
+                    return true;
+
+                distance = rayTrace(y, x, params.numCellsPerRowCol - 1, currentPixelX, grid, increment, false);
+                if (distance >= 0 && distance * params.cellSizeMeters < minimumGapSizeMeters * 0.5)
+                    return true;
             }
         }
         // Check point to left and right edge of the map (every other y and x = first) and (every other y and x = last).
         else
         {
+            double distance;
+            distance = rayTrace(y, x, currentPixelY, 0, grid, increment, false);
+            if (distance >= 0 && distance * params.cellSizeMeters < minimumGapSizeMeters * 0.5)
+                return true;
+
+            distance = rayTrace(y, x, currentPixelY, params.numCellsPerRowCol - 1, grid, increment, false);
+            if (distance >= 0 && distance * params.cellSizeMeters < minimumGapSizeMeters * 0.5)
+                return true;
         }
     }
-
     return false;
+}
+
+double VoronoiMap::rayTrace(int y0, int x0, int y1, int x1, const mapType &grid, int increment, bool checkSurroundings)
+{
+    int d, dx, dy, ai, bi, xi, yi;
+    int x = x0, y = y0;
+    if (x0 < x1)
+    {
+        xi = increment;
+        dx = x1 - x0;
+    }
+    else
+    {
+        xi = -increment;
+        dx = x0 - x1;
+    }
+    if (y0 < y1)
+    {
+        yi = increment;
+        dy = y1 - y0;
+    }
+    else
+    {
+        yi = -increment;
+        dy = y0 - y1;
+    }
+
+    if (dx > dy)
+    {
+        ai = (dy - dx) * 2;
+        bi = dy * 2;
+        d = bi - dx;
+
+        while (x != x1)
+        {
+            if (d >= 0)
+            {
+                x += xi;
+                y += yi;
+                d += ai;
+            }
+            else
+            {
+                d += bi;
+                x += xi;
+            }
+
+            // Algorithm is on the edge, so it's probably possible to move further.
+            if (!isValidPoint(y, x))
+                return -1;
+
+            // Stop on obstacle.
+            if (get(grid, y, x) != CellType::FREE_CELL)
+                return sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
+
+            // Stop if there is not enough space around this point.
+            if (checkSurroundings)
+            {
+                //if (pointTooCloseToObstacle(y, x, grid))
+                //    return sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
+            }
+        }
+    }
+    else
+    {
+        ai = (dx - dy) * 2;
+        bi = dx * 2;
+        d = bi - dy;
+
+        while (y != y1)
+        {
+            if (d >= 0)
+            {
+                x += xi;
+                y += yi;
+                d += ai;
+            }
+            else
+            {
+                d += bi;
+                y += yi;
+            }
+
+            // Algorithm is on the edge, so it's probably possible to move further.
+            if (!isValidPoint(y, x))
+                return -1;
+
+            // Stop on obstacle.
+            if (get(grid, y, x) != CellType::FREE_CELL)
+                return sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
+
+            // Stop if there is not enough space around this point.
+            if (checkSurroundings)
+            {
+                // Unnecessary?
+                //if (pointTooCloseToObstacle(y, x, grid))
+                //    return sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
+            }
+        }
+    }
+    return -1;
 }
 
 void VoronoiMap::filterVoronoiPoints(std::vector<cv::Point> &voronoi, const mapType &mapData)
 {
+    std::vector<cv::Point> voronoiResult;
+    std::copy_if(voronoi.begin(), voronoi.end(), std::back_inserter(voronoiResult), [mapData](cv::Point p) {
+        bool isOk = p.y < params.numCellsPerRowCol && p.y >= 0 && p.x < params.numCellsPerRowCol && p.x >= 0 && get(mapData, p.y, p.x) == 0 && !pointTooCloseToObstacle(p.y, p.x, mapData);
+        return isOk;
+    });
+    voronoi = std::move(voronoiResult);
+}
+
+void VoronoiMap::generateMessage(const std::vector<cv::Point> &voronoi, const mapType &grid)
+{
+    this->voronoiGraph.nodes.clear();
     for (int i = 0; i < voronoi.size(); i++)
     {
-        // Remove points out of range.
-        while ((voronoi[i].x < 0 || voronoi[i].x >= params.numCellsPerRowCol || voronoi[i].y < 0 || voronoi[i].y >= params.numCellsPerRowCol) && voronoi.size() > i)
+        statek_map::GraphNode node;
+        node.id = i;
+        node.point.x = this->toMeters(voronoi[i].x);
+        node.point.y = this->toMeters(voronoi[i].y);
+        this->voronoiGraph.nodes.push_back(node);
+
+        // Last point is always a goal.
+        if (i == voronoi.size() - 1)
         {
-            voronoi.erase(voronoi.begin() + i);
+            node.isGoal = true;
         }
 
-        if (i >= voronoi.size())
-            return;
-
-        // Remove points not on free cells.
-        if (get(mapData, voronoi[i].y, voronoi[i].x) != 0)
+        // Second to last point is always a start.
+        if (i == voronoi.size() - 2)
         {
-            voronoi.erase(voronoi.begin() + i);
-            i--;
-            continue;
+            node.isStart = true;
         }
+    }
 
-        // Remove points too close to obstacles.
-        if (pointTooCloseToObstacle(voronoi[i].y, voronoi[i].x))
+    // For every pushed node...
+    for (int i = 0; i < voronoi.size(); i++)
+    {
+        for (int j = 0; j < voronoi.size(); j++)
         {
-            voronoi.erase(voronoi.begin() + i);
-            i--;
-            continue;
+            // Ignore points outside grid map
+            // Such as goal as for those points rayTrace
+            // would always return 0.
+            if (voronoi[i].y >= params.numCellsPerRowCol || voronoi[i].x >= params.numCellsPerRowCol ||
+                voronoi[i].y < 0 || voronoi[i].x < 0 ||
+                voronoi[j].y >= params.numCellsPerRowCol || voronoi[j].x >= params.numCellsPerRowCol ||
+                voronoi[j].y < 0 || voronoi[j].x < 0)
+            {
+                continue;
+            }
+
+            if (rayTrace(voronoi[i].y, voronoi[i].x,
+                         voronoi[j].y, voronoi[j].x,
+                         grid, 1) < 0)
+            {
+
+                this->voronoiGraph.nodes[i].neighbors.push_back(j);
+                this->voronoiGraph.nodes[j].neighbors.push_back(i);
+            }
         }
     }
 }
@@ -141,6 +297,10 @@ int8_t VoronoiMap::get(const mapType &v, unsigned int y, unsigned int x)
 
 void VoronoiMap::onNewLocalMap(const nav_msgs::OccupancyGrid::ConstPtr &map)
 {
+    //auto start = std::chrono::high_resolution_clock::now();
+
+    this->voronoiGraph.header.frame_id = map->header.frame_id;
+
     cv::Mat mat;
     occupancyGridToMat(map->data, mat);
 
@@ -159,48 +319,55 @@ void VoronoiMap::onNewLocalMap(const nav_msgs::OccupancyGrid::ConstPtr &map)
     // Insert goal's location.
     voronoi.push_back(cv::Point(this->goalX, this->goalY));
 
-    // TODO: Connect voronoi.
-
     // Add nodes to message.
-    this->voronoiGraph.nodes.clear();
-    for (int i = 0; i < voronoi.size(); i++)
-    {
-        statek_map::GraphNode node;
-        node.id = i;
-        node.point.x = this->toMeters(voronoi[i].x);
-        node.point.y = this->toMeters(voronoi[i].y);
-        this->voronoiGraph.nodes.push_back(node);
-    }
+    generateMessage(voronoi, map->data);
 
     this->updatedSinceLastGet = true;
 
-    // Display!
-    cv::cvtColor(mat, mat, cv::COLOR_GRAY2BGR);
+    /*auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = finish - start;
+    std::cout << "Elapsed time: " << elapsed.count() << " s\n";*/
 
+    // Display!
+    /*cv::cvtColor(mat, mat, cv::COLOR_GRAY2BGR);
+
+    cv::resize(mat, mat, cv::Size(), 4, 4);
+
+    // Corners.
     for (int i = 0; i < corners.size(); i++)
     {
-        cv::circle(mat, corners[i], 1, cv::Scalar(0, 0, 255));
+        cv::circle(mat, corners[i] * 4, 2, cv::Scalar(0, 0, 255));
     }
 
+    // Voronoi points.
     for (int i = 0; i < voronoi.size(); i++)
     {
-        cv::circle(mat, voronoi[i], 1, cv::Scalar(255, 0, 0));
+        cv::circle(mat, voronoi[i] * 4, 2, cv::Scalar(255, 0, 0));
+    }
+
+    // Voronoi lines.
+    for (int i = 0; i < this->voronoiGraph.nodes.size(); i++)
+    {
+        for (int j = 0; j < this->voronoiGraph.nodes[i].neighbors.size(); j++)
+        {
+            //std::cout << params.numCellsPerRowCol << voronoi[i] << ", " << voronoi[j] << std::endl;
+            cv::line(mat, voronoi[i] * 4, voronoi[this->voronoiGraph.nodes[i].neighbors[j]] * 4, cv::Scalar(128, 0, 0));
+        }
     }
 
     cv::namedWindow("T", 0);
     cv::resizeWindow("T", 800, 800);
     cv::resize(mat, mat, cv::Size(800, 800));
     cv::imshow("T", mat);
-    cv::waitKey(33);
+    cv::waitKey(33);*/
 }
 
-void VoronoiMap::setGoalPosition(double y, double x)
+void VoronoiMap::onNewShortTermGoal(const geometry_msgs::PoseStamped &goal)
 {
-    double unused;
-    this->transformPoint(x, y, unused);
+    this->goalRawX = goal.pose.position.x;
+    this->goalRawY = goal.pose.position.y;
 
-    this->goalX = toIndex(x);
-    this->goalY = toIndex(y);
+    std::cout << this->goalX << std::endl;
 }
 
 bool VoronoiMap::newGraphAvailable()
@@ -211,5 +378,27 @@ bool VoronoiMap::newGraphAvailable()
 const statek_map::Graph &VoronoiMap::getGraph()
 {
     this->updatedSinceLastGet = false;
+
+    this->voronoiGraph.header.stamp = ros::Time::now();
     return this->voronoiGraph;
+}
+
+void VoronoiMap::setTransform(const geometry_msgs::TransformStamped &_transform)
+{
+    AbstractMap::setTransform(_transform);
+
+    // Transform goal from earth to local map.
+    double tempX = this->goalRawX;
+    double tempY = this->goalRawY;
+    double unused;
+    //this->transformPoint(tempX, tempY, unused);
+
+    this->goalX = toIndex(tempX);
+    this->goalY = toIndex(tempY);
+}
+
+void VoronoiMap::resize()
+{
+    AbstractMap::resize();
+    this->minimumGapSizeMeters = sqrt(params.minimumGapSizeMetersSquared);
 }

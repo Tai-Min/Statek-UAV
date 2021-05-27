@@ -29,9 +29,45 @@ visualization_msgs::Marker createNodeMarker(
     marker.pose.position.x = x;
     marker.pose.position.y = y;
 
-    marker.scale.x = 0.2;
-    marker.scale.y = 0.2;
-    marker.scale.z = 0.2;
+    marker.scale.x = 0.05;
+    marker.scale.y = 0.05;
+    marker.scale.z = 0.05;
+
+    marker.color.r = colorR;
+    marker.color.g = colorG;
+    marker.color.b = colorB;
+    marker.color.a = colorA;
+
+    marker.lifetime.nsec = 300000000;
+
+    return marker;
+}
+
+visualization_msgs::Marker createPathMarker(
+    int id, double x0, double y0, double x1, double y1,
+    double colorR, double colorG, double colorB, double colorA)
+{
+    visualization_msgs::Marker marker;
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = mapFrame;
+
+    marker.ns = statekName + "/voronoi_map_nodes";
+    marker.id = id;
+    marker.type = 4; // Line strip.
+    marker.action = 0;
+
+    geometry_msgs::Point p0, p1;
+
+    p0.x = x0;
+    p0.y = y0;
+
+    p1.x = x1;
+    p1.y = y1;
+
+    marker.points.push_back(p0);
+    marker.points.push_back(p1);
+
+    marker.scale.x = 0.01;
 
     marker.color.r = colorR;
     marker.color.g = colorG;
@@ -48,11 +84,24 @@ void publishMarkers(const statek_map::Graph &graphMsg)
     int markerId = 0;
     visualization_msgs::MarkerArray markersMsg;
 
-    for (int i = 0; i < graphMsg.nodes.size(); i++)
+    for (auto node : graphMsg.nodes)
     {
         markersMsg.markers.push_back(
-            createNodeMarker(markerId, graphMsg.nodes[i].point.x, graphMsg.nodes[i].point.y, 0, 1, 0, 1));
+            createNodeMarker(markerId, node.point.x, node.point.y, 0, 1, 0, 1));
+
         markerId++;
+
+        for (auto neighborNodeIdx : node.neighbors)
+        {
+            double x0, y0, x1, y1;
+            x0 = node.point.x;
+            y0 = node.point.y;
+            x1 = graphMsg.nodes[neighborNodeIdx].point.x;
+            y1 = graphMsg.nodes[neighborNodeIdx].point.y;
+
+            markersMsg.markers.push_back(createPathMarker(markerId, x0, y0, x1, y1, 0, 1, 0, 1));
+            markerId++;
+        }
     }
 
     mapMarkerPublisher.publish(markersMsg);

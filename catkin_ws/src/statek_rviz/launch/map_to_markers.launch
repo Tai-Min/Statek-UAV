@@ -3,8 +3,7 @@
     <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
 
     <group ns="$(arg statek_name)/map/">
-        <!-- Launch camera driver -->
-        <node name="map_to_markers_node" pkg="statek_rviz" type="map_to_markers_node" output="screen" respawn="true">
+        <node name="map_to_markers" pkg="statek_rviz" type="map_to_markers_node" output="screen" respawn="true">
             <param name="statek_name" value="$(arg statek_name)"/>
             <rosparam command="load" file="$(find statek_config)/yaml/map_config.yaml"/>
         </node>

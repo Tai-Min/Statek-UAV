@@ -32,12 +32,6 @@ private:
     const std::vector<std::reference_wrapper<AbstractMap>> maps;
 
     /**
-     * @brief Check whether given coordinates are between 0 (inclusive) and sizeX / sizeY (exclusive).
-     * @return True if both y and x are in range.
-     */
-    static bool isInRange(int y, int x, int sizeY, int sizeX);
-
-    /**
      * @brief Perform sensor fusion.
      */
     void fuseMaps();
@@ -53,14 +47,12 @@ private:
      * @param x0 Start x.
      * @param y1 End y.
      * @param x1 End x.
-     * @param sizeX Number of cells along X axis.
-     * @param sizeY Number of cells along Y axis.
      * @param cellType Cell type to raycast.
      * @param bold Whether the line should be bold.
      * @param stopOnFilled Whether the algorithm should also stop on CellType::FILLED_GAP.
      * @return True if whole line was drawn. False if stopped on CellType::OBSTACLE_CELL or CellType::FILLED_GAP of stopOnFilled = true.
      */
-    bool rayTrace(int y0, int x0, int y1, int x1, int sizeX, int sizeY, int8_t cellType, bool bold = false, bool stopOnFilled = false);
+    bool rayTrace(int y0, int x0, int y1, int x1, int8_t cellType, bool bold = false, bool stopOnFilled = false);
 
     /**
      * @brief Check whether gap between given coordinates is considered small.

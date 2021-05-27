@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     tf2_ros::TransformBroadcaster transformBroadcaster;
 
     // The main loop.
-    ros::Rate rate = ros::Rate(20);
+    ros::Rate rate = ros::Rate(50);
     while (ros::ok())
     {
         // Update transforms.

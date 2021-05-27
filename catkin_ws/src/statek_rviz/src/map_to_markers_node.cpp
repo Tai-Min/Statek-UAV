@@ -59,7 +59,7 @@ visualization_msgs::Marker createMarker(
     marker.color.b = colorB;
     marker.color.a = colorA;
 
-    marker.lifetime.sec = mapUpdateRateMs / 1000.0;
+    marker.lifetime.nsec = mapUpdateRateMs * 1000000;
 
     return marker;
 }

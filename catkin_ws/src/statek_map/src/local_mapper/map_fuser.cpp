@@ -17,22 +17,12 @@ MapFuser::MapFuser(const std::string &odomFrame, const std::string &mapFrame,
     this->resize();
 }
 
-bool MapFuser::isInRange(int y, int x, int sizeY, int sizeX)
-{
-    if (y < 0 || y >= sizeY)
-        return false;
-
-    if (x < 0 || x >= sizeX)
-        return false;
-    return true;
-}
-
 void MapFuser::fuseMaps()
 {
     std::copy(maps[0].get().begin(), maps[0].get().end(), mapMsg.data.begin());
 }
 
-bool MapFuser::rayTrace(int y0, int x0, int y1, int x1, int sizeX, int sizeY, int8_t cellType, bool bold, bool stopOnFilled)
+bool MapFuser::rayTrace(int y0, int x0, int y1, int x1, int8_t cellType, bool bold, bool stopOnFilled)
 {
     int d, dx, dy, ai, bi, xi, yi;
     int x = x0, y = y0;
@@ -90,12 +80,12 @@ bool MapFuser::rayTrace(int y0, int x0, int y1, int x1, int sizeX, int sizeY, in
             {
                 int boldX = x;
                 int boldY = y - yi;
-                if (isInRange(boldY, boldX, sizeY, sizeX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
+                if (isValidPoint(boldY, boldX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
                     this->set(boldY, boldX, cellType);
 
                 boldX = x - xi;
                 boldY = y;
-                if (isInRange(boldY, boldX, sizeY, sizeX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
+                if (isValidPoint(boldY, boldX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
                     this->set(boldY, boldX, cellType);
             }
 
@@ -137,12 +127,12 @@ bool MapFuser::rayTrace(int y0, int x0, int y1, int x1, int sizeX, int sizeY, in
             {
                 int boldX = x;
                 int boldY = y - yi;
-                if (isInRange(boldY, boldX, sizeY, sizeX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
+                if (isValidPoint(boldY, boldX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
                     this->set(boldY, boldX, cellType);
 
                 boldX = x - xi;
                 boldY = y;
-                if (isInRange(boldY, boldX, sizeY, sizeX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
+                if (isValidPoint(boldY, boldX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
                     this->set(boldY, boldX, cellType);
             }
 
@@ -193,7 +183,6 @@ void MapFuser::closeSmallGaps()
                     if (this->isSmallGap(currentPixelY, currentPixelX, checkedPixelY, checkedPixelX))
                         this->rayTrace(currentPixelY, currentPixelX,
                                        checkedPixelY, checkedPixelX,
-                                       params.numCellsPerRowCol, params.numCellsPerRowCol,
                                        CellType::FILLED_GAP, true, false);
                 }
             }
@@ -214,7 +203,6 @@ void MapFuser::rayTraceFreeCells()
 
                 this->rayTrace(params.numCellsPerRowCol / 2.0, params.numCellsPerRowCol / 2.0,
                                currentPixelY, currentPixelX,
-                               params.numCellsPerRowCol, params.numCellsPerRowCol,
                                CellType::FREE_CELL, false, true); // Ray trace obstacle from one pixel to another.
             }
         }
@@ -223,11 +211,9 @@ void MapFuser::rayTraceFreeCells()
         {
             this->rayTrace(params.numCellsPerRowCol / 2.0, params.numCellsPerRowCol / 2.0,
                            currentPixelY, 0,
-                           params.numCellsPerRowCol, params.numCellsPerRowCol,
                            CellType::FREE_CELL, false, true); // Ray trace obstacle from one pixel to another.
             this->rayTrace(params.numCellsPerRowCol / 2.0, params.numCellsPerRowCol / 2.0,
                            currentPixelY, params.numCellsPerRowCol - 1,
-                           params.numCellsPerRowCol, params.numCellsPerRowCol,
                            CellType::FREE_CELL, false, true);
         }
     }

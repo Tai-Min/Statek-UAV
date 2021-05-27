@@ -1,17 +1,11 @@
 #include <ros/ros.h>
 #include "../../include/voronoi_mapper/voronoi_map.hpp"
 #include <geometry_msgs/TransformStamped.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <statek_map/Graph.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2/transform_datatypes.h>
 #include <tf/transform_broadcaster.h>
-
-namespace
-{
-    double goalX, goalY;
-}
 
 /**
  * @brief Get some transform.
@@ -38,12 +32,6 @@ geometry_msgs::TransformStamped getTransform(const std::string &targetFrame, con
     }
 
     return result;
-}
-
-void onNewShortTermGoal(const geometry_msgs::PoseStamped &goal)
-{
-    goalX = goal.pose.position.x;
-    goalY = goal.pose.position.y;
 }
 
 int main(int argc, char **argv)
@@ -81,12 +69,12 @@ int main(int argc, char **argv)
 
     // Init subscribers and publishers.
     ros::Subscriber mapSub = nh.subscribe(localMapTopic, 1, &VoronoiMap::onNewLocalMap, &mapper);
-    ros::Subscriber shortTermGoalSub = nh.subscribe(shortTermGoalTopic, 1, &onNewShortTermGoal);
+    ros::Subscriber shortTermGoalSub = nh.subscribe(shortTermGoalTopic, 1, &VoronoiMap::onNewShortTermGoal, &mapper);
     ros::Publisher voronoiPublisher = nh.advertise<statek_map::Graph>(voronoiMapTopic, 1);
     tf2_ros::TransformBroadcaster transformBroadcaster;
 
     // Main loop.
-    ros::Rate rate = ros::Rate(20);
+    ros::Rate rate = ros::Rate(50);
     while (ros::ok())
     {
         bool ok;
@@ -94,7 +82,6 @@ int main(int argc, char **argv)
         if (ok)
         {
             mapper.setTransform(t);
-            mapper.setGoalPosition(goalX, goalY);
         }
         
         if(mapper.newGraphAvailable()){

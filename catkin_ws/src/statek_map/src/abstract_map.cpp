@@ -50,6 +50,17 @@ void AbstractMap::rotatePoint(double &x, double &y, double &z)
     z = xTemp * this->zx + yTemp * this->zy + zTemp * this->zz;
 }
 
+bool AbstractMap::isValidPoint(int y, int x)
+{
+    if (y < 0 || y >= params.numCellsPerRowCol)
+        return false;
+
+    if (x < 0 || x >= params.numCellsPerRowCol)
+        return false;
+        
+    return true;
+}
+
 void AbstractMap::transformPoint(double &x, double &y, double &z)
 {
     this->translatePoint(x, y, z);

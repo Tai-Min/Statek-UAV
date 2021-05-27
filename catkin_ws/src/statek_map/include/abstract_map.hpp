@@ -76,6 +76,14 @@ protected:
     static MapParams params; //!< Shared parameters for all object inheriting this class.
 
     /**
+     * @brief Check whether given coordinates are on map.
+     * @param y Y.
+     * @param x X.
+     * @return True if both y and x are in range.
+     */
+    static bool isValidPoint(int y, int x);
+
+    /**
      * @brief Translate then rotate point using transform passed to this object by setTransform.
      * @param x Point to transform and result of transform.
      * @param y Point to transform and result of transform.
