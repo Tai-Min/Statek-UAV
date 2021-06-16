@@ -10,4 +10,4 @@ origin_lon_msec: 7.5
 
 # GPS sensor config.
 process_variance: 0.001
-measurement_variance: 5
+measurement_variance: 1

@@ -17,6 +17,7 @@ private:
     double goalRawY = 0;              //!< Goal Y in earth frame.
     int goalX = 0;                    //!< X index position of goal from center of local map.
     int goalY = 0;                    //!< Y index position of goal from center of local map.
+    std::string goalLink = "";
 
     /**
      * @brief Convert ROS OccupancyGrid vector into OpenCV's Mat.
@@ -119,4 +120,6 @@ public:
      * This overrides default behavior from AbstractMap by changing some internal parameters.
      */
     virtual void resize() override;
+
+    virtual std::string getGoalLink();
 };

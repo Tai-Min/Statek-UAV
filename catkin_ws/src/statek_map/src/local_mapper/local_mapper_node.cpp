@@ -1,36 +1,8 @@
 #include <ros/ros.h>
-#include <tf2_ros/transform_listener.h>
 #include <tf/transform_broadcaster.h>
-
 #include "../../include/local_mapper/laser_scan_map.hpp"
 #include "../../include/local_mapper/map_fuser.hpp"
-
-/**
- * @brief Get some transform.
- * @param targetFrame Target of transform.
- * @param sourceFrame Source of transform.
- * @param ok Set to true on success, false otherwise.
- * @return If ok then requested transform, otherwise unspecified.
- */
-geometry_msgs::TransformStamped getTransform(const std::string &targetFrame, const std::string &sourceFrame, bool &ok)
-{
-    static tf2_ros::Buffer tfBuffer;
-    static tf2_ros::TransformListener transformListener(tfBuffer);
-
-    geometry_msgs::TransformStamped result;
-
-    ok = true;
-    try
-    {
-        result = tfBuffer.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
-    }
-    catch (tf::TransformException ex)
-    {
-        ok = false;
-    }
-
-    return result;
-}
+#include "../../include/common.hpp"
 
 int main(int argc, char **argv)
 {

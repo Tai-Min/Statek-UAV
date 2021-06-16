@@ -1,38 +1,8 @@
 #include <ros/ros.h>
-#include "../../include/voronoi_mapper/voronoi_map.hpp"
-#include <geometry_msgs/TransformStamped.h>
 #include <statek_map/Graph.h>
-#include <tf2_ros/transform_broadcaster.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2/transform_datatypes.h>
 #include <tf/transform_broadcaster.h>
-
-/**
- * @brief Get some transform.
- * @param targetFrame Target of transform.
- * @param sourceFrame Source of transform.
- * @param ok Set to true on success, false otherwise.
- * @return If ok then requested transform, otherwise unspecified.
- */
-geometry_msgs::TransformStamped getTransform(const std::string &targetFrame, const std::string &sourceFrame, bool &ok)
-{
-    static tf2_ros::Buffer tfBuffer;
-    static tf2_ros::TransformListener transformListener(tfBuffer);
-
-    geometry_msgs::TransformStamped result;
-
-    ok = true;
-    try
-    {
-        result = tfBuffer.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
-    }
-    catch (tf::TransformException ex)
-    {
-        ok = false;
-    }
-
-    return result;
-}
+#include "../../include/voronoi_mapper/voronoi_map.hpp"
+#include "../../include/common.hpp"
 
 int main(int argc, char **argv)
 {
@@ -78,13 +48,14 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         bool ok;
-        geometry_msgs::TransformStamped t = getTransform(localMapFrame, earthFrame, ok);
+        geometry_msgs::TransformStamped t = getTransform(localMapFrame, mapper.getGoalLink(), ok);
         if (ok)
         {
             mapper.setTransform(t);
         }
-        
-        if(mapper.newGraphAvailable()){
+
+        if (mapper.newGraphAvailable())
+        {
             voronoiPublisher.publish(mapper.getGraph());
         }
 

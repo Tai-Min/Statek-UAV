@@ -38,7 +38,7 @@ visualization_msgs::Marker createMarker(
     double colorR, double colorG, double colorB, double colorA)
 {
     visualization_msgs::Marker marker;
-    marker.header.stamp = ros::Time::now();
+    marker.header.stamp = ros::Time(0); // Fixes extrapolation into the future if Rviz is run remotely.
     marker.header.frame_id = mapFrame;
 
     marker.ns = statekName + "/local_map";
@@ -50,6 +50,11 @@ visualization_msgs::Marker createMarker(
     marker.pose.position.y = y;
     marker.pose.position.z = 0.35 / 2.0;
 
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+
     marker.scale.x = cellSizeMeters;
     marker.scale.y = cellSizeMeters;
     marker.scale.z = 0.35;
@@ -59,7 +64,7 @@ visualization_msgs::Marker createMarker(
     marker.color.b = colorB;
     marker.color.a = colorA;
 
-    marker.lifetime.nsec = mapUpdateRateMs * 1000000;
+    marker.lifetime.nsec = 500000000;
 
     return marker;
 }

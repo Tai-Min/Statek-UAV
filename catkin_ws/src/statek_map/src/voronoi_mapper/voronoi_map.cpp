@@ -2,6 +2,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <tf/transform_broadcaster.h>
 #include <iostream>
 #include <chrono>
 
@@ -353,47 +354,13 @@ void VoronoiMap::onNewLocalMap(const nav_msgs::OccupancyGrid::ConstPtr &map)
     /*auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
     std::cout << "Elapsed time: " << elapsed.count() << " s\n";*/
-
-    // Display!
-    /*cv::cvtColor(mat, mat, cv::COLOR_GRAY2BGR);
-
-    cv::resize(mat, mat, cv::Size(), 4, 4);
-
-    // Corners.
-    for (int i = 0; i < corners.size(); i++)
-    {
-        cv::circle(mat, corners[i] * 4, 2, cv::Scalar(0, 0, 255));
-    }
-
-    // Voronoi points.
-    for (int i = 0; i < voronoi.size(); i++)
-    {
-        cv::circle(mat, voronoi[i] * 4, 2, cv::Scalar(255, 0, 0));
-    }
-
-    // Voronoi lines.
-    for (int i = 0; i < this->voronoiGraph.nodes.size(); i++)
-    {
-        for (int j = 0; j < this->voronoiGraph.nodes[i].neighbors.size(); j++)
-        {
-            //std::cout << params.numCellsPerRowCol << voronoi[i] << ", " << voronoi[j] << std::endl;
-            cv::line(mat, voronoi[i] * 4, voronoi[this->voronoiGraph.nodes[i].neighbors[j]] * 4, cv::Scalar(128, 0, 0));
-        }
-    }
-
-    cv::namedWindow("T", 0);
-    cv::resizeWindow("T", 800, 800);
-    cv::resize(mat, mat, cv::Size(800, 800));
-    cv::imshow("T", mat);
-    cv::waitKey(33);*/
 }
-#include <ros/console.h>
+
 void VoronoiMap::onNewShortTermGoal(const geometry_msgs::PoseStamped &goal)
 {
+    this->goalLink = goal.header.frame_id;
     this->goalRawX = goal.pose.position.x;
     this->goalRawY = goal.pose.position.y;
-
-    ROS_DEBUG("%f", this->goalRawX);
 }
 
 bool VoronoiMap::newGraphAvailable()
@@ -416,9 +383,9 @@ void VoronoiMap::setTransform(const geometry_msgs::TransformStamped &_transform)
     // Transform goal from earth to local map.
     double tempX = this->goalRawX;
     double tempY = this->goalRawY;
-    double unused;
-    //this->transformPoint(tempX, tempY, unused);
-    ROS_DEBUG("%f", this->goalRawX);
+    double unused = 0;
+    this->transformPoint(tempX, tempY, unused);
+    std::cout << tempX << ", " << tempY << std::endl;
     this->goalX = toIndex(tempX);
     this->goalY = toIndex(tempY);
 }
@@ -427,4 +394,8 @@ void VoronoiMap::resize()
 {
     AbstractMap::resize();
     this->minimumGapSizeMeters = sqrt(params.minimumGapSizeMetersSquared);
+}
+
+std::string VoronoiMap::getGoalLink() {
+    return this->goalLink;
 }

@@ -1,5 +1,4 @@
 #include "../include/abstract_map.hpp"
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/transform_datatypes.h>
 
 AbstractMap::MapParams AbstractMap::params = {0, 0, 0, 0};
@@ -7,47 +6,6 @@ AbstractMap::MapParams AbstractMap::params = {0, 0, 0, 0};
 AbstractMap::AbstractMap()
 {
     this->resize();
-}
-
-void AbstractMap::updateRotationMultipliers()
-{
-    tf2::Quaternion quatTf;
-    tf2::fromMsg(this->transform.transform.rotation, quatTf);
-    quatTf.normalize();
-
-    double roll, pitch, yaw;
-    tf2::Matrix3x3(quatTf).getRPY(roll, pitch, yaw);
-
-    // https://en.wikipedia.org/wiki/Rotation_matrix
-    this->xx = cos(yaw) * cos(pitch);
-    this->xy = cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll);
-    this->xz = cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll);
-
-    this->yx = sin(yaw) * cos(pitch);
-    this->yy = sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll);
-    this->yz = sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll);
-
-    this->zx = -sin(pitch);
-    this->zy = cos(pitch) * sin(roll);
-    this->zz = cos(pitch) * cos(roll);
-}
-
-void AbstractMap::translatePoint(double &x, double &y, double &z)
-{
-    x += this->transform.transform.translation.x;
-    y += this->transform.transform.translation.y;
-    z += this->transform.transform.translation.z;
-}
-
-void AbstractMap::rotatePoint(double &x, double &y, double &z)
-{
-    double xTemp = x;
-    double yTemp = y;
-    double zTemp = z;
-
-    x = xTemp * this->xx + yTemp * this->xy + zTemp * this->xz;
-    y = xTemp * this->yx + yTemp * this->yy + zTemp * this->yz;
-    z = xTemp * this->zx + yTemp * this->zy + zTemp * this->zz;
 }
 
 bool AbstractMap::isValidPoint(int y, int x)
@@ -63,8 +21,13 @@ bool AbstractMap::isValidPoint(int y, int x)
 
 void AbstractMap::transformPoint(double &x, double &y, double &z)
 {
-    this->translatePoint(x, y, z);
-    this->rotatePoint(x, y, z);
+    double tx = x, ty = y, tz = z;
+    tf2::Vector3 point(tx, ty, tz);
+
+    point = this->transform * point;
+    x = point.getX();
+    y = point.getY();
+    z = point.getZ();
 }
 
 AbstractMap::mapType::const_iterator AbstractMap::begin() const
@@ -118,9 +81,7 @@ double AbstractMap::toMeters(int idx)
 
 void AbstractMap::setTransform(const geometry_msgs::TransformStamped &_transform)
 {
-    this->transform = _transform;
-
-    this->updateRotationMultipliers();
+    tf2::convert(_transform.transform, this->transform);
 }
 
 void AbstractMap::resize()

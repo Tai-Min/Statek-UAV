@@ -58,6 +58,7 @@ add_executable(local_mapper_node
   src/local_mapper/local_mapper_node.cpp 
   src/local_mapper/map_fuser.cpp
   src/local_mapper/laser_scan_map.cpp
+  src/common.cpp
 )
 target_link_libraries(local_mapper_node ${catkin_LIBRARIES})
 
@@ -65,6 +66,7 @@ add_executable(voronoi_mapper_node
   src/abstract_map.cpp 
   src/voronoi_mapper/voronoi_mapper_node.cpp
   src/voronoi_mapper/voronoi_map.cpp
+  src/common.cpp
 )
 add_dependencies(voronoi_mapper_node statek_map_generate_messages_cpp)
 target_link_libraries(voronoi_mapper_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
@@ -73,6 +75,7 @@ add_executable(gps_to_tf_node
   src/gps_to_tf/gps_to_tf_node.cpp
   src/gps_to_tf/fix_to_tf.cpp
   src/gps_to_tf/kalman.cpp
+  src/common.cpp
 )
 add_dependencies(gps_to_tf_node statek_map_generate_messages_cpp)
 target_link_libraries(gps_to_tf_node 

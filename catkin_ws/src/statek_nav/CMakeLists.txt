@@ -15,4 +15,7 @@ include_directories(${roscpp_INCLUDE_DIRS})
 include_directories(${catkin_INCLUDE_DIRS})
 
 add_executable(short_term_navigator src/short_term_navigator.cpp)
-target_link_libraries(short_term_navigator ${catkin_LIBRARIES})
+target_link_libraries(short_term_navigator
+  ${catkin_LIBRARIES}
+  Eigen3::Eigen
+)

@@ -2,7 +2,6 @@
 
 #include <chrono>
 
-
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -14,9 +13,10 @@ class MapFuser : AbstractMap
 {
 private:
     // ROS stuff.
-    nav_msgs::OccupancyGrid mapMsg;                   //!< Stores map and it's stuff.
+    nav_msgs::OccupancyGrid mapMsg;                                                    //!< Stores map and it's stuff.
     const int mapUpdateRateMs;                                                         //!< Time in ms that should pass between map updates.
     std::chrono::time_point<std::chrono::high_resolution_clock> previousMapUpdateTime; //!< Stores time of previous map update.
+    geometry_msgs::TransformStamped transformMsg;                                      //!< Transform message to accomodate odometry movement between map updates.
 
     // Odometry memory for compensation.
     double latestOdomX = 0;     //!< Latest odometry reading. Required for tf.

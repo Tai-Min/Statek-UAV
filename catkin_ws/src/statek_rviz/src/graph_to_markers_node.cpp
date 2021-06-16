@@ -18,7 +18,7 @@ visualization_msgs::Marker createNodeMarker(
     double colorR, double colorG, double colorB, double colorA)
 {
     visualization_msgs::Marker marker;
-    marker.header.stamp = ros::Time::now();
+    marker.header.stamp = ros::Time(0); // Fixes extrapolation into the future if Rviz is run remotely.
     marker.header.frame_id = mapFrame;
 
     marker.ns = statekName + "/voronoi_map_nodes";
@@ -29,6 +29,11 @@ visualization_msgs::Marker createNodeMarker(
     marker.pose.position.x = x;
     marker.pose.position.y = y;
 
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+
     marker.scale.x = 0.05;
     marker.scale.y = 0.05;
     marker.scale.z = 0.05;
@@ -38,7 +43,7 @@ visualization_msgs::Marker createNodeMarker(
     marker.color.b = colorB;
     marker.color.a = colorA;
 
-    marker.lifetime.nsec = 300000000;
+    marker.lifetime.nsec = 500000000;
 
     return marker;
 }
@@ -48,13 +53,18 @@ visualization_msgs::Marker createPathMarker(
     double colorR, double colorG, double colorB, double colorA)
 {
     visualization_msgs::Marker marker;
-    marker.header.stamp = ros::Time::now();
+    marker.header.stamp = ros::Time(0); // Fixes extrapolation into the future if Rviz is run remotely.
     marker.header.frame_id = mapFrame;
 
     marker.ns = statekName + "/voronoi_map_nodes";
     marker.id = id;
     marker.type = 4; // Line strip.
     marker.action = 0;
+
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
 
     geometry_msgs::Point p0, p1;
 
@@ -74,7 +84,7 @@ visualization_msgs::Marker createPathMarker(
     marker.color.b = colorB;
     marker.color.a = colorA;
 
-    marker.lifetime.nsec = 300000000;
+    marker.lifetime.nsec = 500000000;
 
     return marker;
 }
@@ -84,15 +94,26 @@ void publishMarkers(const statek_map::Graph &graphMsg)
     int markerId = 0;
     visualization_msgs::MarkerArray markersMsg;
 
+    int cntr = 0;
     for (auto node : graphMsg.nodes)
     {
-        markersMsg.markers.push_back(
-            createNodeMarker(markerId, node.point.x, node.point.y, 0, 1, 0, 1));
+        double r = 0;
+        double g = 0;
+        double b = 0;
+        if (node.isGoal || node.isStart)
+            b = 1;
+        else
+            g = 1;
+
+        markersMsg.markers.push_back(createNodeMarker(markerId, node.point.x, node.point.y, r, g, b, 1));
 
         markerId++;
 
         for (auto neighborNodeIdx : node.neighbors)
         {
+            if (neighborNodeIdx < cntr)
+                continue;
+
             double x0, y0, x1, y1;
             x0 = node.point.x;
             y0 = node.point.y;
@@ -102,6 +123,7 @@ void publishMarkers(const statek_map::Graph &graphMsg)
             markersMsg.markers.push_back(createPathMarker(markerId, x0, y0, x1, y1, 0, 1, 0, 1));
             markerId++;
         }
+        cntr++;
     }
 
     mapMarkerPublisher.publish(markersMsg);
