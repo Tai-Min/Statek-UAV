@@ -13,7 +13,6 @@ Panels:
     Name: Selection
   - Class: rviz/Tool Properties
     Expanded:
-      - /2D Pose Estimate1
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
@@ -27,7 +26,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Lidar
+    SyncSource: Lidar img
   - Class: rviz_plugin_tutorials/Teleop
     Name: Teleop
     Topic: /top
@@ -37,7 +36,7 @@ Panels:
     Property Tree Widget:
       Expanded: ~
       Splitter Ratio: 0.5
-    Tree Height: 167
+    Tree Height: 373
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -159,31 +158,32 @@ Visualization Manager:
       Tree:
         statek/earth:
           statek/map/local_map_link:
-            statek/odom/odom_link:
-              statek/base_footprint:
-                statek/base_link:
-                  statek/gps/gps_link:
-                    {}
-                  statek/imu/imu_link:
-                    {}
-                  statek/laser/laser_link:
-                    {}
-                  statek/motors/left_link:
-                    {}
-                  statek/motors/right_link:
-                    {}
-                  statek/stereo/left_link:
-                    {}
-                  statek/stereo/right_link:
-                    {}
-                  statek/wheels/left_back_link:
-                    {}
-                  statek/wheels/left_front_link:
-                    {}
-                  statek/wheels/right_back_link:
-                    {}
-                  statek/wheels/right_front_link:
-                    {}
+            {}
+        statek/odom/odom_link:
+          statek/base_footprint:
+            statek/base_link:
+              statek/gps/gps_link:
+                {}
+              statek/imu/imu_link:
+                {}
+              statek/laser/laser_link:
+                {}
+              statek/motors/left_link:
+                {}
+              statek/motors/right_link:
+                {}
+              statek/stereo/left_link:
+                {}
+              statek/stereo/right_link:
+                {}
+              statek/wheels/left_back_link:
+                {}
+              statek/wheels/left_front_link:
+                {}
+              statek/wheels/right_back_link:
+                {}
+              statek/wheels/right_front_link:
+                {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -235,6 +235,7 @@ Visualization Manager:
         Local map markers: true
         MarkerArray: true
         Odometry: true
+        Path: true
         Pose: true
         RobotModel: false
         Stereo camera points: true
@@ -367,6 +368,29 @@ Visualization Manager:
         statek/voronoi_map_nodes: true
       Queue Size: 1
       Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 25; 255; 0
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /statek/short_term_path
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -377,15 +401,8 @@ Visualization Manager:
   Tools:
     - Class: rviz/Interact
       Hide Inactive Objects: true
-    - Class: rviz/MoveCamera
-    - Class: rviz/Select
     - Class: rviz/FocusCamera
     - Class: rviz/Measure
-    - Class: rviz/SetInitialPose
-      Theta std deviation: 0.2617993950843811
-      Topic: /initialpose
-      X std deviation: 0.5
-      Y std deviation: 0.5
     - Class: rviz/SetGoal
       Topic: /statek/short_term_goal
     - Class: rviz/PublishPoint
@@ -395,25 +412,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 11.659721374511719
+      Distance: 7.493093490600586
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.49107158184051514
-        Y: 0.9547592997550964
-        Z: 0.07701742649078369
+        X: 2.309086799621582
+        Y: -0.6896902322769165
+        Z: -0.8601231575012207
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7697962522506714
+      Pitch: 0.8797961473464966
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.020849227905273
+      Yaw: 4.465846061706543
     Saved: ~
 Window Geometry:
   Displays:

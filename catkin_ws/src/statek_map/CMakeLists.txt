@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 find_package(OpenCV)
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 include_directories(${roscpp_INCLUDE_DIRS})
 include_directories(${std_msgs_INCLUDE_DIRS})
