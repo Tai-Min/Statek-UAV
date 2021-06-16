@@ -89,24 +89,30 @@ void VoronoiMap::getVoronoiPoints(const std::vector<cv::Point> &corners, std::ve
 
 bool VoronoiMap::pointTooCloseToObstacle(unsigned int y, unsigned int x, const mapType &grid)
 {
-    // Increment ray tracing by more pixels for performance.
+    // Increment ray tracing around edges by more pixels for performance.
     // This will add some error but w/e for bigger maps.
-    static const int increment = 5;
+    static const int edgeIncrement = params.numCellsPerRowCol / 10;
+
+    // How far should raytracing algorithm jump in pixels
+    // when checking if track between points is safe.
+    // 1 means check every pixel, 2 check every second pixel etc.
+    // This also will add some error but w/e for bigger maps.
+    static const int rayIncrement = 3;
 
     // Ray trace free cells from center of the map to edges.
-    for (int currentPixelY = 0; currentPixelY < params.numCellsPerRowCol; currentPixelY += increment)
+    for (int currentPixelY = 0; currentPixelY < params.numCellsPerRowCol; currentPixelY += edgeIncrement)
     {
         // Check point to top and bottom edge of the map (y = first and every x) and (y = last and every x).
         if (currentPixelY == 0 || currentPixelY == params.numCellsPerRowCol - 1)
         {
-            for (int currentPixelX = 0; currentPixelX < params.numCellsPerRowCol; currentPixelX += increment)
+            for (int currentPixelX = 0; currentPixelX < params.numCellsPerRowCol; currentPixelX += edgeIncrement)
             {
                 double distance;
-                distance = rayTrace(y, x, 0, currentPixelX, grid, increment, false);
+                distance = rayTrace(y, x, 0, currentPixelX, grid, rayIncrement, false);
                 if (distance >= 0 && distance * params.cellSizeMeters < minimumGapSizeMeters * 0.5)
                     return true;
 
-                distance = rayTrace(y, x, params.numCellsPerRowCol - 1, currentPixelX, grid, increment, false);
+                distance = rayTrace(y, x, params.numCellsPerRowCol - 1, currentPixelX, grid, rayIncrement, false);
                 if (distance >= 0 && distance * params.cellSizeMeters < minimumGapSizeMeters * 0.5)
                     return true;
             }
@@ -115,11 +121,11 @@ bool VoronoiMap::pointTooCloseToObstacle(unsigned int y, unsigned int x, const m
         else
         {
             double distance;
-            distance = rayTrace(y, x, currentPixelY, 0, grid, increment, false);
+            distance = rayTrace(y, x, currentPixelY, 0, grid, rayIncrement, false);
             if (distance >= 0 && distance * params.cellSizeMeters < minimumGapSizeMeters * 0.5)
                 return true;
 
-            distance = rayTrace(y, x, currentPixelY, params.numCellsPerRowCol - 1, grid, increment, false);
+            distance = rayTrace(y, x, currentPixelY, params.numCellsPerRowCol - 1, grid, rayIncrement, false);
             if (distance >= 0 && distance * params.cellSizeMeters < minimumGapSizeMeters * 0.5)
                 return true;
         }
@@ -183,8 +189,8 @@ double VoronoiMap::rayTrace(int y0, int x0, int y1, int x1, const mapType &grid,
             // Stop if there is not enough space around this point.
             if (checkSurroundings)
             {
-                //if (pointTooCloseToObstacle(y, x, grid))
-                //    return sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
+                if (pointTooCloseToObstacle(y, x, grid))
+                    return sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
             }
         }
     }
@@ -219,9 +225,8 @@ double VoronoiMap::rayTrace(int y0, int x0, int y1, int x1, const mapType &grid,
             // Stop if there is not enough space around this point.
             if (checkSurroundings)
             {
-                // Unnecessary?
-                //if (pointTooCloseToObstacle(y, x, grid))
-                //    return sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
+                if (pointTooCloseToObstacle(y, x, grid))
+                    return sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
             }
         }
     }
@@ -238,6 +243,27 @@ void VoronoiMap::filterVoronoiPoints(std::vector<cv::Point> &voronoi, const mapT
     voronoi = std::move(voronoiResult);
 }
 
+void VoronoiMap::insertAnchors(std::vector<cv::Point> &voronoi, const mapType &grid, int num) {
+    num = num - 1;
+    
+    int startPosition = 0;
+    int endPosition = params.numCellsPerRowCol - 1;
+
+    for(int i = 0; i <= num; i++){
+        double position = (double)endPosition * i / (double)num;
+
+        if(get(grid, position, startPosition) == CellType::FREE_CELL)
+            voronoi.push_back(cv::Point(startPosition, position));
+        if(position != startPosition && get(grid, startPosition, position) == CellType::FREE_CELL)
+            voronoi.push_back(cv::Point(position, startPosition));
+
+        if(get(grid, position, endPosition) == CellType::FREE_CELL)
+            voronoi.push_back(cv::Point(endPosition, position));
+        if(position != endPosition && get(grid, endPosition, position) == CellType::FREE_CELL)
+            voronoi.push_back(cv::Point(position, endPosition));
+    }
+}
+
 void VoronoiMap::generateMessage(const std::vector<cv::Point> &voronoi, const mapType &grid)
 {
     this->voronoiGraph.nodes.clear();
@@ -247,37 +273,31 @@ void VoronoiMap::generateMessage(const std::vector<cv::Point> &voronoi, const ma
         node.id = i;
         node.point.x = this->toMeters(voronoi[i].x);
         node.point.y = this->toMeters(voronoi[i].y);
-        this->voronoiGraph.nodes.push_back(node);
 
         // Last point is always a goal.
         if (i == voronoi.size() - 1)
-        {
             node.isGoal = true;
-        }
 
         // Second to last point is always a start.
-        if (i == voronoi.size() - 2)
-        {
+        else if (i == voronoi.size() - 2)
             node.isStart = true;
-        }
+
+        this->voronoiGraph.nodes.push_back(node);
     }
 
     // For every pushed node...
     for (int i = 0; i < voronoi.size(); i++)
     {
+        // Ignore points outside grid map
+        // Such as goal as for those points rayTrace
+        // would always return negative value.
+        if (!isValidPoint(voronoi[i].y, voronoi[i].x))
+        {
+            continue;
+        }
+
         for (int j = 0; j < voronoi.size(); j++)
         {
-            // Ignore points outside grid map
-            // Such as goal as for those points rayTrace
-            // would always return 0.
-            if (voronoi[i].y >= params.numCellsPerRowCol || voronoi[i].x >= params.numCellsPerRowCol ||
-                voronoi[i].y < 0 || voronoi[i].x < 0 ||
-                voronoi[j].y >= params.numCellsPerRowCol || voronoi[j].x >= params.numCellsPerRowCol ||
-                voronoi[j].y < 0 || voronoi[j].x < 0)
-            {
-                continue;
-            }
-
             if (rayTrace(voronoi[i].y, voronoi[i].x,
                          voronoi[j].y, voronoi[j].x,
                          grid, 1) < 0)
@@ -312,8 +332,14 @@ void VoronoiMap::onNewLocalMap(const nav_msgs::OccupancyGrid::ConstPtr &map)
 
     filterVoronoiPoints(voronoi, map->data);
 
+    // Insert some anchor points.
+    double gapSizeCells = this->minimumGapSizeMeters / params.cellSizeMeters;
+    int numAnchors = params.numCellsPerRowCol / gapSizeCells * 2;
+    insertAnchors(voronoi, map->data, numAnchors);
+
     // Insert robot's location.
     // We'll just assume that the robot is at the center of the map during update.
+    // As it's dynamics is slow enough for such assumption.
     voronoi.push_back(cv::Point(params.numCellsPerRowCol / 2, params.numCellsPerRowCol / 2));
 
     // Insert goal's location.
@@ -361,13 +387,13 @@ void VoronoiMap::onNewLocalMap(const nav_msgs::OccupancyGrid::ConstPtr &map)
     cv::imshow("T", mat);
     cv::waitKey(33);*/
 }
-
+#include <ros/console.h>
 void VoronoiMap::onNewShortTermGoal(const geometry_msgs::PoseStamped &goal)
 {
     this->goalRawX = goal.pose.position.x;
     this->goalRawY = goal.pose.position.y;
 
-    std::cout << this->goalX << std::endl;
+    ROS_DEBUG("%f", this->goalRawX);
 }
 
 bool VoronoiMap::newGraphAvailable()
@@ -392,7 +418,7 @@ void VoronoiMap::setTransform(const geometry_msgs::TransformStamped &_transform)
     double tempY = this->goalRawY;
     double unused;
     //this->transformPoint(tempX, tempY, unused);
-
+    ROS_DEBUG("%f", this->goalRawX);
     this->goalX = toIndex(tempX);
     this->goalY = toIndex(tempY);
 }

@@ -109,7 +109,7 @@ int AbstractMap::toIndex(double val)
     return val;
 }
 
-double AbstractMap::toMeters(unsigned int idx)
+double AbstractMap::toMeters(int idx)
 {
     double result = idx;
     result -= params.numCellsPerRowCol / 2.0;

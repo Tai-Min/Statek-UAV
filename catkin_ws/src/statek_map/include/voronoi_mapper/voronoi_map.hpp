@@ -70,6 +70,8 @@ private:
      */
     static void filterVoronoiPoints(std::vector<cv::Point> &voronoi, const mapType &mapData);
 
+    static void insertAnchors(std::vector<cv::Point> &voronoi, const mapType &grid, int num);
+
     void generateMessage(const std::vector<cv::Point> &voronoi, const mapType &grid);
 
     /**

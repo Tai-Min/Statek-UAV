@@ -155,7 +155,7 @@ public:
      * @param idx Index to convert.
      * @return Cartesian distance from sensor.
      */
-    static double toMeters(unsigned int idx);
+    static double toMeters(int idx);
 
     /**
      * @brief Save transform received from tf transform broadcaster.
