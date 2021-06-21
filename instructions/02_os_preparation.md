@@ -46,17 +46,16 @@ Install [create_ap](https://github.com/oblique/create_ap) and configure it:
 ```
 sudo /usr/bin/create_ap wlan0_ap wlan0_sta <SSID> <PASSWORD> --mkconfig /etc/create_ap.conf
 ```
-To sudo's crontab add:
-```
-@reboot (sleep 10s && ip link set down wlan0 && iw dev wlan0 interface add wlan0_sta type managed && iw dev wlan0 interface add wlan0_ap type managed &
-```
 Edit /usr/lib/systemd/system/create_ap.service
 and above ExecStart add:
 ```
-ExecStartPre=/bin/sleep 60s
+ExecStartPre=/sbin/iw dev wlan0 interface add wlan0_sta type managed
+ExecStartPre=/sbin/iw dev wlan0 interface add wlan0_ap type managed
+ExecStartPre=/sbin/ip link set down wlan0
 ```
 and run:
 ```
+systemctl start create_ap
 systemctl enable create_ap
 ```
 
