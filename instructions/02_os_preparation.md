@@ -59,7 +59,7 @@ and run:
 systemctl start create_ap
 systemctl enable create_ap
 ```
-
+Now you can set ROS_MASTER_URI in your remote device to AP's gateway and connect directly to robot without access to WiFi.
 ## Configure serial devices
 Make sure that all serial devices are connected.
 
