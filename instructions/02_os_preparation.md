@@ -50,6 +50,11 @@ To sudo's crontab add:
 ```
 @reboot (sleep 10s && ip link set down wlan0 && iw dev wlan0 interface add wlan0_sta type managed && iw dev wlan0 interface add wlan0_ap type managed &
 ```
+Edit /usr/lib/systemd/system/create_ap.service
+and above ExecStart add:
+```
+ExecStartPre=/bin/sleep 60s
+```
 and run:
 ```
 systemctl enable create_ap
