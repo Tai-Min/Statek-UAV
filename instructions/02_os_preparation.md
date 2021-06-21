@@ -42,9 +42,14 @@ sudo dhclient <your wifi card/dongle>
 Now, you should be able to connect to the UAV and control it without wired connection.
 
 ## Configure access point
-Install [create_ap](https://github.com/oblique/create_ap).
+Install [create_ap](https://github.com/oblique/create_ap). </br>
 To sudo's crontab add:
 ```
+@reboot (sleep 10s && ip link set down wlan0 && iw dev wlan0 interface add wlan0_sta type managed && iw dev wlan0 interface add wlan0_ap type managed &
+```
+and run:
+```
+systemctl enable create_ap
 ```
 
 ## Configure serial devices
