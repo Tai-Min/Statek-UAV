@@ -50,6 +50,7 @@ Edit /usr/lib/systemd/system/create_ap.service
 and above ExecStart add:
 ```
 ExecStartPre=/bin/sleep 10s
+ExecStartPre=/etc/init.d/network-manager restart
 ExecStartPre=/sbin/iw dev wlan0 interface add wlan0_sta type managed
 ExecStartPre=/sbin/iw dev wlan0 interface add wlan0_ap type managed
 ExecStartPre=/sbin/ip link set down wlan0
