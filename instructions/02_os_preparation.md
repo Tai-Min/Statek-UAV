@@ -49,6 +49,7 @@ sudo /usr/bin/create_ap wlan0_ap wlan0_sta <SSID> <PASSWORD> --mkconfig /etc/cre
 Edit /usr/lib/systemd/system/create_ap.service
 and above ExecStart add:
 ```
+ExecStartPre=/bin/sleep 20s
 ExecStartPre=/sbin/iw dev wlan0 interface add wlan0_sta type managed
 ExecStartPre=/sbin/iw dev wlan0 interface add wlan0_ap type managed
 ExecStartPre=/sbin/ip link set down wlan0
