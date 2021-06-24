@@ -1,6 +1,7 @@
 #include "../../include/vision_publisher/camera.hpp"
 #include <sstream>
 #include <chrono>
+#include <opencv2/photo.hpp>
 
 Camera::~Camera()
 {
@@ -40,7 +41,9 @@ void Camera::threadFunction()
         // get frame
         {
             std::unique_lock<std::mutex> lck(this->frameMutex);
+
             this->cam.read(this->frame);
+            //cv::fastNlMeansDenoisingColored(this->frame, this->frame, 3, 10, 7, 5);
             if(!this->frame.empty())
                 this->firstFrameRead = true;
         }

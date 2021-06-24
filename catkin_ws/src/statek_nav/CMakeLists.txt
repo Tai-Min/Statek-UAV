@@ -3,6 +3,9 @@ project(statek_nav)
 
 add_compile_options(-std=c++11)
 
+set(IPOPT_LIBRARY_DIRS /usr/local/lib)
+set(IPOPT_INCLUDE_DIRS /usr/local/include/coin-or)
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -13,9 +16,12 @@ catkin_package()
 
 include_directories(${roscpp_INCLUDE_DIRS})
 include_directories(${catkin_INCLUDE_DIRS})
+include_directories(${IPOPT_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/include)
+link_directories(${IPOPT_LIBRARY_DIRS})
 
 add_executable(short_term_navigator src/short_term_navigator.cpp)
 target_link_libraries(short_term_navigator
   ${catkin_LIBRARIES}
   Eigen3::Eigen
+  ipopt
 )

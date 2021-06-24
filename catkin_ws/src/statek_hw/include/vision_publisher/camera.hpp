@@ -5,7 +5,7 @@
 #include <mutex>
 #include <thread>
 
-#include "opencv2/videoio.hpp"
+#include <opencv2/videoio.hpp>
 
 class Camera
 {
