@@ -1,8 +1,0 @@
-prefix=/home/statek/ros/catkin_ws/install
-
-Name: ds4_driver
-Description: Description of ds4_driver
-Version: 0.2.1
-Cflags: -I${prefix}/include
-Libs: -L${prefix}/lib 
-Requires: 

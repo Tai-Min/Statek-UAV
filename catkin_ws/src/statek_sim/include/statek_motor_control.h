@@ -23,16 +23,16 @@ namespace gazebo
         physics::JointPtr leftFrontWheel;  //!< Joint of left front wheel.
         physics::JointPtr rightFrontWheel; //!< Joint of right front wheel.
 
-        common::PID leftBackWheelPid;          //!< Pid controller for left back wheel.
-        common::PID rightBackWheelPid;         //!< Pid controller for right back wheel.
-        common::PID leftFrontWheelPid;          //!< Pid controller for left front wheel.
-        common::PID rightFrontWheelPid;         //!< Pid controller for right front wheel.
+        common::PID leftBackWheelPid;   //!< Pid controller for left back wheel.
+        common::PID rightBackWheelPid;  //!< Pid controller for right back wheel.
+        common::PID leftFrontWheelPid;  //!< Pid controller for left front wheel.
+        common::PID rightFrontWheelPid; //!< Pid controller for right front wheel.
 
         std::unique_ptr<ros::NodeHandle> rosNode; //!< Node to communicate with ROS.
         ros::Rate rosLoopRate;
-        ros::Subscriber motorCmdSubscriber;   //!< Subscriber that listens to <model_name>/left_vel_cmd and sets new velocity target based on it.
-        ros::Publisher leftMotorRawData;  //!< Publisher that publishes raw info from encoder that placed on left back wheel.
-        ros::Publisher rightMotorRawData; //!< Publisher that publishes raw info from encoder that is placed on right back wheel.
+        ros::Subscriber motorCmdSubscriber;    //!< Subscriber that listens to <model_name>/left_vel_cmd and sets new velocity target based on it.
+        ros::Publisher leftMotorRawData;       //!< Publisher that publishes raw info from encoder that placed on left back wheel.
+        ros::Publisher rightMotorRawData;      //!< Publisher that publishes raw info from encoder that is placed on right back wheel.
         ros::Publisher leftMotorFilteredData;  //!< Publisher that publishes filtered info from encoder that placed on left front wheel.
         ros::Publisher rightMotorFilteredData; //!< Publisher that publishes diltered info from encoder that is placed on right front wheel.
 
@@ -40,18 +40,18 @@ namespace gazebo
         std::mt19937 randomGen;
         std::normal_distribution<> noise;
 
-        ros::CallbackQueue rosQueue; //!< Callback manager for ROS.
-        std::thread rosQueueThread;  //!< Thread for ROS communication.
+        ros::CallbackQueue rosQueue;        //!< Callback manager for ROS.
+        std::thread rosQueueThread;         //!< Thread for ROS communication.
         std::atomic_bool rosStop = {false}; //!< Flag to stop ROS thread.
-        
-        std::atomic<double> leftTarget = {0}; //!< Setpoint for left wheels.
-        std::atomic<double> rightTarget = {0}; //!< Setpoint for right wheels.
-        std::atomic<double> leftVelocity = {0}; //!< Angular velocity of left wheels.
+
+        std::atomic<double> leftTarget = {0};    //!< Setpoint for left wheels.
+        std::atomic<double> rightTarget = {0};   //!< Setpoint for right wheels.
+        std::atomic<double> leftVelocity = {0};  //!< Angular velocity of left wheels.
         std::atomic<double> rightVelocity = {0}; //!< Angular velocity of right wheels.
-        std::atomic<double> leftPosition = {0}; //!< Angular position of left wheels.
+        std::atomic<double> leftPosition = {0};  //!< Angular position of left wheels.
         std::atomic<double> rightPosition = {0}; //!< Angular position of right wheels.
 
-        std::string left_motor_tf = "left_motor_link"; //!< For Encoder's header.
+        std::string left_motor_tf = "left_motor_link";   //!< For Encoder's header.
         std::string right_motor_tf = "right_motor_link"; //!< For Encoder's header.
 
         double maxRpmRads = 0;
@@ -123,6 +123,7 @@ namespace gazebo
         * @param _msg Target speed for wheels in rad/s.
         */
         void OnVelCmd(const statek_hw::Velocity::ConstPtr &_msg);
+
     public:
         /**
         * @brief Class constructor.

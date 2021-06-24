@@ -1,5 +1,0 @@
-uint32 odom_update_rate_ms # Set to 0 to ignore.
-float64 distance_between_wheels # Set to negative to ignore.
-float64 wheel_radius # Set to negative to ignore.
----
-bool success # Set to true on success.

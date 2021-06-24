@@ -1,8 +1,0 @@
-prefix=/home/statek/ros/catkin_ws/install
-
-Name: statek_playground
-Description: Description of statek_playground
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

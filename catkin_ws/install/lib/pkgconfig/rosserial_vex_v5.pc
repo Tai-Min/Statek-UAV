@@ -1,8 +1,0 @@
-prefix=/home/statek/ros/catkin_ws/install
-
-Name: rosserial_vex_v5
-Description: Description of rosserial_vex_v5
-Version: 0.9.2
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

@@ -1,8 +1,0 @@
-prefix=/home/statek/ros/catkin_ws/install
-
-Name: statek_config
-Description: Description of statek_config
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

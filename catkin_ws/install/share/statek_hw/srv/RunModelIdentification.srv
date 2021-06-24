@@ -1,5 +1,0 @@
-uint32 identification_time_ms
----
-bool success
-float64 sampling_time
-float64[100] samples
