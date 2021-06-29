@@ -33,6 +33,7 @@ Now, install third party packages:
 * [ydlidar_ros](https://github.com/YDLIDAR/ydlidar_ros)
 * [nmea_navsat_driver](http://wiki.ros.org/nmea_navsat_driver)
 * [rosserial](https://github.com/ros-drivers/rosserial) (select melodic branch to clone)
+* [hector_gazebo_plugins](https://wiki.ros.org/hector_gazebo_plugins)
 
 cd into rosserial:
 ```
