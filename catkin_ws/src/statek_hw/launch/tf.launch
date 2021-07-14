@@ -2,11 +2,12 @@
 <launch>
     <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
 
-    <include file="$(find statek_hw)/launch/static_transform_publishers.launch">
+    <include file="$(find statek_hw)/launch/tf/static_transform_publishers.launch">
         <arg name="statek_name" value="$(arg statek_name)"/>
     </include>
 
-    <include file="$(find statek_hw)/launch/dynamic_transform_publishers.launch">
+    <include file="$(find statek_hw)/launch/tf/dynamic_transform_publishers.launch">
         <arg name="statek_name" value="$(arg statek_name)"/>
     </include>
+    
 </launch>

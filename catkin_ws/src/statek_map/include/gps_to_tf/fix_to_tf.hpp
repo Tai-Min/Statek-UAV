@@ -33,8 +33,8 @@ private:
     bool fstFix = true; //!< Wheter it is first received GPS fix by this object. Used to initialize Kalman filter.
     Kalman filter;      //!< Kalman filter.
 
-    long double originPhi = 0;      //!< Longitude of origin of tangent plane in radians.
-    long double originLambda = 0;   //!< Latitude of origin of tangent plane in radians.
+    long double originLambda = 0;   //!< Longitude of origin of tangent plane in radians.
+    long double originPhi = 0;      //!< Latitude of origin of tangent plane in radians.
     long double originEcefX = 0;    //!< ECEF coordinate of tangent plane in meters.
     long double originEcefY = 0;    //!< ECEF coordinate of tangent plane in meters.
     long double originEcefZ = 0;    //!< ECEF coordinate of tangent plane in meters.

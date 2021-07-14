@@ -3,6 +3,6 @@
     <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
 
     <group ns="$(arg statek_name)/plan">
-        <node pkg="statek_plan" type="short_term_goal_planner.py" name="short_term_goal_planner" respawn="true"/>
+        <node pkg="statek_plan" type="short_term_planner.py" name="short_goal_planner" respawn="true"/>
     </group>
 </launch>

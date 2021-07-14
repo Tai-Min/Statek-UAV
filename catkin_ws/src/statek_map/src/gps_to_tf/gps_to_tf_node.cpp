@@ -35,7 +35,8 @@ int main(int argc, char **argv)
     nh.param<double>("origin_lat_min", originLatMin, 0.0);
     nh.param<double>("origin_lat_sec", originLatSec, 0.0);
 
-    nh.param<double>("north_compensation", northCompensation, 5.86);
+    //nh.param<double>("north_compensation", northCompensation, 5.86);
+    nh.param<double>("north_compensation", northCompensation, 0);
 
     nh.param<double>("process_variance", processVariance, 0.001);
     nh.param<double>("measurement_variance", measurementVariance, 15);

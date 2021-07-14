@@ -3,12 +3,11 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <tf/transform_broadcaster.h>
-#include <iostream>
-#include <chrono>
+#include "../../include/common.hpp"
 
 double VoronoiMap::minimumGapSizeMeters = 0;
 
-VoronoiMap::VoronoiMap()
+VoronoiMap::VoronoiMap(const std::string &_localMapLink) : localMapLink(_localMapLink)
 {
     this->minimumGapSizeMeters = sqrt(params.minimumGapSizeMetersSquared);
 }
@@ -237,35 +236,70 @@ double VoronoiMap::rayTrace(int y0, int x0, int y1, int x1, const mapType &grid,
 void VoronoiMap::filterVoronoiPoints(std::vector<cv::Point> &voronoi, const mapType &mapData)
 {
     std::vector<cv::Point> voronoiResult;
-    std::copy_if(voronoi.begin(), voronoi.end(), std::back_inserter(voronoiResult), [mapData](cv::Point p) {
-        bool isOk = p.y < params.numCellsPerRowCol && p.y >= 0 && p.x < params.numCellsPerRowCol && p.x >= 0 && get(mapData, p.y, p.x) == 0 && !pointTooCloseToObstacle(p.y, p.x, mapData);
-        return isOk;
-    });
+    std::copy_if(voronoi.begin(), voronoi.end(), std::back_inserter(voronoiResult), [mapData](cv::Point p)
+                 {
+                     bool isOk = p.y < params.numCellsPerRowCol && p.y >= 0 && p.x < params.numCellsPerRowCol && p.x >= 0 && get(mapData, p.y, p.x) == 0 && !pointTooCloseToObstacle(p.y, p.x, mapData);
+                     return isOk;
+                 });
     voronoi = std::move(voronoiResult);
 }
 
-void VoronoiMap::insertAnchors(std::vector<cv::Point> &voronoi, const mapType &grid, int num) {
+int VoronoiMap::insertAnchors(std::vector<cv::Point> &voronoi, const mapType &grid, int num)
+{
+    int inserted = 0;
     num = num - 1;
-    
+
     int startPosition = 0;
     int endPosition = params.numCellsPerRowCol - 1;
 
-    for(int i = 0; i <= num; i++){
+    for (int i = 0; i <= num; i++)
+    {
         double position = (double)endPosition * i / (double)num;
 
-        if(get(grid, position, startPosition) == CellType::FREE_CELL)
+        if (get(grid, position, startPosition) == CellType::FREE_CELL)
+        {
             voronoi.push_back(cv::Point(startPosition, position));
-        if(position != startPosition && get(grid, startPosition, position) == CellType::FREE_CELL)
-            voronoi.push_back(cv::Point(position, startPosition));
+            inserted++;
+        }
 
-        if(get(grid, position, endPosition) == CellType::FREE_CELL)
+        if (position != startPosition && get(grid, startPosition, position) == CellType::FREE_CELL)
+        {
+            voronoi.push_back(cv::Point(position, startPosition));
+            inserted++;
+        }
+
+        if (get(grid, position, endPosition) == CellType::FREE_CELL)
+        {
             voronoi.push_back(cv::Point(endPosition, position));
-        if(position != endPosition && get(grid, endPosition, position) == CellType::FREE_CELL)
+            inserted++;
+        }
+
+        if (position != endPosition && get(grid, endPosition, position) == CellType::FREE_CELL)
+        {
             voronoi.push_back(cv::Point(position, endPosition));
+            inserted++;
+        }
     }
+
+    return inserted;
 }
 
-void VoronoiMap::generateMessage(const std::vector<cv::Point> &voronoi, const mapType &grid)
+bool VoronoiMap::isAnchor(int index, const std::vector<cv::Point> &voronoi, int numAnchors, bool isGoal)
+{
+    int startGoalNum = 1; // Count only start.
+    if (isGoal)
+        startGoalNum = 2; // Count start and goal.
+
+    int anchorsBegin = voronoi.size() - numAnchors - startGoalNum; // Points to first anchor.
+    int anchorsEnd = voronoi.size() - startGoalNum;                // Points index after last anchor.
+
+    if (index >= anchorsBegin && index < anchorsEnd)
+        return true;
+
+    return false;
+}
+
+void VoronoiMap::generateMessage(const std::vector<cv::Point> &voronoi, const mapType &grid, int numAnchors)
 {
     this->voronoiGraph.nodes.clear();
     for (int i = 0; i < voronoi.size(); i++)
@@ -275,15 +309,23 @@ void VoronoiMap::generateMessage(const std::vector<cv::Point> &voronoi, const ma
         node.point.x = this->toMeters(voronoi[i].x);
         node.point.y = this->toMeters(voronoi[i].y);
 
-        // Last point is always a goal.
-        if (i == voronoi.size() - 1)
-            node.isGoal = true;
-
-        // Second to last point is always a start.
-        else if (i == voronoi.size() - 2)
-            node.isStart = true;
-
         this->voronoiGraph.nodes.push_back(node);
+    }
+
+    bool isGoal = false;
+
+    // Last point is a goal if there is one.
+    // Second to last point is a start.
+    // Point inf should be unreachable.
+    if (std::isfinite(this->goalRawX) && std::isfinite(this->goalRawY))
+    {
+        this->voronoiGraph.nodes[voronoi.size() - 1].isGoal = true;
+        this->voronoiGraph.nodes[voronoi.size() - 2].isStart = true;
+        isGoal = true;
+    }
+    else
+    {
+        this->voronoiGraph.nodes[voronoi.size() - 1].isStart = true; // If there is no goal then last point is a start.
     }
 
     // For every pushed node...
@@ -297,13 +339,21 @@ void VoronoiMap::generateMessage(const std::vector<cv::Point> &voronoi, const ma
             continue;
         }
 
-        for (int j = 0; j < voronoi.size(); j++)
+        // Check whether movement between two points is possible
+        // and if so then add them to neighbors of each other.
+        // Also ignore connections from anchor to anchor for performance reasons.
+        for (int j = i + 1; j < voronoi.size(); j++)
         {
+            if (isAnchor(i, voronoi, numAnchors, isGoal) &&
+                isAnchor(j, voronoi, numAnchors, isGoal))
+            {
+                continue;
+            }
+
             if (rayTrace(voronoi[i].y, voronoi[i].x,
                          voronoi[j].y, voronoi[j].x,
                          grid, 1) < 0)
             {
-
                 this->voronoiGraph.nodes[i].neighbors.push_back(j);
                 this->voronoiGraph.nodes[j].neighbors.push_back(i);
             }
@@ -318,8 +368,6 @@ int8_t VoronoiMap::get(const mapType &v, unsigned int y, unsigned int x)
 
 void VoronoiMap::onNewLocalMap(const nav_msgs::OccupancyGrid::ConstPtr &map)
 {
-    //auto start = std::chrono::high_resolution_clock::now();
-
     this->voronoiGraph.header.frame_id = map->header.frame_id;
 
     cv::Mat mat;
@@ -335,25 +383,34 @@ void VoronoiMap::onNewLocalMap(const nav_msgs::OccupancyGrid::ConstPtr &map)
 
     // Insert some anchor points.
     double gapSizeCells = this->minimumGapSizeMeters / params.cellSizeMeters;
-    int numAnchors = params.numCellsPerRowCol / gapSizeCells * 2;
-    insertAnchors(voronoi, map->data, numAnchors);
+    int numAnchors = params.numCellsPerRowCol / gapSizeCells;
+    numAnchors = insertAnchors(voronoi, map->data, numAnchors);
 
-    // Insert robot's location.
-    // We'll just assume that the robot is at the center of the map during update.
-    // As it's dynamics is slow enough for such assumption.
-    voronoi.push_back(cv::Point(params.numCellsPerRowCol / 2, params.numCellsPerRowCol / 2));
+    // Get location of the robot on local map.
+    bool ok = false;
+    geometry_msgs::TransformStamped robotTransform = getTransform("statek/map/local_map_link", "statek/base_footprint", ok);
+
+    double posX = 0;
+    double posY = 0;
+
+    // Add offsets from map link to base footprint.
+    if (ok)
+    {
+        posX = robotTransform.transform.translation.x;
+        posY = robotTransform.transform.translation.y;
+    }
+
+    voronoi.push_back(cv::Point(params.numCellsPerRowCol / 2 + posX, params.numCellsPerRowCol / 2 + posY));
 
     // Insert goal's location.
-    voronoi.push_back(cv::Point(this->goalX, this->goalY));
+    // inf in X or Y is treated as no goal.
+    if (std::isfinite(this->goalRawX) && std::isfinite(this->goalRawY))
+        voronoi.push_back(cv::Point(this->goalX, this->goalY));
 
     // Add nodes to message.
-    generateMessage(voronoi, map->data);
+    generateMessage(voronoi, map->data, numAnchors);
 
     this->updatedSinceLastGet = true;
-
-    /*auto finish = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = finish - start;
-    std::cout << "Elapsed time: " << elapsed.count() << " s\n";*/
 }
 
 void VoronoiMap::onNewShortTermGoal(const geometry_msgs::PoseStamped &goal)
@@ -361,6 +418,24 @@ void VoronoiMap::onNewShortTermGoal(const geometry_msgs::PoseStamped &goal)
     this->goalLink = goal.header.frame_id;
     this->goalRawX = goal.pose.position.x;
     this->goalRawY = goal.pose.position.y;
+
+    bool ok;
+    geometry_msgs::TransformStamped transform = getTransform(this->localMapLink, this->goalLink, ok);
+    if (ok)
+    {
+        AbstractMap::setTransform(transform);
+
+        if (std::isfinite(this->goalRawX) && std::isfinite(this->goalRawY))
+        {
+            // Transform goal from earth to local map.
+            double tempX = this->goalRawX;
+            double tempY = this->goalRawY;
+            double unused = 0;
+            this->transformPoint(tempX, tempY, unused);
+            this->goalX = toIndex(tempX);
+            this->goalY = toIndex(tempY);
+        }
+    }
 }
 
 bool VoronoiMap::newGraphAvailable()
@@ -368,7 +443,7 @@ bool VoronoiMap::newGraphAvailable()
     return this->updatedSinceLastGet;
 }
 
-const statek_map::Graph &VoronoiMap::getGraph()
+const statek_map::Graph &VoronoiMap::getGraphMsg()
 {
     this->updatedSinceLastGet = false;
 
@@ -376,26 +451,8 @@ const statek_map::Graph &VoronoiMap::getGraph()
     return this->voronoiGraph;
 }
 
-void VoronoiMap::setTransform(const geometry_msgs::TransformStamped &_transform)
-{
-    AbstractMap::setTransform(_transform);
-
-    // Transform goal from earth to local map.
-    double tempX = this->goalRawX;
-    double tempY = this->goalRawY;
-    double unused = 0;
-    this->transformPoint(tempX, tempY, unused);
-    std::cout << tempX << ", " << tempY << std::endl;
-    this->goalX = toIndex(tempX);
-    this->goalY = toIndex(tempY);
-}
-
 void VoronoiMap::resize()
 {
     AbstractMap::resize();
     this->minimumGapSizeMeters = sqrt(params.minimumGapSizeMetersSquared);
-}
-
-std::string VoronoiMap::getGoalLink() {
-    return this->goalLink;
 }

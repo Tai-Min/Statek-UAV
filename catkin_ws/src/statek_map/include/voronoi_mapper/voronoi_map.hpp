@@ -6,18 +6,20 @@
 #include <opencv2/core/mat.hpp>
 #include <geometry_msgs/PoseStamped.h>
 #include "../abstract_map.hpp"
+#include <limits>
 
 class VoronoiMap : public AbstractMap
 {
 private:
     static double minimumGapSizeMeters;
-    bool updatedSinceLastGet = false; //!< Flag to check whether map was updated since last map retreive using getGraph.
-    statek_map::Graph voronoiGraph;   //!< Stores voronoi graph ready to be published.
-    double goalRawX = 0;              //!< Goal X in earth frame.
-    double goalRawY = 0;              //!< Goal Y in earth frame.
-    int goalX = 0;                    //!< X index position of goal from center of local map.
-    int goalY = 0;                    //!< Y index position of goal from center of local map.
-    std::string goalLink = "";
+    bool updatedSinceLastGet = false;                          //!< Flag to check whether map was updated since last map retreive using getGraph.
+    statek_map::Graph voronoiGraph;                            //!< Stores voronoi graph ready to be published.
+    double goalRawX = std::numeric_limits<double>::infinity(); //!< Goal X in some frame.
+    double goalRawY = std::numeric_limits<double>::infinity(); //!< Goal Y in some frame.
+    int goalX = 0;                                             //!< X index position of goal from center of local map.
+    int goalY = 0;                                             //!< Y index position of goal from center of local map.
+    std::string goalLink = "";                                 //!< Tf link of the most recent goal message.
+    std::string localMapLink = "";                             //!< Tf link of local map.
 
     /**
      * @brief Convert ROS OccupancyGrid vector into OpenCV's Mat.
@@ -71,9 +73,29 @@ private:
      */
     static void filterVoronoiPoints(std::vector<cv::Point> &voronoi, const mapType &mapData);
 
-    static void insertAnchors(std::vector<cv::Point> &voronoi, const mapType &grid, int num);
+    /**
+     * @brief Insert anchor points (points around the edges of the map) whenever possible.
+     */
+    static int insertAnchors(std::vector<cv::Point> &voronoi, const mapType &grid, int num);
 
-    void generateMessage(const std::vector<cv::Point> &voronoi, const mapType &grid);
+    /**
+     * @brief Check whether point on given index is an anchor or not.
+     * @param index Index of point to check.
+     * @param numAnchors Number of anchors inserted to voronoi.
+     * @param isGoal Whether the goal point was inserted to voronoi.
+     * @return True if the point is an anchor.
+     */
+    static bool isAnchor(int index, const std::vector<cv::Point> &voronoi, int numAnchors, bool isGoal);
+
+    /**
+     * @brief Generate new statek_map::Graph message.
+     * Called on new local map. Converts given voronoi diagram
+     * into the message and also seeks possible neighbors and connects them.
+     * @param voronoi Voronoi diagram to be converted to message.
+     * @param grid Map data of local map.
+     * @param numAnchors Number of anchors inserted to voronoi.
+     */
+    void generateMessage(const std::vector<cv::Point> &voronoi, const mapType &grid, int numAnchors);
 
     /**
      * @brief Get element from some vector while treating it as matrix.
@@ -85,7 +107,10 @@ private:
     static int8_t get(const mapType &v, unsigned int y, unsigned int x);
 
 public:
-    VoronoiMap();
+    /**
+     * @brief Class constructor.
+     */
+    VoronoiMap(const std::string &_localMapLink);
 
     /**
      * @brief Callback called on update of local grid map.
@@ -102,24 +127,19 @@ public:
 
     /**
      * @brief Check whether graph updated.
+     * @return true if new graph was generated since last getGraphMsg.
      */
     bool newGraphAvailable();
 
-    const statek_map::Graph &getGraph();
-
     /**
-     * @brief Save transform received from tf transform broadcaster.
-     * Overrides default behavior from AbstractMap by updating goal position in reference to local map.
-     * 
-     * @param _transform Desired transform.
+     * @brief Get voronoi graph as ready to publish message.
+     * @return Message with voronoi graph.
      */
-    virtual void setTransform(const geometry_msgs::TransformStamped &_transform) override;
+    const statek_map::Graph &getGraphMsg();
 
     /**
      * @brief Resizes map to accommodate map matrix after call to AbstractMap::setParams.
      * This overrides default behavior from AbstractMap by changing some internal parameters.
      */
     virtual void resize() override;
-
-    virtual std::string getGoalLink();
 };

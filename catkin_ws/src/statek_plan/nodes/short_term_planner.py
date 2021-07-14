@@ -30,6 +30,10 @@ def voronoi_graph_callback(graph, data):
     path_msg.header.frame_id = data["map_link"]
     path_msg.header.stamp =  rospy.Time.now()
 
+    # Start is last so there is no goal.
+    if graph.nodes[-1].isStart:
+        return
+
     start = graph.nodes[-1] # Goal is always last.
     end = graph.nodes[-2] # Start is always second from end.
 
@@ -38,6 +42,8 @@ def voronoi_graph_callback(graph, data):
     if path:
         for node in path:
             pose = PoseStamped()
+            pose.header.stamp = path_msg.header.stamp
+            pose.header.frame_id = path_msg.header.frame_id
             pose.pose.position.x = node.point.x
             pose.pose.position.y = node.point.y
             path_msg.poses.append(pose)

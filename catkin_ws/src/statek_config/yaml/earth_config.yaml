@@ -1,12 +1,24 @@
+# Uni
+# Latitude of origin of local tangent plane.
+#origin_lat_deg: 54
+#origin_lat_min: 23
+#origin_lat_sec: 21.8
+
+# Longtitute of origin of local tangent plane.
+#origin_lon_deg: 18
+#origin_lon_min: 35
+#origin_lon_msec: 7.5
+
+# Park
 # Latitude of origin of local tangent plane.
 origin_lat_deg: 54
 origin_lat_min: 23
-origin_lat_sec: 21.8
+origin_lat_sec: 10.6
 
 # Longtitute of origin of local tangent plane.
 origin_lon_deg: 18
 origin_lon_min: 35
-origin_lon_msec: 7.5
+origin_lon_msec: 26.8
 
 # GPS sensor config.
 process_variance: 0.001

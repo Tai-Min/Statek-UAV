@@ -7,7 +7,7 @@
 int main(int argc, char **argv)
 {
     // ROS init.
-    ros::init(argc, argv, "local_mapper");
+    ros::init(argc, argv, "voronoi_mapper");
     ros::NodeHandle nh("~");
 
     // Get all the params.
@@ -35,7 +35,7 @@ int main(int argc, char **argv)
                             minimumGapSizeMeters * minimumGapSizeMeters,
                             numCellsPerRowCol});
 
-    VoronoiMap mapper;
+    VoronoiMap mapper(localMapFrame);
 
     // Init subscribers and publishers.
     ros::Subscriber mapSub = nh.subscribe(localMapTopic, 1, &VoronoiMap::onNewLocalMap, &mapper);
@@ -44,21 +44,12 @@ int main(int argc, char **argv)
     tf2_ros::TransformBroadcaster transformBroadcaster;
 
     // Main loop.
-    ros::Rate rate = ros::Rate(50);
+    ros::Rate rate = ros::Rate(10);
     while (ros::ok())
     {
-        bool ok;
-        geometry_msgs::TransformStamped t = getTransform(localMapFrame, mapper.getGoalLink(), ok);
-        if (ok)
-        {
-            mapper.setTransform(t);
-        }
-
         if (mapper.newGraphAvailable())
-        {
-            voronoiPublisher.publish(mapper.getGraph());
-        }
-
+            voronoiPublisher.publish(mapper.getGraphMsg());
+            
         ros::spinOnce();
         rate.sleep();
     }

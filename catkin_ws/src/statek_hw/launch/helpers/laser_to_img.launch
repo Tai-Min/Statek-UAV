@@ -2,7 +2,7 @@
 <launch>
     <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
 
-    <!-- Run node -->
+    <!-- Launch lidar to image converter -->
     <group ns="$(arg statek_name)/laser">
         <node name="laser_to_img" pkg="statek_hw" type="laser_to_img_node">
             <param name="statek_name" type="string" value="$(arg statek_name)" />
@@ -20,4 +20,5 @@
             <param name="fps" value="15" />
         </node>
     </group>
+
 </launch>

@@ -2,72 +2,18 @@
 <launch>
     <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
 
-    <!-- Launch static transform publisher -->
-    <include file="$(find statek_hw)/launch/transform_publishers.launch">
+    <!-- Launch transform publishers -->
+    <include file="$(find statek_hw)/launch/tf.launch">
         <arg name="statek_name" value="$(arg statek_name)"/>
     </include>
 
-    <!-- Launch lidar -->
-    <group ns="$(arg statek_name)/laser/">
-        <node name="ydlidar_node" pkg="ydlidar_ros" type="ydlidar_node" output="screen" respawn="true">
-            <param name="port" type="string" value="/dev/ydlidar"/>
-            <param name="baudrate" type="int" value="128000"/>
-            <param name="frame_id" type="string" value="$(arg statek_name)/laser/laser_link"/>
-            <param name="resolution_fixed" type="bool" value="true"/>
-            <param name="auto_reconnect" type="bool" value="true"/>
-            <param name="reversion" type="bool" value="false"/>
-            <param name="angle_min" type="double" value="-180" />
-            <param name="angle_max" type="double" value="180" />
-            <param name="range_min" type="double" value="0.1" />
-            <param name="range_max" type="double" value="12.0" />
-            <param name="ignore_array" type="string" value="" />
-            <param name="frequency" type="double" value="8"/>
-            <param name="samp_rate" type="int" value="5"/>
-        </node>
-    </group>
-
-    <!-- Launch lidar to img converter -->
-    <include file="$(find statek_hw)/launch/laser_to_img.launch">
+    <!-- Launch hardware nodes -->
+    <include file="$(find statek_hw)/launch/hw.launch">
         <arg name="statek_name" value="$(arg statek_name)"/>
     </include>
 
-    <!-- Launch GPS driver -->
-    <group ns="$(arg statek_name)/gps/">
-        <node name="gps_node" pkg="nmea_navsat_driver" type="nmea_serial_driver" output="screen" respawn="true">
-            <param name="port" type="string" value="/dev/ttyTHS1"/>
-            <param name="baud" type="int" value="9600"/>
-            <param name="frame_id" type="string" value="$(arg statek_name)/gps/gps_link"/>
-        </node>
-    </group>
-
-    <group ns="$(arg statek_name)/stereo/">
-        <!-- Launch camera driver -->
-        <node name="vision_node" pkg="statek_hw" type="vision_publisher_node" output="screen" respawn="true">
-            <param name="statek_name" value="$(arg statek_name)"/>
-            <rosparam command="load" ns="$(arg statek_name)/camera_config/" file="$(find statek_config)/yaml/camera_config.yaml"/>
-            <rosparam command="load" ns="$(arg statek_name)/camera_info_left/" file="$(find statek_config)/yaml/camera_info_left.yaml"/>
-            <rosparam command="load" ns="$(arg statek_name)/camera_info_right/" file="$(find statek_config)/yaml/camera_info_right.yaml"/>
-        </node>
-
-        <!-- Launch depth image and point cloud generator -->
-        <node name="stereo_image_proc" pkg="stereo_image_proc" type="stereo_image_proc" output="screen" respawn="true"/>
-    </group>
-
-    <!-- Reconfigure depth vision  -->
-    <node name="depth_reconfigure" pkg="dynamic_reconfigure" type="dynparam" args="load $(arg statek_name)/stereo/stereo_image_proc $(find statek_config)/yaml/depth_config.yaml -t 8"/>
-
-    <!-- Real time hardware -->
-    <include file="$(find statek_hw)/launch/real_time.launch">
-        <arg name="statek_name" value="$(arg statek_name)"/>
-    </include>
-
-    <!-- Twist to differential command converter -->
-    <include file="$(find statek_hw)/launch/twist_to_differential.launch">
-        <arg name="statek_name" value="$(arg statek_name)"/>
-    </include>
-
-    <!-- Differential to twist command feedback -->
-    <include file="$(find statek_hw)/launch/differential_to_twist_feedback.launch">
+    <!-- Launch helper nodes -->
+    <include file="$(find statek_hw)/launch/helpers.launch">
         <arg name="statek_name" value="$(arg statek_name)"/>
     </include>
 

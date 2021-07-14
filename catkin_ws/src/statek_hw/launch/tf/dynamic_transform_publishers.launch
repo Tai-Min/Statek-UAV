@@ -11,6 +11,7 @@
     <arg name="base_to_right_front_wheel" value="$(eval open(find('statek_config') + '/tf/base_to_right_front_wheel').read())"/>
 
     <group ns="$(arg statek_name)/tf">
+
         <!-- base link to encoder and wheel links  -->
         <node pkg="statek_hw" type="encoders_wheels_transforms_publisher.py" name="encoders_wheels_transforms_publisher" respawn="true">
             <param name="statek_name" type="string" value="$(arg statek_name)" />
@@ -26,6 +27,7 @@
             <param name="base_to_right_back_wheel" value="$(arg base_to_right_back_wheel)"/>
             <param name="base_to_right_front_wheel" value="$(arg base_to_right_front_wheel)"/>
         </node>
+
     </group>
 
 </launch>

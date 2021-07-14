@@ -50,16 +50,19 @@ int main(int argc, char **argv)
     ros::Publisher mapPublisher = nh.advertise<nav_msgs::OccupancyGrid>(mapTopic, 1);
     tf2_ros::TransformBroadcaster transformBroadcaster;
 
+    // Update static transforms.
+    bool ok = false;
+    while (!ok)
+    {
+        geometry_msgs::TransformStamped t = getTransform(footprintFrame, laserFrame, ok);
+        if (ok)
+            laserScanMap.setTransform(t);
+    }
+
     // The main loop.
     ros::Rate rate = ros::Rate(50);
     while (ros::ok())
     {
-        // Update transforms
-        bool ok;
-        geometry_msgs::TransformStamped t = getTransform(footprintFrame, laserFrame, ok);
-        if (ok)
-            laserScanMap.setTransform(t);
-
         // Update map.
         if (fuser.tryUpdateMap())
         {

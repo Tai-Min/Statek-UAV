@@ -4,8 +4,8 @@
 FixToTf::FixToTf(long double originLat, long double originLon, double _northCompensation,
                  double processVariance, double measurementVariance,
                  std::string _mapFrame, std::string _earthFrame)
-    : originLambda(originLat * M_PIf128 / (long double)180.0),
-      originPhi(originLon * M_PIf128 / (long double)180.0),
+    : originPhi(originLat * M_PIf128 / (long double)180.0),
+      originLambda(originLon * M_PIf128 / (long double)180.0),
       northCompensation(_northCompensation),
       mapFrame(_mapFrame),
       earthFrame(_earthFrame),
@@ -21,13 +21,13 @@ long double FixToTf::sign(long double v)
 
 void FixToTf::geodeticToEcef(long double lat, long double lon, long double &ecefX, long double &ecefY, long double &ecefZ)
 {
-    long double lambda = lat * M_PIf128 / (long double)180.0;
-    long double phi = lon * M_PIf128 / (long double)180.0;
-    long double N = a / sqrtf128((long double)1.0 - eSq * powf128(sinf128(lambda), 2));
+    long double phi = lat * M_PIf128 / (long double)180.0;
+    long double lambda = lon * M_PIf128 / (long double)180.0;
+    long double N = a / sqrtf128((long double)1.0 - eSq * powf128(sinf128(phi), 2));
 
-    ecefX = N * cosf128(lambda) * cosf128(phi);
-    ecefY = N * cosf128(lambda) * sinf128(phi);
-    ecefZ = (powf128(b, 2)) / (powf128(a, 2)) * N * sinf128(lambda);
+    ecefX = N * cosf128(phi) * cosf128(lambda);
+    ecefY = N * cosf128(phi) * sinf128(lambda);
+    ecefZ = (powf128(b, 2)) / (powf128(a, 2)) * N * sinf128(phi);
 }
 
 void FixToTf::EcefToGeodetic(long double ecefX, long double ecefY, long double ecefZ, long double &lat, long double &lon)
@@ -49,15 +49,15 @@ void FixToTf::EcefToGeodetic(long double ecefX, long double ecefY, long double e
     long double w1 = w / (t + l);
     long double z1 = ((long double)1 - eSq) * ecefZ / (t - l);
 
-    long double lambda;
+    long double phi;
     if (w != 0)
-        lambda = atan2f128(z1, ((long double)1.0 - eSq) * w1);
+        phi = atan2f128(z1, ((long double)1.0 - eSq) * w1);
     else
-        lambda = sign(ecefZ) * (M_PIf128 / (long double)2.0);
-    long double phi = (long double)2.0 * atan2f128(w - ecefX, ecefY);
+        phi = sign(ecefZ) * (M_PIf128 / (long double)2.0);
+    long double lambda = (long double)2.0 * atan2f128(w - ecefX, ecefY);
 
-    lat = lambda * (long double)180.0 / M_PIf128;
-    lon = phi * (long double)180.0 / M_PIf128;
+    lat = phi * (long double)180.0 / M_PIf128;
+    lon = lambda * (long double)180.0 / M_PIf128;
 }
 
 void FixToTf::EcefToEnu(long double ecefX, long double ecefY, long double ecefZ, long double &enuX, long double &enuY, long double &enuZ) const
@@ -66,16 +66,16 @@ void FixToTf::EcefToEnu(long double ecefX, long double ecefY, long double ecefZ,
     long double deltaEcefY = ecefY - this->originEcefY;
     long double deltaEcefZ = ecefZ - this->originEcefZ;
 
-    enuX = -sinf128(originLambda) * deltaEcefX + cosf128(originLambda) * deltaEcefY;
-    enuY = -cosf128(originLambda) * sinf128(originPhi) * deltaEcefX - sinf128(originLambda) * sinf128(originPhi) * deltaEcefY + cosf128(originPhi) * deltaEcefZ;
-    enuZ = cosf128(originLambda) * cosf128(originPhi) * deltaEcefX + cosf128(originLambda) * sinf128(originPhi) * deltaEcefY + sinf128(originLambda) * deltaEcefZ;
+    enuX = -sinf128(originPhi) * deltaEcefX + cosf128(originPhi) * deltaEcefY;
+    enuY = -cosf128(originPhi) * sinf128(originLambda) * deltaEcefX - sinf128(originPhi) * sinf128(originLambda) * deltaEcefY + cosf128(originLambda) * deltaEcefZ;
+    enuZ = cosf128(originPhi) * cosf128(originLambda) * deltaEcefX + cosf128(originPhi) * sinf128(originLambda) * deltaEcefY + sinf128(originPhi) * deltaEcefZ;
 }
 
 void FixToTf::EnuToEcef(long double enuX, long double enuY, long double enuZ, long double &ecefX, long double &ecefY, long double &ecefZ) const
 {
-    ecefX = (-sinf128(originPhi) * enuX - sinf128(originLambda) * cosf128(originPhi) * enuY + cosf128(originLambda) * cosf128(originPhi) * enuZ) + this->originEcefX;
-    ecefY = (cosf128(originPhi) * enuX - sinf128(originLambda) * sinf128(originPhi) * enuY + cosf128(originLambda) * sinf128(originPhi) * enuZ) + this->originEcefY;
-    ecefZ = (cosf128(originLambda) * enuY + sinf128(originLambda) * enuZ) + this->originEcefZ;
+    ecefX = (-sinf128(originLambda) * enuX - sinf128(originPhi) * cosf128(originLambda) * enuY + cosf128(originPhi) * cosf128(originLambda) * enuZ) + this->originEcefX;
+    ecefY = (cosf128(originLambda) * enuX - sinf128(originPhi) * sinf128(originLambda) * enuY + cosf128(originPhi) * sinf128(originLambda) * enuZ) + this->originEcefY;
+    ecefZ = (cosf128(originPhi) * enuY + sinf128(originPhi) * enuZ) + this->originEcefZ;
 }
 
 void FixToTf::geodeticToEnu(long double lat, long double lon, long double &enuX, long double &enuY, long double &enuZ) const
@@ -163,7 +163,7 @@ void FixToTf::onNewImu(const sensor_msgs::Imu::ConstPtr &imu)
     {
         Kalman::Estimates estimates = this->filter.update({(double)this->latestAccelerationEast, (double)this->latestAccelerationNorth, (double)this->odomOffsetTheta},
                                                           {(double)this->latestTangentX, (double)this->latestTangentY, (double)this->latestYaw});
-        this->latestYaw = estimates.yaw;
+        //this->latestYaw = estimates.yaw;
 
         // IMU updated so reset offset.
         this->odomOffsetTheta = 0;
@@ -187,8 +187,8 @@ void FixToTf::onNewFix(const sensor_msgs::NavSatFix::ConstPtr &fix)
 
     Kalman::Estimates estimates = this->filter.update({(double)this->latestAccelerationEast, (double)this->latestAccelerationNorth, (double)this->odomOffsetTheta},
                                                       {(double)this->latestTangentX, (double)this->latestTangentY, (double)this->latestYaw});
-    this->latestTangentX = estimates.x;
-    this->latestTangentY = estimates.y;
+    //this->latestTangentX = estimates.x;
+    //this->latestTangentY = estimates.y;
 
     long double tempLat, tempLon;
     enuToGeodetic(this->latestTangentX, this->latestTangentY, this->latestTangentZ, tempLat, tempLon);

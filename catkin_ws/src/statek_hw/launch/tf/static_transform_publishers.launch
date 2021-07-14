@@ -22,8 +22,10 @@
         <!-- base link to gps link -->
         <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_gps_link" args="$(arg base_to_gps) $(arg statek_name)/base_link $(arg statek_name)/gps/gps_link" respawn="true"/>
 
-        <!-- base link to camera links -->
+        <!-- base link to left camera link -->
         <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_left_camera_link" args="$(arg base_to_left_camera) $(arg statek_name)/base_link $(arg statek_name)/stereo/left_link" respawn="true"/>
+        
+        <!-- base link to right camera link -->
         <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_right_camera_link" args="$(arg base_to_right_camera) $(arg statek_name)/base_link $(arg statek_name)/stereo/right_link" respawn="true"/>
     </group>
 

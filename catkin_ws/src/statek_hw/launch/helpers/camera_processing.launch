@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
+
+    <!-- Launch depth image and point cloud generator -->
+    <group ns="$(arg statek_name)/stereo/">
+        <node name="stereo_image_proc" pkg="stereo_image_proc" type="stereo_image_proc" output="screen" respawn="true"/>
+    </group>
+
+    <!-- Reconfigure depth vision  -->
+    <node name="depth_reconfigure" pkg="dynamic_reconfigure" type="dynparam" args="load $(arg statek_name)/stereo/stereo_image_proc $(find statek_config)/yaml/depth_config.yaml -t 8"/>
+
+</launch>
