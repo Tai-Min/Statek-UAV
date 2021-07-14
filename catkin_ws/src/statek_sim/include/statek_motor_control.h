@@ -7,6 +7,9 @@
 #include <ros/callback_queue.h>
 #include <statek_hw/Velocity.h>
 
+#include <tf2_ros/transform_broadcaster.h>
+#include "odometry.hpp"
+
 namespace gazebo
 {
     /**
@@ -15,6 +18,8 @@ namespace gazebo
     class MotorControlPlugin : public ModelPlugin
     {
     private:
+        Odometry odomUpdater;
+
         event::ConnectionPtr worldUpdateConnection; //!< Callback to send encoder data back to ROS.
 
         physics::ModelPtr model;           //!< Model to which this plugin is attached to.
@@ -30,12 +35,11 @@ namespace gazebo
 
         std::unique_ptr<ros::NodeHandle> rosNode; //!< Node to communicate with ROS.
         ros::Rate rosLoopRate;
-        ros::Subscriber motorCmdSubscriber;    //!< Subscriber that listens to <model_name>/left_vel_cmd and sets new velocity target based on it.
-        ros::Publisher leftMotorRawData;       //!< Publisher that publishes raw info from encoder that placed on left back wheel.
-        ros::Publisher rightMotorRawData;      //!< Publisher that publishes raw info from encoder that is placed on right back wheel.
-        ros::Publisher leftMotorFilteredData;  //!< Publisher that publishes filtered info from encoder that placed on left front wheel.
-        ros::Publisher rightMotorFilteredData; //!< Publisher that publishes diltered info from encoder that is placed on right front wheel.
-
+        ros::Subscriber motorCmdSubscriber;       //!< Subscriber that listens to <model_name>/left_vel_cmd and sets new velocity target based on it.
+        ros::Publisher leftMotorRawData;          //!< Publisher that publishes raw info from encoder that placed on left back wheel.
+        ros::Publisher rightMotorRawData;         //!< Publisher that publishes raw info from encoder that is placed on right back wheel.
+        ros::Publisher odomPublisher;             //!< Publisher that publishes odometry from encoders.
+        tf2_ros::TransformBroadcaster odomBroadcaster; //!< Odometry tf broadcaster.
         std::random_device rd;
         std::mt19937 randomGen;
         std::normal_distribution<> noise;
@@ -51,10 +55,17 @@ namespace gazebo
         std::atomic<double> leftPosition = {0};  //!< Angular position of left wheels.
         std::atomic<double> rightPosition = {0}; //!< Angular position of right wheels.
 
-        std::string left_motor_tf = "left_motor_link";   //!< For Encoder's header.
-        std::string right_motor_tf = "right_motor_link"; //!< For Encoder's header.
+        std::string left_motor_tf = "left_motor_link";      //!< For Encoder's header.
+        std::string right_motor_tf = "right_motor_link";    //!< For Encoder's header.
+        std::string odom_tf_frame = "odom/odom_link";       //!< For Odom's header.
+        std::string odom_tf_child_frame = "base_footprint"; //!< For Odom's header.
 
         double maxRpmRads = 0;
+
+        /**
+         * @brief Initialize odometry updater.
+         */
+        void InitializeOdom(sdf::ElementPtr _sdf);
 
         /**
         * @brief Initialize ROS, subscribers, publishers and start ROS thread.

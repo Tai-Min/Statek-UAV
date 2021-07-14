@@ -6,6 +6,9 @@
     <arg name="statek_x" default="0"/>
     <arg name="statek_y" default="0"/>
     <arg name="statek_z" default="0"/>
+    <arg name="statek_R" default="0"/>
+    <arg name="statek_P" default="0"/>
+    <arg name="statek_Y" default="0"/>
 
     <!-- Launch world -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -15,7 +18,7 @@
         <arg name="gui" value="true"/>
         <arg name="recording" value="false"/>
         <arg name="debug" value="false"/>
-        <arg name="verbose" value="false"/>
+        <arg name="verbose" value="true"/>
     </include>
 
     <!-- Spawn Statek UAV with given name or default one -->
@@ -24,5 +27,8 @@
         <arg name="x" value="$(arg statek_x)"/>
         <arg name="y" value="$(arg statek_y)"/>
         <arg name="z" value="$(arg statek_z)"/>
+        <arg name="R" value="$(arg statek_R)"/>
+        <arg name="P" value="$(arg statek_P)"/>
+        <arg name="Y" value="$(arg statek_Y)"/>
     </include>
 </launch>

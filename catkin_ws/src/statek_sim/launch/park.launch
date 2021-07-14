@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
+
+  <!-- Launch world -->
+  <include file="$(find statek_sim)/launch/world.launch">
+    <arg name="world_name" value="$(find statek_sim)/worlds/park.world"/>
+    <arg name="statek_name" value="$(arg statek_name)"/>
+    <arg name="statek_z" value="1"/>
+    <arg name="statek_Y" value="-0.949998"/>
+  </include>
+
+</launch>

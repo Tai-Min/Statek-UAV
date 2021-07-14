@@ -84,7 +84,7 @@ visualization_msgs::Marker createPathMarker(
     marker.color.b = colorB;
     marker.color.a = colorA;
 
-    marker.lifetime.nsec = 500000000;
+    //marker.lifetime.nsec = 500000000;
 
     return marker;
 }
@@ -93,6 +93,12 @@ void publishMarkers(const statek_map::Graph &graphMsg)
 {
     int markerId = 0;
     visualization_msgs::MarkerArray markersMsg;
+
+    visualization_msgs::Marker deleteAll;
+    deleteAll.action = 3;
+    markersMsg.markers.push_back(deleteAll);
+    mapMarkerPublisher.publish(markersMsg);
+    markersMsg.markers.clear();
 
     int cntr = 0;
     for (auto node : graphMsg.nodes)
@@ -141,7 +147,7 @@ int main(int argc, char **argv)
     nh.param<std::string>("voronoi_map_frame", mapFrame, statekName + "/map/local_map_link");
 
     mapSub = nh.subscribe(mapTopic, 1, &publishMarkers);
-    mapMarkerPublisher = nh.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array", 1);
+    mapMarkerPublisher = nh.advertise<visualization_msgs::MarkerArray>("/" + statekName + "/graph_markers", 1);
 
     ros::spin();
 }

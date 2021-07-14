@@ -1,6 +1,9 @@
 #include "../include/statek_motor_control.h"
 #include <statek_hw/Encoder.h>
 #include <math.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <nav_msgs/Odometry.h>
 
 namespace gazebo
 {
@@ -19,6 +22,8 @@ namespace gazebo
 
     this->model = _model;
 
+    InitializeOdom(_sdf);
+
     // create noise generator for sensors
     CreateNoiseGenerator(_sdf);
 
@@ -33,6 +38,26 @@ namespace gazebo
     InitializeRos(_sdf);
   }
 
+  void MotorControlPlugin::InitializeOdom(sdf::ElementPtr _sdf)
+  {
+    unsigned long loopRate = 20;
+
+    float wheelRadius = 0;
+    float distanceBetweenWheels = 0;
+
+    if (_sdf->HasElement("sensor_publish_rate"))
+      loopRate = _sdf->Get<unsigned long>("sensor_publish_rate");
+
+    if (_sdf->HasElement("wheel_radius"))
+      wheelRadius = _sdf->Get<float>("wheel_radius");
+
+    if (_sdf->HasElement("distance_between_wheels"))
+      distanceBetweenWheels = _sdf->Get<float>("distance_between_wheels");
+
+      odomUpdater.setOdomParams({wheelRadius, distanceBetweenWheels, loopRate});
+      odomUpdater.start();
+  }
+
   void MotorControlPlugin::InitializeRos(sdf::ElementPtr _sdf)
   {
     if (!ros::isInitialized())
@@ -45,7 +70,7 @@ namespace gazebo
 
     this->rosNode.reset(new ros::NodeHandle("gazebo_client"));
 
-    int loopRate = 10;
+    int loopRate = 20;
 
     if (_sdf->HasElement("sensor_publish_rate"))
       loopRate = _sdf->Get<int>("sensor_publish_rate");
@@ -53,12 +78,18 @@ namespace gazebo
     this->rosLoopRate = ros::Rate(loopRate);
 
     if (_sdf->HasElement("max_velocity_rads"))
-      this->maxRpmRads = _sdf->Get<int>("max_velocity_rads");
+      this->maxRpmRads = _sdf->Get<double>("max_velocity_rads");
 
     if (_sdf->HasElement("left_motor_tf_frame"))
       this->left_motor_tf = _sdf->Get<std::string>("left_motor_tf_frame");
     if (_sdf->HasElement("right_motor_tf_frame"))
       this->right_motor_tf = _sdf->Get<std::string>("right_motor_tf_frame");
+
+    if (_sdf->HasElement("odom_tf_frame"))
+      this->odom_tf_frame = _sdf->Get<std::string>("odom_tf_frame");
+
+    if (_sdf->HasElement("odom_tf_child_frame"))
+      this->odom_tf_child_frame = _sdf->Get<std::string>("odom_tf_child_frame");
 
     CreateSubscribers(_sdf);
     CreatePublishers(_sdf);
@@ -74,23 +105,21 @@ namespace gazebo
 
     ros::SubscribeOptions motorOptions =
         ros::SubscribeOptions::create<statek_hw::Velocity>(
-            "/" + this->model->GetName() + "/" + ns + "/real_time/motors/vel_cmd",
+            "/" + this->model->GetName() + "/" + ns + "/vel_cmd",
             10,
             boost::bind(&MotorControlPlugin::OnVelCmd, this, _1),
             ros::VoidPtr(), &this->rosQueue);
     this->motorCmdSubscriber = this->rosNode->subscribe(motorOptions);
-}
+  }
 
   void MotorControlPlugin::CreatePublishers(sdf::ElementPtr _sdf)
   {
     this->leftMotorRawData =
-        this->rosNode->advertise<statek_hw::Encoder>("/" + this->model->GetName() + "/real_time/motors/left/encoder/raw", 1);
+        this->rosNode->advertise<statek_hw::Encoder>("/" + this->model->GetName() + "/real_time/motors/left/encoder", 1);
     this->rightMotorRawData =
-        this->rosNode->advertise<statek_hw::Encoder>("/" + this->model->GetName() + "/real_time/motors/right/encoder/raw", 1);
-    this->leftMotorFilteredData =
-        this->rosNode->advertise<statek_hw::Encoder>("/" + this->model->GetName() + "/real_time/motors/left/encoder/filtered", 1);
-    this->rightMotorFilteredData =
-        this->rosNode->advertise<statek_hw::Encoder>("/" + this->model->GetName() + "/real_time/motors/right/encoder/filtered", 1);
+        this->rosNode->advertise<statek_hw::Encoder>("/" + this->model->GetName() + "/real_time/motors/right/encoder", 1);
+    this->odomPublisher =
+        this->rosNode->advertise<nav_msgs::Odometry>("/" + this->model->GetName() + "/real_time/odom", 1);
   }
 
   void MotorControlPlugin::StartRosThread()
@@ -231,6 +260,8 @@ namespace gazebo
       rawRight.velocity = this->rightVelocity + GenerateNoiseSample();
       rawRight.position = this->rightPosition + GenerateNoiseSample();
 
+      odomUpdater.update(rawLeft.position, rawRight.position);
+
       statek_hw::Encoder filteredLeft;
       filteredLeft.header.seq = cntr;
       filteredLeft.header.stamp = ros::Time::now();
@@ -247,8 +278,33 @@ namespace gazebo
 
       this->leftMotorRawData.publish(rawLeft);
       this->rightMotorRawData.publish(rawRight);
-      this->leftMotorFilteredData.publish(filteredLeft);
-      this->rightMotorFilteredData.publish(filteredRight);
+
+      tf2::Quaternion q;
+      q.setRPY(0, 0, odomUpdater.getTheta());
+      q = q.normalize();
+
+      geometry_msgs::TransformStamped odomTrans;
+      odomTrans.header.stamp = ros::Time::now();
+      odomTrans.header.frame_id = this->odom_tf_frame;
+      odomTrans.child_frame_id = this->odom_tf_child_frame;
+      odomTrans.transform.translation.x = odomUpdater.getX();
+      odomTrans.transform.translation.y = odomUpdater.getY();
+      tf2::convert(q, odomTrans.transform.rotation);
+
+      odomBroadcaster.sendTransform(odomTrans);
+
+      nav_msgs::Odometry odom;
+      odom.header.stamp = ros::Time::now();
+      odom.header.frame_id = this->odom_tf_frame;
+      odom.child_frame_id = this->odom_tf_child_frame;
+      odom.pose.pose.position.x = odomUpdater.getX();
+      odom.pose.pose.position.y = odomUpdater.getY();
+      tf2::convert(q, odom.pose.pose.orientation);
+      odom.twist.twist.linear.x = odomUpdater.getDx();
+      odom.twist.twist.linear.y = odomUpdater.getDy();
+      odom.twist.twist.angular.z = odomUpdater.getDtheta();
+
+      this->odomPublisher.publish(odom);
 
       this->rosQueue.callAvailable();
 
@@ -263,15 +319,15 @@ namespace gazebo
     float right = _msg->right;
 
     // saturation left
-    if(left > this->maxRpmRads)
+    if (left > this->maxRpmRads)
       left = this->maxRpmRads;
-    if(left < -this->maxRpmRads)
+    if (left < -this->maxRpmRads)
       left = -this->maxRpmRads;
 
     // saturation right
-    if(right > this->maxRpmRads)
+    if (right > this->maxRpmRads)
       right = this->maxRpmRads;
-    if(right < -this->maxRpmRads)
+    if (right < -this->maxRpmRads)
       right = -this->maxRpmRads;
 
     this->leftTarget = {left};

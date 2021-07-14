@@ -64,7 +64,7 @@ visualization_msgs::Marker createMarker(
     marker.color.b = colorB;
     marker.color.a = colorA;
 
-    marker.lifetime.nsec = 500000000;
+    //marker.lifetime.nsec = 500000000;
 
     return marker;
 }
@@ -73,6 +73,12 @@ void publishMarkers(const nav_msgs::OccupancyGrid &mapMsg)
 {
     int markerId = 0;
     visualization_msgs::MarkerArray markersMsg;
+
+    visualization_msgs::Marker deleteAll;
+    deleteAll.action = 3;
+    markersMsg.markers.push_back(deleteAll);
+    mapMarkerPublisher.publish(markersMsg);
+    markersMsg.markers.clear();
 
     for (int y = 0; y < numCellsPerRowCol; y++)
     {
@@ -108,11 +114,11 @@ int main(int argc, char **argv)
     nh.param<double>("map_size_meters", mapSizeMeters, 7);
     nh.param<double>("cell_size_meters", cellSizeMeters, 0.1);
     nh.param<int>("map_update_rate_ms", mapUpdateRateMs, 0);
-    
+
     numCellsPerRowCol = mapSizeMeters / cellSizeMeters;
 
     mapSub = nh.subscribe(mapTopic, 1, &publishMarkers);
-    mapMarkerPublisher = nh.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array", 1);
+    mapMarkerPublisher = nh.advertise<visualization_msgs::MarkerArray>("/" + statekName + "/map_markers", 1);
 
     ros::spin();
 }

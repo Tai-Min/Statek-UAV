@@ -4,13 +4,16 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
-        - /Grid1/Offset1
-        - /TF1/Frames1/statek/map/local_map_link1
         - /Hardware1
         - /Hardware1/Wheel odometry1/Shape1
         - /Hardware1/Wheel odometry1/Covariance1
+        - /Local map1
+        - /Local map1/Local map markers1
         - /Local map1/Local map markers1/Status1
+        - /Local map1/Local map markers1/Namespaces1
+        - /Short term nav1
+        - /Short term nav1/Short term map1
+        - /Short term nav1/Short term map1/Namespaces1
       Splitter Ratio: 0.7514563202857971
     Tree Height: 584
   - Class: rviz/Selection
@@ -72,7 +75,7 @@ Visualization Manager:
       Offset:
         X: 0
         Y: 0
-        Z: -1
+        Z: -0.019999999552965164
       Plane: XY
       Plane Cell Count: 1000
       Reference Frame: <Fixed Frame>
@@ -85,8 +88,6 @@ Visualization Manager:
         statek/base_footprint:
           Value: true
         statek/base_link:
-          Value: true
-        statek/earth:
           Value: true
         statek/gps/gps_link:
           Value: true
@@ -120,33 +121,33 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        statek/earth:
-          statek/map/local_map_link:
-            statek/odom/odom_link:
-              statek/base_footprint:
-                statek/base_link:
-                  statek/gps/gps_link:
-                    {}
-                  statek/imu/imu_link:
-                    {}
-                  statek/laser/laser_link:
-                    {}
-                  statek/motors/left_link:
-                    {}
-                  statek/motors/right_link:
-                    {}
-                  statek/stereo/left_link:
-                    {}
-                  statek/stereo/right_link:
-                    {}
-                  statek/wheels/left_back_link:
-                    {}
-                  statek/wheels/left_front_link:
-                    {}
-                  statek/wheels/right_back_link:
-                    {}
-                  statek/wheels/right_front_link:
-                    {}
+        statek/map/local_map_link:
+          {}
+        statek/odom/odom_link:
+          statek/base_footprint:
+            statek/base_link:
+              statek/gps/gps_link:
+                {}
+              statek/imu/imu_link:
+                {}
+              statek/laser/laser_link:
+                {}
+              statek/motors/left_link:
+                {}
+              statek/motors/right_link:
+                {}
+              statek/stereo/left_link:
+                {}
+              statek/stereo/right_link:
+                {}
+              statek/wheels/left_back_link:
+                {}
+              statek/wheels/left_front_link:
+                {}
+              statek/wheels/right_back_link:
+                {}
+              statek/wheels/right_front_link:
+                {}
       Update Interval: 0
       Value: true
     - Class: rviz/Group
@@ -195,12 +196,12 @@ Visualization Manager:
         - Alpha: 1
           Class: rviz_plugin_tutorials/Imu
           Color: 204; 51; 204
-          Enabled: true
+          Enabled: false
           History Length: 1
           Name: Imu
           Topic: /statek/real_time/imu
           Unreliable: false
-          Value: true
+          Value: false
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
@@ -355,11 +356,11 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /visualization_marker_array
+          Marker Topic: /statek/map_markers
           Name: Local map markers
           Namespaces:
-            statek/voronoi_map_nodes: true
-          Queue Size: 1
+            statek/local_map: true
+          Queue Size: 2
           Value: true
       Enabled: true
       Name: Local map
@@ -367,11 +368,11 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /visualization_marker_array
+          Marker Topic: /statek/graph_markers
           Name: Short term map
           Namespaces:
             statek/voronoi_map_nodes: true
-          Queue Size: 1
+          Queue Size: 2
           Value: true
         - Alpha: 1
           Axes Length: 1
@@ -417,7 +418,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: statek/earth
+    Fixed Frame: statek/base_footprint
     Frame Rate: 30
   Name: root
   Tools:
@@ -428,21 +429,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0.07000000029802322
-      Class: rviz/TopDownOrtho
+      Class: rviz/Orbit
+      Distance: 10.511582374572754
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Focal Point:
+        X: 0.3178384602069855
+        Y: -0.5746491551399231
+        Z: -0.3594646453857422
+      Focal Shape Fixed Size: false
+      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 23.938770294189453
+      Pitch: 1.2903975248336792
       Target Frame: <Fixed Frame>
-      Value: TopDownOrtho (rviz)
-      X: 134.88455200195312
-      Y: -101.75054931640625
+      Value: Orbit (rviz)
+      Yaw: 3.125398635864258
     Saved: ~
 Window Geometry:
   Displays:
@@ -454,7 +460,7 @@ Window Geometry:
     collapsed: false
   Lidar img:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000300000000000001f700000354fc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005d00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003700000284000000ca00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00540065006c0065006f0070000000032e000000b00000004200fffffffb000000100044006900730070006c00610079007300000002b600000128000000ca00fffffffb0000000a0056006900650077007301000002bf000000cc000000a100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002dc000000af0000005d00ffffff00000001000001a400000354fc0200000004fb00000012004c006900640061007200200069006d00670100000037000001890000001600fffffffb00000020004c006500660074002000630061006d0065007200610020007200650063007401000001c4000001c70000001600fffffffb0000000a00560069006500770073000000003b0000031d000000a100fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000078000000050fc0100000002fc00000000000007800000028100fffffffa000000010200000002fb0000000c00430061006d0065007200610100000000ffffffff0000000000000000fb0000000800540069006d006501000003a00000003e0000003700fffffffb0000000800540069006d00650100000000000004500000000000000000000003dd0000035400000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000300000000000002d100000354fc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005d00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003700000284000000ca00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00540065006c0065006f0070000000032e000000b00000004200fffffffb000000100044006900730070006c00610079007300000002b600000128000000ca00fffffffb0000000a0056006900650077007301000002bf000000cc000000a100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002dc000000af0000005d00ffffff00000001000001a400000354fc0200000004fb00000012004c006900640061007200200069006d00670100000037000001890000001600fffffffb00000020004c006500660074002000630061006d0065007200610020007200650063007401000001c4000001c70000001600fffffffb0000000a00560069006500770073000000003b0000031d000000a100fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000078000000050fc0100000002fc00000000000007800000028100fffffffa000000010200000002fb0000000c00430061006d0065007200610100000000ffffffff0000000000000000fb0000000800540069006d006501000003a00000003e0000003700fffffffb0000000800540069006d00650100000000000004500000000000000000000003030000035400000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Teleop:

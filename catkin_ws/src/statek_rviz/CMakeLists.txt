@@ -13,7 +13,6 @@ include_directories(${std_msgs_INCLUDE_DIRS})
 include_directories(${sensor_msgs_INCLUDE_DIRS})
 include_directories(${visualization_msgs_INCLUDE_DIRS})
 include_directories(${nav_msgs_INCLUDE_DIRS})
-include_directories(${OpenCV_INCLUDE_DIRS})
 
 include_directories(
   ${catkin_INCLUDE_DIRS}

@@ -3,6 +3,9 @@
   xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:arg name="statek_name" default="statek"/>
 
+  <xacro:arg name="lat" default="54.3862777778"/>
+  <xacro:arg name="lon" default="18.5907777778"/>
+
   <xacro:arg name="mu1" default="0.00"/>
   <xacro:arg name="mu2" default="0.00"/>
   <xacro:arg name="kp" default="100000"/>
@@ -11,6 +14,8 @@
 
   <xacro:property name="motion_config" value="${load_yaml('$(find statek_config)/yaml/motion_config.yaml')}"/>
   <xacro:property name="max_velocity_rads" value="${motion_config['wheel_max_angular_velocity']}"/>
+  <xacro:property name="distance_between_wheels" value="${motion_config['distance_between_wheels']}"/>
+  <xacro:property name="wheel_radius" value="${motion_config['wheel_radius']}"/>
 
   <xacro:property name="camera_config" value="${load_yaml('$(find statek_config)/yaml/camera_config.yaml')}"/>
   <xacro:property name="camera_width" value="${camera_config['width']}"/>
@@ -26,147 +31,157 @@
   <joint name="left_back_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
     <child link="$(arg statek_name)/wheels/left_back_link"/>
-    <origin rpy="0      0     1.5708" xyz="-0.252682 0.270467 -0.03126"/>
-    <axis xyz="1  0  0"/>
+    <origin rpy="0 0 1.5708" xyz="-0.252682 0.270467 -0.03126"/>
+    <axis xyz="1 0 0"/>
     <limit effort="-1" lower="-1e16" upper="1e16" velocity="-1"/>
   </joint>
 
   <joint name="right_back_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
     <child link="$(arg statek_name)/wheels/right_back_link"/>
-    <origin rpy="0      0      1.5708" xyz="-0.252682 -0.264541 -0.03126"/>
-    <axis xyz="1  0  0"/>
+    <origin rpy="0 0 1.5708" xyz="-0.252682 -0.264541 -0.03126"/>
+    <axis xyz="1 0 0"/>
     <limit effort="-1" lower="-1e16" upper="1e16" velocity="-1"/>
   </joint>
 
   <joint name="left_front_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
     <child link="$(arg statek_name)/wheels/left_front_link"/>
-    <origin rpy="0      0     1.5708" xyz="0.167807 0.270467 -0.03126"/>
-    <axis xyz="1  0  0"/>
+    <origin rpy="0 0 1.5708" xyz="0.167807 0.270467 -0.03126"/>
+    <axis xyz="1 0 0"/>
     <limit effort="-1" lower="-1e16" upper="1e16" velocity="-1"/>
   </joint>
 
   <joint name="right_front_wheel_hinge" type="revolute">
     <parent link="$(arg statek_name)/base_link"/>
     <child link="$(arg statek_name)/wheels/right_front_link"/>
-    <origin rpy="0      0      1.5708" xyz="0.167807 -0.264541 -0.03126"/>
-    <axis xyz="1  0  0"/>
+    <origin rpy="0 0 1.5708" xyz="0.167807 -0.264541 -0.03126"/>
+    <axis xyz="1 0 0"/>
     <limit effort="-1" lower="-1e16" upper="1e16" velocity="-1"/>
   </joint>
 
   <link name="$(arg statek_name)/base_link">
+
     <inertial>
       <mass value="9"/>
-      <origin rpy="0  0  1.57" xyz="-0.04 0 0.012"/>
+      <origin rpy="0 0 1.57" xyz="-0.04 0 0.012"/>
       <inertia ixx="0.97125" ixy="0" ixz="0" iyy="0.51916" iyz="0" izz="1.4379"/>
     </inertial>
 
     <collision name="collision">
-      <origin rpy="0  0  1.57" xyz="-0.04  0  0.012"/>
+      <origin rpy="0 0 1.57" xyz="-0.04 0 0.012"/>
       <geometry>
-        <box size=".62 .9 .15"/>
+        <box size="0.62 0.9 0.15"/>
       </geometry>
     </collision>
 
     <visual name="visual">
-      <origin rpy="0  0  1.57" xyz="0  -0.0035  0"/>
+      <origin rpy="0 0 1.57" xyz="0 -0.0035 0"/>
       <geometry>
         <mesh filename="file://$(find statek_config)/urdf/chassis.dae" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
+
   </link>
 
   <link name="$(arg statek_name)/wheels/left_back_link">
+
     <inertial>
       <mass value="1.3"/>
-      <origin rpy="0  0  1.57" xyz="0.012  0  0"/>
+      <origin rpy="0 0 1.57" xyz="0.012 0 0"/>
       <inertia ixx="0.00521083333" ixy="0" ixz="0" iyy="0.00936" iyz="0" izz="0.00521083333"/>
     </inertial>
 
     <collision name="collision">
-      <origin rpy="-1.57  0 1.57" xyz="0.012 0  0"/>
+      <origin rpy="-1.57 0 1.57" xyz="0.012 0 0"/>
       <geometry>
         <sphere length="0.07" radius="0.12"/>
       </geometry>
     </collision>
 
     <visual name="visual">
-      <origin rpy="0  0  -1.57" xyz="0  0  0"/>
+      <origin rpy="0 0 -1.57" xyz="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find statek_config)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
+
   </link>
 
   <link name="$(arg statek_name)/wheels/right_back_link">
+
     <inertial>
       <mass value="1.3"/>
-      <origin rpy="0  0  1.57" xyz="0.012  0  0"/>
+      <origin rpy="0 0 1.57" xyz="0.012 0 0"/>
       <inertia ixx="0.00521083333" ixy="0" ixz="0" iyy="0.00936" iyz="0" izz="0.00521083333"/>
     </inertial>
 
     <collision name="collision">
-      <origin rpy="1.57  0    1.57" xyz="0.012 0  0"/>
+      <origin rpy="1.57 0 1.57" xyz="0.012 0 0"/>
       <geometry>
         <sphere length="0.07" radius="0.12"/>
       </geometry>
     </collision>
 
     <visual name="visual">
-      <origin rpy="0  0  1.57" xyz="0  0  0"/>
+      <origin rpy="0 0 1.57" xyz="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find statek_config)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
+
   </link>
 
   <link name="$(arg statek_name)/wheels/left_front_link">
+
     <inertial>
       <mass value="1.3"/>
-      <origin rpy="0  0  1.57" xyz="0.012  0  0"/>
+      <origin rpy="0 0 1.57" xyz="0.012 0 0"/>
       <inertia ixx="0.00521083333" ixy="0" ixz="0" iyy="0.00936" iyz="0" izz="0.00521083333"/>
     </inertial>
 
     <collision name="collision">
-      <origin rpy="-1.57  0    1.57" xyz="0.012 0  0"/>
+      <origin rpy="-1.57 0 1.57" xyz="0.012 0 0"/>
       <geometry>
         <sphere length="0.07" radius="0.12"/>
       </geometry>
     </collision>
 
     <visual name="visual">
-      <origin rpy="0  0  -1.57" xyz="0  0  0"/>
+      <origin rpy="0 0 -1.57" xyz="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find statek_config)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
+
   </link>
 
   <link name="$(arg statek_name)/wheels/right_front_link">
+
     <inertial>
       <mass value="1.3"/>
-      <origin rpy="0  0  1.57" xyz="0.012  0  0"/>
+      <origin rpy="0 0 1.57" xyz="0.012 0 0"/>
       <inertia ixx="0.00521083333" ixy="0" ixz="0" iyy="0.00936" iyz="0" izz="0.00521083333"/>
     </inertial>
 
     <collision name="collision">
-      <origin rpy="1.57  0    1.57" xyz="0.012 0 0"/>
+      <origin rpy="1.57 0 1.57" xyz="0.012 0 0"/>
       <geometry>
         <sphere length="0.07" radius="0.12"/>
       </geometry>
     </collision>
 
     <visual name="visual">
-      <origin rpy="0  0  1.57" xyz="0  0  0"/>
+      <origin rpy="0 0 1.57" xyz="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find statek_config)/urdf/wheel.dae" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
+
   </link>
 
   <gazebo reference="$(arg statek_name)/base_link">
-    <!--<sensor type="ray" name="lidar">
+    <sensor type="ray" name="lidar">
       <always_on>true</always_on>
       <pose>0 0 .15 0 0 3.08159265359</pose>
       <visualize>false</visualize>
@@ -191,11 +206,11 @@
           <stddev>0.01</stddev>
         </noise>
       </ray>
-      <plugin name="sensor_plugin" filename="libgazebo_ros_laser.so">
+      <plugin name="libgazebo_ros_laser" filename="libgazebo_ros_laser.so">
         <topicName>$(arg statek_name)/laser/scan</topicName>
         <frameName>$(arg statek_name)/laser/laser_link</frameName>
       </plugin>
-    </sensor>-->
+    </sensor>
 
     <sensor type="multicamera" name="stereo_camera">
       <update_rate>30.0</update_rate>
@@ -208,7 +223,7 @@
           <format>R8G8B8</format>
         </image>
         <clip>
-          <near>0.0</near>
+          <near>0.1</near>
           <far>30000</far>
         </clip>
         <noise>
@@ -226,7 +241,7 @@
           <format>R8G8B8</format>
         </image>
         <clip>
-          <near>0.0</near>
+          <near>0.1</near>
           <far>30000</far>
         </clip>
         <noise>
@@ -235,7 +250,7 @@
           <stddev>0.015</stddev>
         </noise>
       </camera>
-      <plugin name="stereo_camera_controller" filename="libgazebo_ros_multicamera.so">
+      <plugin name="libgazebo_ros_multicamera" filename="libgazebo_ros_multicamera.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>${camera_framerate}</updateRate>
         <cameraName>$(arg statek_name)/stereo</cameraName>
@@ -255,14 +270,33 @@
         <Cy>${camera_info_K[5]}</Cy>
       </plugin>
     </sensor>
+
+    <!--<sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>20</update_rate>
+      <visualize>false</visualize>
+      <topic>$(arg statek_name)/real_time/imu</topic>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <topicName>$(arg statek_name)/real_time/imu</topicName>
+        <bodyName>$(arg statek_name)/base_link</bodyName>
+        <updateRateHZ>10.0</updateRateHZ>
+        <gaussianNoise>0.001</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>$(arg statek_name)/imu/imu_link</frameName>
+        <initialOrientationAsReference>false</initialOrientationAsReference>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>-->
+
   </gazebo>
 
   <gazebo reference="$(arg statek_name)/wheels/left_front_link">
-    <kp>$(arg kp)</kp>
-    <kd>$(arg kd)</kd>
-    <mu1>$(arg mu1)</mu1>
-    <mu2>$(arg mu2)</mu2>
-    <fdir1>$(arg fdir1)</fdir1>
+    <kp value="$(arg kp)"/>
+    <kd value="$(arg kd)"/>
+    <mu1 value="$(arg mu1)"/>
+    <mu2 value="$(arg mu2)"/>
+    <fdir1 value="$(arg fdir1)"/>
   </gazebo>
 
   <gazebo reference="$(arg statek_name)/wheels/right_front_link">
@@ -290,18 +324,45 @@
   </gazebo>
 
   <gazebo>
-    <plugin name="statek_motor_control" filename="libstatek_motor_control.so">
+    <plugin name="statek_imu_sensor" filename="libhector_gazebo_ros_imu.so">
+      <updateRate>20.0</updateRate>
+      <bodyName>$(arg statek_name)/base_link</bodyName>
+      <topicName>$(arg statek_name)/real_time/imu</topicName>
+      <yawOffset>1.57079632679</yawOffset>
+    </plugin>
+
+    <plugin name="libstatek_motor_control" filename="libstatek_motor_control.so">
       <left_back_joint>left_back_wheel_hinge</left_back_joint>
       <right_back_joint>right_back_wheel_hinge</right_back_joint>
       <left_front_joint>left_front_wheel_hinge</left_front_joint>
       <right_front_joint>right_front_wheel_hinge</right_front_joint>
       <max_velocity_rads>${max_velocity_rads}</max_velocity_rads>
-      <kp>5</kp>
-      <ki>2.5</ki>
+      <kp>10</kp>
+      <ki>20</ki>
       <kd>0</kd>
       <motor_namespace>real_time/motors</motor_namespace>
       <left_motor_tf_frame>$(arg statek_name)/motors/left_link</left_motor_tf_frame>
       <right_motor_tf_frame>$(arg statek_name)/motors/right_link</right_motor_tf_frame>
+      <odom_tf_frame>$(arg statek_name)/odom/odom_link</odom_tf_frame>
+      <odom_tf_child_frame>$(arg statek_name)/base_footprint</odom_tf_child_frame>
+      <wheel_radius>${wheel_radius}</wheel_radius>
+      <distance_between_wheels>${distance_between_wheels}</distance_between_wheels>
+    </plugin>
+
+    <plugin name="libhector_gazebo_ros_gps" filename="libhector_gazebo_ros_gps.so">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>1.0</updateRate>
+      <bodyName>$(arg statek_name)/base_link</bodyName>
+      <frameId>$(arg statek_name)/gps/gps_link</frameId>
+      <topicName>/$(arg statek_name)/gps/fix</topicName>
+      <velocityTopicName>/$(arg statek_name)/gps/fix_velocity</velocityTopicName>
+      <referenceLatitude>$(arg lat)</referenceLatitude>
+      <referenceLongitude>$(arg lon)</referenceLongitude>
+      <referenceHeading>90.0</referenceHeading>
+      <drift>5.0 5.0 5.0</drift>
+      <gaussianNoise>0.1 0.1 0.1</gaussianNoise>
+      <velocityDrift>0 0 0</velocityDrift>
+      <velocityGaussianNoise>0.1 0.1 0.1</velocityGaussianNoise>
     </plugin>
   </gazebo>
 
