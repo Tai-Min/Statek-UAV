@@ -39,15 +39,29 @@ def voronoi_graph_callback(graph, data):
 
     voronoi_graph_callback.planner.set_graph(graph.nodes)
     path = voronoi_graph_callback.planner.astar(start, end)
+
+    path_length = 0
+
     if path:
+        previous_x = 0
+        previous_y = 0
+
         for node in path:
             pose = PoseStamped()
             pose.header.stamp = path_msg.header.stamp
             pose.header.frame_id = path_msg.header.frame_id
             pose.pose.position.x = node.point.x
             pose.pose.position.y = node.point.y
-            path_msg.poses.append(pose)
+            path_msg.poses.insert(0, pose) # Insert in reverse order so path starts from start node.
+
+            path_length += math.hypot(node.point.x - previous_x, node.point.y - previous_y)
+            previous_x = node.point.x
+            previous_y = node.point.y
     
+    # Publish empty path if it's too short.
+    if path_length < data["minimum_path_length"]:
+        path_msg.poses[:] = []
+
     data["path_publisher"].publish(path_msg)
 
 voronoi_graph_callback.planner = Planner()
@@ -61,12 +75,14 @@ def main():
     voronoi_graph_topic = rospy.get_param("~voronoi_graph_topic", "/" + statek_name + "/map/voronoi_map")
     short_term_path_topic = rospy.get_param("~short_term_path_topic", "/" + statek_name + "/short_term_path")
     local_map_link = rospy.get_param("~local_map_link", statek_name + "/map/local_map_link")
+    minimum_path_length = rospy.get_param("~minimum_path_length", 0.5)
 
     # Init subscribers and publishers.
     path_publisher = rospy.Publisher(short_term_path_topic, Path, queue_size=1)
-    rospy.Subscriber(voronoi_graph_topic, Graph, voronoi_graph_callback, {"map_link": local_map_link, "path_publisher": path_publisher}, queue_size=1)
+    params = {"map_link": local_map_link,"path_publisher": path_publisher,"minimum_path_length": minimum_path_length}
+    rospy.Subscriber(voronoi_graph_topic, Graph, voronoi_graph_callback, params, queue_size=1)
 
-    rate = rospy.Rate(10) # 10hz
+    rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         rate.sleep()
 

@@ -1,11 +1,11 @@
 #include "../../include/gps_to_tf/fix_to_tf.hpp"
 #include <tf/transform_broadcaster.h>
 
-FixToTf::FixToTf(long double originLat, long double originLon, double _northCompensation,
+FixToTf::FixToTf(double originLat, double originLon, double _northCompensation,
                  double processVariance, double measurementVariance,
                  std::string _mapFrame, std::string _earthFrame)
-    : originPhi(originLat * M_PIf128 / (long double)180.0),
-      originLambda(originLon * M_PIf128 / (long double)180.0),
+    : originPhi(originLat * M_PI / (double)180.0),
+      originLambda(originLon * M_PI / (double)180.0),
       northCompensation(_northCompensation),
       mapFrame(_mapFrame),
       earthFrame(_earthFrame),
@@ -14,80 +14,80 @@ FixToTf::FixToTf(long double originLat, long double originLon, double _northComp
     geodeticToEcef(originLat, originLon, originEcefX, originEcefY, originEcefZ);
 }
 
-long double FixToTf::sign(long double v)
+double FixToTf::sign(double v)
 {
     return (v > 0) - (v < 0);
 }
 
-void FixToTf::geodeticToEcef(long double lat, long double lon, long double &ecefX, long double &ecefY, long double &ecefZ)
+void FixToTf::geodeticToEcef(double lat, double lon, double &ecefX, double &ecefY, double &ecefZ)
 {
-    long double phi = lat * M_PIf128 / (long double)180.0;
-    long double lambda = lon * M_PIf128 / (long double)180.0;
-    long double N = a / sqrtf128((long double)1.0 - eSq * powf128(sinf128(phi), 2));
+    double phi = lat * M_PI / (double)180.0;
+    double lambda = lon * M_PI / (double)180.0;
+    double N = a / sqrt((double)1.0 - eSq * pow(sin(phi), 2));
 
-    ecefX = N * cosf128(phi) * cosf128(lambda);
-    ecefY = N * cosf128(phi) * sinf128(lambda);
-    ecefZ = (powf128(b, 2)) / (powf128(a, 2)) * N * sinf128(phi);
+    ecefX = N * cos(phi) * cos(lambda);
+    ecefY = N * cos(phi) * sin(lambda);
+    ecefZ = (pow(b, 2)) / (pow(a, 2)) * N * sin(phi);
 }
 
-void FixToTf::EcefToGeodetic(long double ecefX, long double ecefY, long double ecefZ, long double &lat, long double &lon)
+void FixToTf::EcefToGeodetic(double ecefX, double ecefY, double ecefZ, double &lat, double &lon)
 {
     // ._.
     // Zhu's Algorithm.
     // https://hal.archives-ouvertes.fr/hal-01704943v2/document
-    long double w = sqrtf128(powf128(ecefX, 2) + powf128(ecefY, 2));
-    long double l = eSq / (long double)2.0;
-    long double lSq = powf128(l, 2);
-    long double m = powf128(w / a, 2);
-    long double n = powf128((((long double)1.0 - eSq) * ecefZ / b), 2);
-    long double i = -((long double)2 * lSq + m + n) / (long double)2.0;
-    long double k = lSq * (lSq - m - n);
-    long double q = powf128((m + n - (long double)4.0 * lSq), 3) / (long double)216.0 + m * n * lSq;
-    long double D = sqrtf128(fabsf128(((long double)2.0 * q - m * n * lSq) * m * n * lSq));
-    long double beta = i / (long double)3.0 - cbrtf128(q + D) - cbrtf128(q - D);
-    long double t = sqrtf128(sqrtf128(powf128(beta, 2) - k) - (beta + i) / (long double)2.0) - sign(m - n) * sqrtf128(fabsf128((beta - i) / (long double)2.0));
-    long double w1 = w / (t + l);
-    long double z1 = ((long double)1 - eSq) * ecefZ / (t - l);
+    double w = sqrt(pow(ecefX, 2) + pow(ecefY, 2));
+    double l = eSq / (double)2.0;
+    double lSq = pow(l, 2);
+    double m = pow(w / a, 2);
+    double n = pow((((double)1.0 - eSq) * ecefZ / b), 2);
+    double i = -((double)2 * lSq + m + n) / (double)2.0;
+    double k = lSq * (lSq - m - n);
+    double q = pow((m + n - (double)4.0 * lSq), 3) / (double)216.0 + m * n * lSq;
+    double D = sqrt(fabs(((double)2.0 * q - m * n * lSq) * m * n * lSq));
+    double beta = i / (double)3.0 - cbrt(q + D) - cbrt(q - D);
+    double t = sqrt(sqrt(pow(beta, 2) - k) - (beta + i) / (double)2.0) - sign(m - n) * sqrt(fabs((beta - i) / (double)2.0));
+    double w1 = w / (t + l);
+    double z1 = ((double)1 - eSq) * ecefZ / (t - l);
 
-    long double phi;
+    double phi;
     if (w != 0)
-        phi = atan2f128(z1, ((long double)1.0 - eSq) * w1);
+        phi = atan2(z1, ((double)1.0 - eSq) * w1);
     else
-        phi = sign(ecefZ) * (M_PIf128 / (long double)2.0);
-    long double lambda = (long double)2.0 * atan2f128(w - ecefX, ecefY);
+        phi = sign(ecefZ) * (M_PI / (double)2.0);
+    double lambda = (double)2.0 * atan2(w - ecefX, ecefY);
 
-    lat = phi * (long double)180.0 / M_PIf128;
-    lon = lambda * (long double)180.0 / M_PIf128;
+    lat = phi * (double)180.0 / M_PI;
+    lon = lambda * (double)180.0 / M_PI;
 }
 
-void FixToTf::EcefToEnu(long double ecefX, long double ecefY, long double ecefZ, long double &enuX, long double &enuY, long double &enuZ) const
+void FixToTf::EcefToEnu(double ecefX, double ecefY, double ecefZ, double &enuX, double &enuY, double &enuZ) const
 {
-    long double deltaEcefX = ecefX - this->originEcefX;
-    long double deltaEcefY = ecefY - this->originEcefY;
-    long double deltaEcefZ = ecefZ - this->originEcefZ;
+    double deltaEcefX = ecefX - this->originEcefX;
+    double deltaEcefY = ecefY - this->originEcefY;
+    double deltaEcefZ = ecefZ - this->originEcefZ;
 
-    enuX = -sinf128(originPhi) * deltaEcefX + cosf128(originPhi) * deltaEcefY;
-    enuY = -cosf128(originPhi) * sinf128(originLambda) * deltaEcefX - sinf128(originPhi) * sinf128(originLambda) * deltaEcefY + cosf128(originLambda) * deltaEcefZ;
-    enuZ = cosf128(originPhi) * cosf128(originLambda) * deltaEcefX + cosf128(originPhi) * sinf128(originLambda) * deltaEcefY + sinf128(originPhi) * deltaEcefZ;
+    enuX = -sin(originLambda) * deltaEcefX + cos(originLambda) * deltaEcefY;
+    enuY = -sin(originPhi) * cos(originLambda) * deltaEcefX - sin(originPhi) * sin(originLambda) * deltaEcefY + cos(originPhi) * deltaEcefZ;
+    enuZ = cos(originPhi) * cos(originLambda) * deltaEcefX + cos(originPhi) * sin(originLambda) * deltaEcefY + sin(originPhi) * deltaEcefZ;
 }
 
-void FixToTf::EnuToEcef(long double enuX, long double enuY, long double enuZ, long double &ecefX, long double &ecefY, long double &ecefZ) const
+void FixToTf::EnuToEcef(double enuX, double enuY, double enuZ, double &ecefX, double &ecefY, double &ecefZ) const
 {
-    ecefX = (-sinf128(originLambda) * enuX - sinf128(originPhi) * cosf128(originLambda) * enuY + cosf128(originPhi) * cosf128(originLambda) * enuZ) + this->originEcefX;
-    ecefY = (cosf128(originLambda) * enuX - sinf128(originPhi) * sinf128(originLambda) * enuY + cosf128(originPhi) * sinf128(originLambda) * enuZ) + this->originEcefY;
-    ecefZ = (cosf128(originPhi) * enuY + sinf128(originPhi) * enuZ) + this->originEcefZ;
+    ecefX = (-sin(originLambda) * enuX - sin(originPhi) * cos(originLambda) * enuY + cos(originPhi) * cos(originLambda) * enuZ) + this->originEcefX;
+    ecefY = (cos(originLambda) * enuX - sin(originPhi) * sin(originLambda) * enuY + cos(originPhi) * sin(originLambda) * enuZ) + this->originEcefY;
+    ecefZ = (cos(originPhi) * enuY + sin(originPhi) * enuZ) + this->originEcefZ;
 }
 
-void FixToTf::geodeticToEnu(long double lat, long double lon, long double &enuX, long double &enuY, long double &enuZ) const
+void FixToTf::geodeticToEnu(double lat, double lon, double &enuX, double &enuY, double &enuZ) const
 {
-    long double ecefX, ecefY, ecefZ;
+    double ecefX, ecefY, ecefZ;
     this->geodeticToEcef(lat, lon, ecefX, ecefY, ecefZ);
     this->EcefToEnu(ecefX, ecefY, ecefZ, enuX, enuY, enuZ);
 }
 
-void FixToTf::enuToGeodetic(long double enuX, long double enuY, long double enuZ, long double &lat, long double &lon) const
+void FixToTf::enuToGeodetic(double enuX, double enuY, double enuZ, double &lat, double &lon) const
 {
-    long double ecefX, ecefY, ecefZ;
+    double ecefX, ecefY, ecefZ;
     this->EnuToEcef(enuX, enuY, enuZ, ecefX, ecefY, ecefZ);
     this->EcefToGeodetic(ecefX, ecefY, ecefZ, lat, lon);
 }
@@ -100,7 +100,7 @@ bool FixToTf::newFixAvailable() const
 bool FixToTf::geodeticToEnuService(statek_map::GeoToEnu::Request &req,
                                    statek_map::GeoToEnu::Response &res)
 {
-    long double tempX, tempY, tempZ;
+    double tempX, tempY, tempZ;
     geodeticToEnu(req.latitude, req.longitude, tempX, tempY, tempZ);
     res.x = tempX;
     res.y = tempY;
@@ -110,7 +110,7 @@ bool FixToTf::geodeticToEnuService(statek_map::GeoToEnu::Request &req,
 bool FixToTf::enuToGeodeticService(statek_map::EnuToGeo::Request &req,
                                    statek_map::EnuToGeo::Response &res)
 {
-    long double tempLat, tempLon;
+    double tempLat, tempLon;
     enuToGeodetic(req.x, req.y, req.z, tempLat, tempLon);
     res.latitude = tempLat;
     res.longitude = tempLon;
@@ -190,13 +190,13 @@ void FixToTf::onNewFix(const sensor_msgs::NavSatFix::ConstPtr &fix)
     //this->latestTangentX = estimates.x;
     //this->latestTangentY = estimates.y;
 
-    long double tempLat, tempLon;
-    enuToGeodetic(this->latestTangentX, this->latestTangentY, this->latestTangentZ, tempLat, tempLon);
+    //double tempLat, tempLon;
+    //enuToGeodetic(this->latestTangentX, this->latestTangentY, this->latestTangentZ, tempLat, tempLon);
 
     // There should be filtered GPS signal
     // but enuToGeodetic is not so accurate.
-    fixFiltered.latitude = fix->latitude;
-    fixFiltered.longitude = fix->longitude;
+    //fixFiltered.latitude = fix->latitude;
+    //fixFiltered.longitude = fix->longitude;
 
     // Fix updated so reset offsets.
     this->odomOffsetX = 0;
@@ -205,6 +205,8 @@ void FixToTf::onNewFix(const sensor_msgs::NavSatFix::ConstPtr &fix)
 
 geometry_msgs::TransformStamped FixToTf::getTransformMsg(const geometry_msgs::Transform &gpsToMap) const
 {
+    ROS_WARN("Origin lat: %f, origin lon: %f, X: %f, Y: %f, Z: %f",
+             originPhi * 180.0 / M_PI, originLambda * 180.0 / M_PI, latestTangentX, latestTangentY, latestTangentZ);
     // Get transform from tangent plane to gps link.
     geometry_msgs::Transform tfTransformTangentMsg;
     tfTransformTangentMsg.translation.x = this->latestTangentX;
@@ -215,7 +217,6 @@ geometry_msgs::TransformStamped FixToTf::getTransformMsg(const geometry_msgs::Tr
     tfTransformTangentMsg.rotation.w = 1.0; // GPS does not provide rotation data.
     tf::Transform tfTransformTangent;
     tf::transformMsgToTF(tfTransformTangentMsg, tfTransformTangent);
-    //tfTransformTangent.inverse();
 
     // Accommodate offset of odometry.
     geometry_msgs::Transform tfTransformOdomMsg;
@@ -223,6 +224,7 @@ geometry_msgs::TransformStamped FixToTf::getTransformMsg(const geometry_msgs::Tr
     tfTransformOdomMsg.translation.y = this->odomOffsetY;
     tf2::Quaternion q;
     q.setRPY(0, 0, this->latestYaw); // For rotation use IMU as it is facing true north and updating fast enough.
+    q.normalize();
     tfTransformOdomMsg.rotation.x = q.x();
     tfTransformOdomMsg.rotation.y = q.y();
     tfTransformOdomMsg.rotation.z = q.z();

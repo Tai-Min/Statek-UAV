@@ -5,6 +5,7 @@
     <group ns="$(arg statek_name)/nav">
         <node pkg="statek_nav" type="short_term_navigator" name="short_term_navigator" respawn="true">
             <rosparam command="load" file="$(find statek_config)/yaml/motion_config.yaml"/>
+            <rosparam command="load" file="$(find statek_config)/yaml/mpc_config.yaml"/>
         </node>
     </group>
 </launch>

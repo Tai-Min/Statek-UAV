@@ -4,12 +4,69 @@
 #include <opencv2/imgproc.hpp>
 #include <tf/transform_broadcaster.h>
 #include "../../include/common.hpp"
+#include <chrono>
 
 double VoronoiMap::minimumGapSizeMeters = 0;
 
-VoronoiMap::VoronoiMap(const std::string &_localMapLink) : localMapLink(_localMapLink)
+VoronoiMap::VoronoiMap(const std::string &_localMapLink)
+    : localMapLink(_localMapLink), tfThread(&VoronoiMap::tfThreadFcn, this)
 {
     this->minimumGapSizeMeters = sqrt(params.minimumGapSizeMetersSquared);
+}
+
+VoronoiMap::~VoronoiMap()
+{
+    stopTfThread = true;
+    tfThread.join();
+}
+
+void VoronoiMap::tfThreadFcn()
+{
+    auto previousRobotTfTime = std::chrono::steady_clock::now();
+    auto previousGoalTfTime = std::chrono::steady_clock::now();
+
+    while (!stopTfThread)
+    {
+        auto now = std::chrono::steady_clock::now();
+
+        // Check for tf timeouts to stop the mapper.
+        auto robotTfElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - previousRobotTfTime).count();
+        if (robotTfElapsed > 3000)
+            robotTfReceived = false;
+
+        auto goalTfElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - previousGoalTfTime).count();
+        if (goalTfElapsed > 3000)
+            goalTfReceived = false;
+
+        // Get location of the robot on local map.
+        bool ok = false;
+        {
+            std::lock_guard<std::mutex> robotLck(robotTfMutex);
+            robotTransform = getTransform("statek/map/local_map_link", "statek/base_footprint", ok);
+        }
+
+        if (ok)
+        {
+            robotTfReceived = true;
+            previousRobotTfTime = std::chrono::steady_clock::now();
+        }
+
+        // Get most recent transform of the goal.
+        ok = false;
+        {
+            std::lock_guard<std::mutex> goalLck(goalTfMutex);
+            std::lock_guard<std::mutex> goalLinkLck(goalLinkMutex);
+            geometry_msgs::TransformStamped goalTransform = getTransform(this->localMapLink, this->goalLink, ok);
+            AbstractMap::setTransform(goalTransform);
+        }
+
+        if (ok)
+        {
+            goalTfReceived = true;
+            previousGoalTfTime = std::chrono::steady_clock::now();
+        }
+    }
+    
 }
 
 void VoronoiMap::occupancyGridToMat(const mapType &grid, cv::Mat &mat)
@@ -99,7 +156,7 @@ bool VoronoiMap::pointTooCloseToObstacle(unsigned int y, unsigned int x, const m
     // This also will add some error but w/e for bigger maps.
     static const int rayIncrement = 3;
 
-    // Ray trace free cells from center of the map to edges.
+    // Ray trace free cells from given point to edges of the map.
     for (int currentPixelY = 0; currentPixelY < params.numCellsPerRowCol; currentPixelY += edgeIncrement)
     {
         // Check point to top and bottom edge of the map (y = first and every x) and (y = last and every x).
@@ -183,7 +240,7 @@ double VoronoiMap::rayTrace(int y0, int x0, int y1, int x1, const mapType &grid,
                 return -1;
 
             // Stop on obstacle.
-            if (get(grid, y, x) != CellType::FREE_CELL)
+            if (get(grid, y, x) != CellType::FREE_CELL || get(grid, y, x) != CellType::UNKNOWN_CELL)
                 return sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
 
             // Stop if there is not enough space around this point.
@@ -219,7 +276,7 @@ double VoronoiMap::rayTrace(int y0, int x0, int y1, int x1, const mapType &grid,
                 return -1;
 
             // Stop on obstacle.
-            if (get(grid, y, x) != CellType::FREE_CELL)
+            if (get(grid, y, x) != CellType::FREE_CELL || get(grid, y, x) != CellType::UNKNOWN_CELL)
                 return sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
 
             // Stop if there is not enough space around this point.
@@ -352,7 +409,7 @@ void VoronoiMap::generateMessage(const std::vector<cv::Point> &voronoi, const ma
 
             if (rayTrace(voronoi[i].y, voronoi[i].x,
                          voronoi[j].y, voronoi[j].x,
-                         grid, 1) < 0)
+                         grid) < 0)
             {
                 this->voronoiGraph.nodes[i].neighbors.push_back(j);
                 this->voronoiGraph.nodes[j].neighbors.push_back(i);
@@ -386,26 +443,36 @@ void VoronoiMap::onNewLocalMap(const nav_msgs::OccupancyGrid::ConstPtr &map)
     int numAnchors = params.numCellsPerRowCol / gapSizeCells;
     numAnchors = insertAnchors(voronoi, map->data, numAnchors);
 
-    // Get location of the robot on local map.
-    bool ok = false;
-    geometry_msgs::TransformStamped robotTransform = getTransform("statek/map/local_map_link", "statek/base_footprint", ok);
-
+    // Add offsets from map link to base footprint.
     double posX = 0;
     double posY = 0;
-
-    // Add offsets from map link to base footprint.
-    if (ok)
+    if (robotTfReceived)
     {
+        std::lock_guard<std::mutex> robotLck(robotTfMutex);
         posX = robotTransform.transform.translation.x;
         posY = robotTransform.transform.translation.y;
     }
 
+    // Insert robot's location.
     voronoi.push_back(cv::Point(params.numCellsPerRowCol / 2 + posX, params.numCellsPerRowCol / 2 + posY));
 
     // Insert goal's location.
     // inf in X or Y is treated as no goal.
-    if (std::isfinite(this->goalRawX) && std::isfinite(this->goalRawY))
-        voronoi.push_back(cv::Point(this->goalX, this->goalY));
+    if (std::isfinite(this->goalRawX) && std::isfinite(this->goalRawY) && goalTfReceived)
+    {
+        // Transform goal from earth to local map.
+        double tempX = this->goalRawX;
+        double tempY = this->goalRawY;
+        double unused = 0;
+
+        {
+            std::lock_guard<std::mutex> goalLck(goalTfMutex);
+            this->transformPoint(tempX, tempY, unused);
+        }
+
+        // Insert points to voronoi.
+        voronoi.push_back(cv::Point(toIndex(tempX), toIndex(tempY)));
+    }
 
     // Add nodes to message.
     generateMessage(voronoi, map->data, numAnchors);
@@ -415,27 +482,13 @@ void VoronoiMap::onNewLocalMap(const nav_msgs::OccupancyGrid::ConstPtr &map)
 
 void VoronoiMap::onNewShortTermGoal(const geometry_msgs::PoseStamped &goal)
 {
-    this->goalLink = goal.header.frame_id;
+    {
+        std::lock_guard<std::mutex> goalLinkLck(goalLinkMutex);
+        this->goalLink = goal.header.frame_id;
+    }
+
     this->goalRawX = goal.pose.position.x;
     this->goalRawY = goal.pose.position.y;
-
-    bool ok;
-    geometry_msgs::TransformStamped transform = getTransform(this->localMapLink, this->goalLink, ok);
-    if (ok)
-    {
-        AbstractMap::setTransform(transform);
-
-        if (std::isfinite(this->goalRawX) && std::isfinite(this->goalRawY))
-        {
-            // Transform goal from earth to local map.
-            double tempX = this->goalRawX;
-            double tempY = this->goalRawY;
-            double unused = 0;
-            this->transformPoint(tempX, tempY, unused);
-            this->goalX = toIndex(tempX);
-            this->goalY = toIndex(tempY);
-        }
-    }
 }
 
 bool VoronoiMap::newGraphAvailable()

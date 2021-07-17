@@ -7,19 +7,30 @@
 #include <geometry_msgs/PoseStamped.h>
 #include "../abstract_map.hpp"
 #include <limits>
+#include <thread>
+#include <mutex>
 
 class VoronoiMap : public AbstractMap
 {
 private:
-    static double minimumGapSizeMeters;
+    void tfThreadFcn();
+    std::atomic_bool stopTfThread = {false};
+    std::atomic_bool robotTfReceived = {false};
+    std::atomic_bool goalTfReceived = {false};
+    std::thread tfThread;
+    std::mutex robotTfMutex;
+    std::mutex goalTfMutex;
+    std::mutex goalLinkMutex;
+
+    geometry_msgs::TransformStamped robotTransform;
+
+    static double minimumGapSizeMeters;                        //!< Maximum allowed gap size between obstacles in meters.
     bool updatedSinceLastGet = false;                          //!< Flag to check whether map was updated since last map retreive using getGraph.
     statek_map::Graph voronoiGraph;                            //!< Stores voronoi graph ready to be published.
     double goalRawX = std::numeric_limits<double>::infinity(); //!< Goal X in some frame.
     double goalRawY = std::numeric_limits<double>::infinity(); //!< Goal Y in some frame.
-    int goalX = 0;                                             //!< X index position of goal from center of local map.
-    int goalY = 0;                                             //!< Y index position of goal from center of local map.
     std::string goalLink = "";                                 //!< Tf link of the most recent goal message.
-    std::string localMapLink = "";                             //!< Tf link of local map.
+    const std::string localMapLink = "";                       //!< Tf link of local map.
 
     /**
      * @brief Convert ROS OccupancyGrid vector into OpenCV's Mat.
@@ -111,6 +122,8 @@ public:
      * @brief Class constructor.
      */
     VoronoiMap(const std::string &_localMapLink);
+
+    ~VoronoiMap();
 
     /**
      * @brief Callback called on update of local grid map.

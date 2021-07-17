@@ -18,9 +18,9 @@ private:
     // https://en.wikipedia.org/wiki/Geographic_coordinate_conversion
     // https://archive.psas.pdx.edu/CoordinateSystem/Latitude_to_LocalTangent.pdf
     // Some params.
-    static constexpr long double a = 6378137.0;       //!< WGS-84 semi major axis in meters.
-    static constexpr long double b = 6356752.314245;  //!< Semi minor axis in meters.
-    static constexpr long double eSq = 0.00669437999; //!< Square of eccentricity.
+    static constexpr double a = 6378137.0;       //!< WGS-84 semi major axis in meters.
+    static constexpr double b = 6356752.3142;  //!< Semi minor axis in meters.
+    static constexpr double eSq = 0.00669437999; //!< Square of eccentricity.
 
     const double northCompensation = 0; //!< Used to compensate IMU's reading so it points 0 deg to EAST and 90 deg to NORTH.
 
@@ -33,14 +33,14 @@ private:
     bool fstFix = true; //!< Wheter it is first received GPS fix by this object. Used to initialize Kalman filter.
     Kalman filter;      //!< Kalman filter.
 
-    long double originLambda = 0;   //!< Longitude of origin of tangent plane in radians.
-    long double originPhi = 0;      //!< Latitude of origin of tangent plane in radians.
-    long double originEcefX = 0;    //!< ECEF coordinate of tangent plane in meters.
-    long double originEcefY = 0;    //!< ECEF coordinate of tangent plane in meters.
-    long double originEcefZ = 0;    //!< ECEF coordinate of tangent plane in meters.
-    long double latestTangentX = 0; //!< Latest position of robot in tangent plane.
-    long double latestTangentY = 0; //!< Latest position of robot in tangent plane.
-    long double latestTangentZ = 0; //!< Latest position of robot in tangent plane.
+    double originLambda = 0;   //!< Longitude of origin of tangent plane in radians.
+    double originPhi = 0;      //!< Latitude of origin of tangent plane in radians.
+     double originEcefX = 0;    //!< ECEF coordinate of tangent plane in meters.
+     double originEcefY = 0;    //!< ECEF coordinate of tangent plane in meters.
+     double originEcefZ = 0;    //!< ECEF coordinate of tangent plane in meters.
+     double latestTangentX = 0; //!< Latest position of robot in tangent plane.
+     double latestTangentY = 0; //!< Latest position of robot in tangent plane.
+     double latestTangentZ = 0; //!< Latest position of robot in tangent plane.
     double latestYaw = 0;           //!< Latest rotation of robot in tangent plane.
     double latestAccelerationNorth; //!< Latest velocity to the north (for Kalman filter).
     double latestAccelerationEast;  //!< Latest velocity to the east (for Kalman filter).
@@ -60,7 +60,7 @@ private:
      * @param v Value to check sign of.
      * @return Sign of given value or 0 if v = 0.
      */
-    static long double sign(long double v);
+    static  double sign( double v);
 
     /**
      * @brief Convert latitude and longitude to ECEF x, y, z coordinates.
@@ -70,7 +70,7 @@ private:
      * @param ecefY Result ECEF y.
      * @param ecefZ Result ECEF z.
      */
-    static void geodeticToEcef(long double lat, long double lon, long double &ecefX, long double &ecefY, long double &ecefZ);
+    static void geodeticToEcef( double lat,  double lon,  double &ecefX,  double &ecefY,  double &ecefZ);
 
     /**
      * @brief Convert ECEF coordinates to latitude and longitude.
@@ -80,7 +80,7 @@ private:
      * @param lat Result latitude.
      * @param lon Result longitude.
      */
-    static void EcefToGeodetic(long double ecefX, long double ecefY, long double ecefZ, long double &lat, long double &lon);
+    static void EcefToGeodetic( double ecefX,  double ecefY,  double ecefZ,  double &lat,  double &lon);
 
     /**
      * @brief Convert ECEF coordinates to ENU.
@@ -91,7 +91,7 @@ private:
      * @param enuY Result ENU y.
      * @param enuZ Result ENU z.
      */
-    void EcefToEnu(long double ecefX, long double ecefY, long double ecefZ, long double &enuX, long double &enuY, long double &enuZ) const;
+    void EcefToEnu( double ecefX,  double ecefY,  double ecefZ,  double &enuX,  double &enuY,  double &enuZ) const;
 
     /**
      * @brief Convert ENU coordinates to ECEF.
@@ -102,7 +102,7 @@ private:
      * @param ecefY Result ECEF Y.
      * @param ecefZ Result ECEF Z.
      */
-    void EnuToEcef(long double enuX, long double enuY, long double enuZ, long double &ecefX, long double &ecefY, long double &ecefZ) const;
+    void EnuToEcef( double enuX,  double enuY,  double enuZ,  double &ecefX,  double &ecefY,  double &ecefZ) const;
 
     /**
      * @brief Convert GPS coordinates to ENU.
@@ -112,7 +112,7 @@ private:
      * @param enuY Result ENU y.
      * @param enuZ Result ENU z.
      */
-    void geodeticToEnu(long double lat, long double lon, long double &enuX, long double &enuY, long double &enuZ) const;
+    void geodeticToEnu( double lat,  double lon,  double &enuX,  double &enuY,  double &enuZ) const;
 
     /**
      * @brief Convert ENU to GPS coordinates.
@@ -122,7 +122,7 @@ private:
      * @param lat Result latitude.
      * @param lon Result longitude.
      */
-    void enuToGeodetic(long double enuX, long double enuY, long double enuZ, long double &lat, long double &lon) const;
+    void enuToGeodetic( double enuX,  double enuY,  double enuZ,  double &lat,  double &lon) const;
 
 public:
     /**
@@ -135,7 +135,7 @@ public:
      * @param _mapFrame Map frame.
      * @param _earthFrame Earth frame.
      */
-    FixToTf(long double originLat, long double originLon, double _northCompensation,
+    FixToTf( double originLat,  double originLon, double _northCompensation,
             double processVariance, double measurementVariance,
             std::string _mapFrame, std::string _earthFrame);
 

@@ -6,117 +6,86 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2/transform_datatypes.h>
 
+#include <chrono>
 #include <iostream>
 using namespace std;
 
-namespace
-{
-    bool isEqual(double a, double b, double eps)
-    {
-        return std::fabs(a - b) < eps;
-    }
-};
-
-/**
- * @brief Cost function (f) for differential drive under motion constraints (g).
- */
-class MPC::FG_eval
-{
-public:
-    typedef CPPAD_TESTVECTOR(CppAD::AD<double>) ADvector;
-
-private:
-    const MPC *parent = nullptr; //!< Parent of this object.
-    const MPC::State &state;     //!< Reference to initial state passed during object creation.
-
-public:
-    ADvector xTrajectory;
-    ADvector yTrajectory;
-    ADvector yawTrajectory;
-    ADvector cteTrajectory;
-    ADvector oeTrajectory;
-    std::vector<int> cteIdx;
-
-    /**
-     * @brief Class constructor.
-     */
-    FG_eval(const MPC *_parent, const MPC::State &_state)
-        : parent(_parent), xTrajectory(parent->N), yTrajectory(parent->N), yawTrajectory(parent->N),
-          cteTrajectory(parent->N), oeTrajectory(parent->N), cteIdx(parent->N), state(_state) {}
-
-    /**
-     * @brief Calculate cost of control under given 
-     * @param fg
-     * @param vars
-     */
-    void operator()(ADvector &fg, const ADvector &vars)
-    {
-        // Create trajectory based on predicted controls.
-        xTrajectory[0] = state.x;
-        yTrajectory[0] = state.y;
-        yawTrajectory[0] = state.yaw;
-        cteTrajectory[0] = state.cte;
-        oeTrajectory[0] = state.oe;
-        cteIdx[0] = state.cteIdx;
-
-        for (int i = 1; i < parent->N; i++)
-        {
-            xTrajectory[i] = xTrajectory[i - 1] + vars[parent->linearVelocityStart + i - 1] * CppAD::cos(yawTrajectory[i - 1]) * parent->horizonSampling;
-            yTrajectory[i] = yTrajectory[i - 1] + vars[0] * CppAD::sin(yawTrajectory[parent->linearVelocityStart + i - 1]) * parent->horizonSampling;
-            yawTrajectory[i] = yawTrajectory[i - 1] + vars[parent->angularVelocityStart + i - 1] * parent->horizonSampling;
-
-            CppAD::AD<double> cte, oe;
-
-            cteIdx[i] = findCteOe(xTrajectory[i], yTrajectory[i], yawTrajectory[i], parent->path, cte, oe);
-
-            cteTrajectory[i] = cte;
-            oeTrajectory[i] = oe;
-        }
-
-        fg[0] = 0; // Cost function.
-
-        for (int i = 0; i < parent->N; i++)
-        {
-            // Minimize control error.
-            fg[0] += parent->weights.poseWeight * (CppAD::pow(parent->path[cteIdx[i]].x1 - xTrajectory[i], 2) +
-                                                   CppAD::pow(parent->path[cteIdx[i]].y1 - yTrajectory[i], 2));
-            fg[0] += parent->weights.cteWeight * CppAD::pow(cteTrajectory[i], 2);
-            fg[0] += parent->weights.oeWeight * CppAD::pow(oeTrajectory[i], 2);
-        }
-
-        // Minimize use of actuators.
-        for (int i = 0; i < parent->N - 1; i++)
-        {
-            fg[0] += parent->weights.linearVelocityWeight * CppAD::pow(vars[parent->linearVelocityStart + i], 2);
-            fg[0] += parent->weights.angularVelocityWeight * CppAD::pow(vars[parent->angularVelocityStart + i], 2);
-        }
-
-        // Minimize gap between sequential actuations for smoothness of movement.
-        for (int i = 1; i < parent->N - 1; i++)
-        {
-            fg[0] += parent->weights.linearVelocityDeltaWeight * (CppAD::pow(vars[parent->linearVelocityStart + i] - vars[parent->linearVelocityStart + i - 1], 2));
-            fg[0] += parent->weights.angularVelocityDeltaWeight * (CppAD::pow(vars[parent->angularVelocityStart + i] - vars[parent->angularVelocityStart + i - 1], 2));
-        }
-    }
-};
-
-MPC::MPC(const double _horizonDuration, const double _horizonSampling,
-         const Constraints &_constraints, const CostWeights &_weights)
-    : horizonSampling(_horizonSampling), horizonDuration(_horizonDuration),
-      constraints(_constraints), weights(_weights)
+MPC::MPC(double _horizonDurationForward, double _horizonSamplingForward,
+         double _horizonDurationRotate, double _horizonSamplingRotate,
+         const Constraints &_constraints, const CostWeights &_weights,
+         const double _goalArea, const std::string &_solverOptions)
+    : horizonSamplingForward(_horizonSamplingForward), horizonDurationForward(_horizonDurationForward),
+      horizonSamplingRotate(_horizonSamplingRotate), horizonDurationRotate(_horizonDurationRotate),
+      constraints(_constraints), weights(_weights),
+      goalArea(_goalArea), solverOptions(_solverOptions), tfThread(&MPC::tfThreadFcn, this)
 {
 }
 
-double MPC::wrapToTwoPi(double angle)
+MPC::~MPC()
 {
-    if (angle < 0)
-        return fmod(angle, 2 * M_PI);
+    stopTfThread = true;
+    tfThread.join();
+}
+
+void MPC::tfThreadFcn()
+{
+    auto previousTfTime = std::chrono::steady_clock::now();
+
+    while (!stopTfThread)
+    {
+        auto now = std::chrono::steady_clock::now();
+
+        // Check for tf timeouts to stop the controller.
+        auto tfElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - previousTfTime).count();
+        if (tfElapsed > 3000)
+            tfReceived = false;
+
+        // Get location of the robot on local map.
+        bool ok = false;
+        geometry_msgs::TransformStamped robotTransform = getTransform("statek/map/local_map_link", "statek/base_footprint", ok);
+
+        if (ok)
+        {
+            tfReceived = true; // Tf received so allow MPC to work.
+            previousTfTime = std::chrono::steady_clock::now();
+
+            // Convert orientation to tf quaternion.
+            tf::Quaternion quat;
+            tf::quaternionMsgToTF(robotTransform.transform.rotation, quat);
+
+            // Convert orientation to RPY angles.
+            double temp1, temp2, theta;
+            tf::Matrix3x3(quat).getRPY(temp1, temp2, theta);
+            theta = wrapToPi(theta);
+
+            // Set current state.
+            const std::lock_guard<std::mutex> lck(stateMtx);
+            state = {robotTransform.transform.translation.x,
+                     robotTransform.transform.translation.y,
+                     theta, 0, 0, -1};
+
+            // Get cross track error and orientation error.
+            findCteOe(state, 0);
+        }
+    }
+}
+
+double MPC::wrapToPi(double angle)
+{
+    // Whiles because fmod works strange?
+    if (angle < -1 * M_PI)
+    {
+        while (angle < -1 * M_PI)
+            angle += M_PI;
+    }
+
+    if (angle > M_PI)
+    {
+        while (angle > M_PI)
+            angle -= M_PI;
+    }
+
     return angle;
-}
-
-CppAD::AD<double> MPC::distancePointLine(CppAD::AD<double> x0, CppAD::AD<double> y0, CppAD::AD<double> x1, CppAD::AD<double> y1, CppAD::AD<double> x2, CppAD::AD<double> y2)
-{
-    return CppAD::abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1)) / CppAD::sqrt(pow(x2 - x1, 2) + CppAD::pow(y2 - y1, 2));
 }
 
 double MPC::distancePointLine(double x0, double y0, double x1, double y1, double x2, double y2)
@@ -124,50 +93,38 @@ double MPC::distancePointLine(double x0, double y0, double x1, double y1, double
     return fabs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1)) / sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
-int MPC::findCteOe(CppAD::AD<double> x, CppAD::AD<double> y, CppAD::AD<double> yaw, const Path &path, CppAD::AD<double> &cte, CppAD::AD<double> &oe)
+void MPC::findCteOe(State &_state, int lastIdx) const
 {
     int bestIdx = -1;
-    CppAD::AD<double> bestCte = std::numeric_limits<double>::max();
+    _state.cte = std::numeric_limits<double>::max();
 
-    for (int i = 0; i < path.size(); i++)
+    for (int i = lastIdx; i < path.size(); i++)
     {
-        CppAD::AD<double> currentCte = distancePointLine(x, y, path[i].x0, path[i].y0, path[i].x1, path[i].y1);
-        if (currentCte < bestCte)
+        double currentCte = distancePointLine(_state.x, _state.y, path[i].x0, path[i].y0, path[i].x1, path[i].y1);
+        if (currentCte < _state.cte)
         {
-            bestCte = currentCte;
+            _state.cte = currentCte;
             bestIdx = i;
         }
     }
 
-    cte = bestCte;
-
     if (bestIdx >= 0)
-        oe = path[bestIdx].angle - yaw;
-
-    return bestIdx;
-}
-
-int MPC::findCteOe(double x, double y, double yaw, const Path &path, double &cte, double &oe)
-{
-    int bestIdx = -1;
-    double bestCte = std::numeric_limits<double>::max();
-
-    for (int i = 0; i < path.size(); i++)
     {
-        double currentCte = distancePointLine(x, y, path[i].x0, path[i].y0, path[i].x1, path[i].y1);
-        if (currentCte < bestCte)
+        double distanceToEnd = sqrt(pow(_state.x - path[bestIdx].x1, 2) + pow(_state.y - path[bestIdx].y1, 2));
+
+        // If distance of the vehicle and end of best segment is less than some limiting value
+        // then we'd rather care for next segment if there is one.
+        if (distanceToEnd < goalArea &&
+            bestIdx < path.size() - 1)
         {
-            bestCte = currentCte;
-            bestIdx = i;
+            bestIdx++;
+            _state.cte = distancePointLine(_state.x, _state.y, path[bestIdx].x0, path[bestIdx].y0, path[bestIdx].x1, path[bestIdx].y1);
         }
+
+        _state.oe = path[bestIdx].angle - _state.yaw;
     }
 
-    cte = bestCte;
-
-    if (bestIdx >= 0)
-        oe = path[bestIdx].angle - yaw;
-
-    return bestIdx;
+    _state.cteIdx = bestIdx;
 }
 
 geometry_msgs::TransformStamped MPC::getTransform(const std::string &targetFrame, const std::string &sourceFrame, bool &ok)
@@ -204,45 +161,31 @@ geometry_msgs::TransformStamped MPC::getTransform(const std::string &targetFrame
 
 MPC::Control MPC::update()
 {
+    auto startFcn = chrono::steady_clock::now();
+
+    if (!tfReceived)
+    {
+        return {0, 0, {}};
+    }
+
     // Empty path, nothing to follow.
     if (!path.size())
     {
-        return {0, 0, {}, false};
+        return {0, 0, {}};
     }
 
-    // Get location of the robot on local map.
-    bool ok = false;
-    geometry_msgs::TransformStamped robotTransform = getTransform("statek/map/local_map_link", "statek/base_footprint", ok);
-
-    if (!ok)
     {
-        return {0, 0, {}, false};
+        const std::lock_guard<std::mutex> lckOe(stateMtx);
+
+        // Calculace current prediction horizon depending on oe.
+        // Use simple linear equation to do that.
+        horizonSampling = abs(state.oe) * (horizonSamplingRotate - horizonSamplingForward) / M_PI + horizonSamplingForward;
+        horizonDuration = abs(state.oe) * (horizonDurationRotate - horizonDurationForward) / M_PI + horizonDurationForward;
+        N = horizonDuration / horizonSampling;
     }
 
-    // Convert orientation to tf quaternion.
-    tf::Quaternion quat;
-    tf::quaternionMsgToTF(robotTransform.transform.rotation, quat);
-
-    // Convert orientation to RPY angles.
-    double temp1, temp2, theta;
-    tf::Matrix3x3(quat).getRPY(temp1, temp2, theta);
-    theta = wrapToTwoPi(theta);
-
-    // Get cross track error and orientation error.
-    double cte;
-    double oe;
-
-    int idx = findCteOe(robotTransform.transform.translation.x,
-                        robotTransform.transform.translation.y,
-                        theta,
-                        path,
-                        cte,
-                        oe);
-
-    // Set current state.
-    const State state = {robotTransform.transform.translation.x,
-                         robotTransform.transform.translation.y,
-                         theta, cte, oe, idx};
+    int numVars = numInputs * (N - 1);
+    angularVelocityStart = linearVelocityStart + N - 1;
 
     // Initial state of variables.
     Dvector vars(numVars);
@@ -274,39 +217,37 @@ MPC::Control MPC::update()
     Dvector stateUpperConstraints(0);
 
     // MPC evaluation.
-    FG_eval evalFcn(this, state);
+    FG_eval evalFcn(this);
     CppAD::ipopt::solve_result<Dvector> solution;
-    CppAD::ipopt::solve<Dvector, FG_eval>(
-        solverOptions,
-        vars, varsLowerConstraints, varsUpperConstraints,
-        varsLowerConstraints, varsUpperConstraints,
-        evalFcn, solution);
 
-    cout << "Cost: " << solution.obj_value << endl;
+    const std::lock_guard<std::mutex> lckOpti(stateMtx);
+    try
+    {
+        CppAD::ipopt::solve<Dvector, FG_eval>(
+            solverOptions,
+            vars, varsLowerConstraints, varsUpperConstraints,
+            varsLowerConstraints, varsUpperConstraints,
+            evalFcn, solution);
+    }
+    catch (...)
+    {
+        return {0, 0, {}};
+    }
 
-    if (solution.status != CppAD::ipopt::solve_result<Dvector>::success)
-        return {0, 0, {}, false};
+    //if (solution.status != CppAD::ipopt::solve_result<Dvector>::success)
+    //    return {0, 0, {}};
 
     Control control;
-    control.success = true;
 
     // Apply first set of controls.
     control.linearVelocity = solution.x[linearVelocityStart];
     control.angularVelocity = solution.x[angularVelocityStart];
 
     // Copy state trajectory.
-    for (int i = 0; i < N; i++)
-    {
-        State s = {
-            CppAD::Value(evalFcn.xTrajectory[i]),
-            CppAD::Value(evalFcn.yTrajectory[i]),
-            CppAD::Value(evalFcn.yawTrajectory[i]),
-            CppAD::Value(evalFcn.cteTrajectory[i]),
-            CppAD::Value(evalFcn.oeTrajectory[i]),
-        };
+    control.stateTrajectory = evalFcn.evalControl(solution.x, state);
 
-        control.stateTrajectory.push_back(s);
-    }
+    auto endFcn = chrono::steady_clock::now();
+    ROS_WARN("MPC update elapsed time in milliseconds: %ldms.\n---", chrono::duration_cast<chrono::milliseconds>(endFcn - startFcn).count());
 
     return control;
 }
@@ -314,6 +255,9 @@ MPC::Control MPC::update()
 void MPC::onNewPath(const nav_msgs::Path::ConstPtr &pathMsg)
 {
     path.clear();
+
+    if (!pathMsg->poses.size())
+        return;
 
     // Translate path message into Path data type.
     for (int i = 0; i < pathMsg->poses.size() - 1; i++)
@@ -326,9 +270,7 @@ void MPC::onNewPath(const nav_msgs::Path::ConstPtr &pathMsg)
         segment.x1 = pathMsg->poses[i + 1].pose.position.x;
         segment.y1 = pathMsg->poses[i + 1].pose.position.y;
 
-        segment.angle = wrapToTwoPi(atan2(segment.y1 - segment.y0, segment.x1 - segment.x0));
-
-        cout << "Angle " << i << ": " << segment.angle << endl;
+        segment.angle = wrapToPi(atan2(segment.y1 - segment.y0, segment.x1 - segment.x0));
 
         path.push_back(segment);
     }

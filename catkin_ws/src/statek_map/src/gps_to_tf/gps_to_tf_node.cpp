@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 
     // Get all the params.
     std::string statekName, gpsTopic, odomTopic, imuTopic, fixFilteredTopic, gpsFrame, mapFrame, earthFrame, geoToEnuService, enuToGeoService;
-    double originLonDeg, originLonMin, originLonSec, originLatDeg, originLatMin, originLatSec, northCompensation, processVariance, measurementVariance;
+    double originLon, originLat, northCompensation, processVariance, measurementVariance;
 
     nh.param<std::string>("statek_name", statekName, "statek");
 
@@ -27,23 +27,15 @@ int main(int argc, char **argv)
     nh.param<std::string>("geo_to_enu_service", geoToEnuService, statekName + "/geodetic_to_enu");
     nh.param<std::string>("enu_to_geo_service", enuToGeoService, statekName + "/enu_to_geodetic");
 
-    nh.param<double>("origin_lon_deg", originLonDeg, 0.0);
-    nh.param<double>("origin_lon_min", originLonMin, 0.0);
-    nh.param<double>("origin_lon_sec", originLonSec, 0.0);
+    nh.param<double>("origin_lon", originLon, 0.0);
+    nh.param<double>("origin_lat", originLat, 0.0);
 
-    nh.param<double>("origin_lat_deg", originLatDeg, 0.0);
-    nh.param<double>("origin_lat_min", originLatMin, 0.0);
-    nh.param<double>("origin_lat_sec", originLatSec, 0.0);
-
-    //nh.param<double>("north_compensation", northCompensation, 5.86);
     nh.param<double>("north_compensation", northCompensation, 0);
 
     nh.param<double>("process_variance", processVariance, 0.001);
     nh.param<double>("measurement_variance", measurementVariance, 15);
 
     // The converter.
-    double originLat = originLatDeg + originLatMin / 60.0 + originLatSec / 3600.0;
-    double originLon = originLonDeg + originLonMin / 60.0 + originLonSec / 3600.0;
     FixToTf converter(originLat, originLon, northCompensation, processVariance, measurementVariance, mapFrame, earthFrame);
 
     // Subscribers.
