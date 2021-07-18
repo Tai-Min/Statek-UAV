@@ -187,16 +187,14 @@ void FixToTf::onNewFix(const sensor_msgs::NavSatFix::ConstPtr &fix)
 
     Kalman::Estimates estimates = this->filter.update({(double)this->latestAccelerationEast, (double)this->latestAccelerationNorth, (double)this->odomOffsetTheta},
                                                       {(double)this->latestTangentX, (double)this->latestTangentY, (double)this->latestYaw});
-    //this->latestTangentX = estimates.x;
-    //this->latestTangentY = estimates.y;
+    this->latestTangentX = estimates.x;
+    this->latestTangentY = estimates.y;
 
-    //double tempLat, tempLon;
-    //enuToGeodetic(this->latestTangentX, this->latestTangentY, this->latestTangentZ, tempLat, tempLon);
+    double tempLat, tempLon;
+    enuToGeodetic(this->latestTangentX, this->latestTangentY, this->latestTangentZ, tempLat, tempLon);
 
-    // There should be filtered GPS signal
-    // but enuToGeodetic is not so accurate.
-    //fixFiltered.latitude = fix->latitude;
-    //fixFiltered.longitude = fix->longitude;
+    fixFiltered.latitude = fix->latitude;
+    fixFiltered.longitude = fix->longitude;
 
     // Fix updated so reset offsets.
     this->odomOffsetX = 0;

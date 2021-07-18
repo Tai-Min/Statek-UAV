@@ -3,5 +3,5 @@ origin_lat: 54.386279
 origin_lon: 18.590767
 
 # GPS sensor config.
-process_variance: 0.004
-measurement_variance: 1
+process_variance: 0.04
+measurement_variance: 2

@@ -84,6 +84,7 @@ public:
         double linearVelocity;              //!< Linear velocity control variable in m/s.
         double angularVelocity;             //!< Angular velocity control variable in rad/s.
         std::vector<State> stateTrajectory; //!< Contains trajectory of the state at every sample.
+        bool success;
     };
 
 private:
@@ -104,11 +105,11 @@ private:
 
     double horizonSampling; //!< In seconds. Will change depending on oe.
     double horizonDuration; //!< In seconds. Will change depending on oe.
-    int N;               //!< Horizon duration in samples. Will change depending on oe.
+    int N;                  //!< Horizon duration in samples. Will change depending on oe.
 
-    const int numInputs = 2;                 //!< Number of inputs to the model (see MPC::Inputs).
+    const int numInputs = 2; //!< Number of inputs to the model (see MPC::Inputs).
 
-    const int linearVelocityStart = 0;                            //!< Index of first linear velocity input value in Dvectors and ADvectors.
+    const int linearVelocityStart = 0;                      //!< Index of first linear velocity input value in Dvectors and ADvectors.
     int angularVelocityStart = linearVelocityStart + N - 1; //!< Index of first angular velocity input value in Dvectors and ADvectors. There is one less linearVelocityStart so subtract 1.*/
 
     const Constraints constraints; //!< Motion constraints.
@@ -117,6 +118,8 @@ private:
     Path path;                        //!< Path received from ROS in form for better computing stuff such as cte and oe.
     State state = {0, 0, 0, 0, 0, 0}; //!< Current state received from tf.
     Inputs inputs = {0, 0};           //!< Current actuations received from twist callback.
+
+    State onMapState = {0, 0, 0, 0, 0};
 
     /**
      * @brief Wrap given angle to -PI to PI.
@@ -200,7 +203,7 @@ public:
     typedef CPPAD_TESTVECTOR(CppAD::AD<double>) ADvector; //!< Required for Ipopt solver. Simple vector of AD doubles.
 
 private:
-    const MPC *parent = nullptr;  //!< Parent of this object.
+    const MPC *parent = nullptr; //!< Parent of this object.
 
 public:
     /**
@@ -230,6 +233,13 @@ public:
     CppAD::AD<double> distancePointLine(CppAD::AD<double> x0, CppAD::AD<double> y0,
                                         CppAD::AD<double> x1, CppAD::AD<double> y1,
                                         CppAD::AD<double> x2, CppAD::AD<double> y2) const;
+
+    /**
+     * @brief Wrap given angle to -PI to PI.
+     * @param angle Angle to wrap.
+     * @return Current angle but in range of -PI to PI.
+     */
+    static CppAD::AD<double> wrapToPi(CppAD::AD<double> angle);
 
     /**
      * @brief Find cross track error and orientation error to the closest segment on the path*.

@@ -1,22 +1,72 @@
 #!/usr/bin/env python
+
+# DO NOT USE
+# Does not work as good as I tought :(
+
 import rospy
 import tf2_ros
 import tf2_geometry_msgs
 from astar import AStar
 from statek_map.msg import Graph
 from nav_msgs.msg import Path
-from geometry_msgs.msg import PointStamped
 from geometry_msgs.msg import PoseStamped
 import math
 
 class Planner(AStar):
+    # Radius of circle around some point
+    # in which every point is considered as "close" to this point.
+    closest_max_distance = 0.5 
+
+    # Favor distance between two points that are close to points in self.previous_path
+    # by decreasing it making it better looking than it really is.
+    distance_favor = 0.1
+
     def set_graph(self, graph):
         self.graph = graph
 
-    def heuristic_cost_estimate(self, n1, n2):
-        return self.distance_between(n1, n2)
+    def set_previous_path(self, p):
+        self.previous_path = p
 
-    def distance_between(self, n1, n2):
+    def closest_previous_node(self, node):
+        min_dist = float("inf")
+        found_node = None
+
+        # self.previous_path might not exist.
+        try:
+            for previous_node in self.previous_path:
+                dist = self.distance_between_nodes(node, previous_node)
+                if(dist < min_dist):
+                    min_dist = dist
+                    found_node = previous_node
+        except AttributeError:
+            pass
+
+        return [found_node, min_dist]
+
+    # Compute close to real cost from start_node to goal using previous map as reference.
+    def previous_path_cost(self, start_node):
+        previous_node = None
+        total_cost = 0
+
+        for node in self.previous_path:
+            if node == start_node:
+                previous_node = node
+            elif previous_node:
+                total_cost += self.distance_between_nodes(previous_node, node)
+                previous_node = node
+
+        return total_cost
+
+    def heuristic_cost_estimate(self, node, goal):
+        [closest_node, node_dist] = self.closest_previous_node(node)
+
+        if node_dist < self.closest_max_distance:
+            return self.distance_between_nodes(closest_node, goal) * self.distance_favor
+        else:
+            return self.distance_between_nodes(node, goal)
+
+    # Compute true distance between two nodes.
+    def distance_between_nodes(self, n1, n2):
         x1 = n1.point.x
         y1 = n1.point.y
 
@@ -24,6 +74,21 @@ class Planner(AStar):
         y2 = n2.point.y
 
         return math.hypot(x2 - x1, y2 - y1)
+
+    # Naming necessary for abstract method.
+    # Compute distance between two nodes*. 
+    # *If both nodes were present in self.previous_path
+    # then compute their distance using favor mechanism, 
+    # basically decreasing their distance 
+    # and making it look better than it really is.
+    def distance_between(self, n1, n2):
+        [closest_n1, n1_dist] = self.closest_previous_node(n1)
+        [closest_n2, n2_dist] = self.closest_previous_node(n2)
+
+        if n1_dist < self.closest_max_distance and n2_dist < self.closest_max_distance:
+            return self.distance_between_nodes(closest_n1, closest_n2) * self.distance_favor
+        else:
+            return self.distance_between_nodes(n1, n2)
 
     def neighbors(self, node):
         return [self.graph[neighbor] for neighbor in node.neighbors]
@@ -46,14 +111,16 @@ def voronoi_graph_callback(graph, data):
     start = graph.nodes[-1] # Goal is always last.
     end = graph.nodes[-2] # Start is always second from end.
 
-    planner.set_graph(graph.nodes)
-    path = planner.astar(start, end)
+    voronoi_graph_callback.planner.set_graph(graph.nodes)
+    path = voronoi_graph_callback.planner.astar(start, end)
 
     path_length = 0
 
     if path:
+        path = list(path)
         previous_x = 0
         previous_y = 0
+        voronoi_graph_callback.planner.set_previous_path(path)
 
         for node in path:
             pose = PoseStamped()
@@ -61,7 +128,7 @@ def voronoi_graph_callback(graph, data):
             pose.header.frame_id = data["map_link"]
             pose.pose.position.x = node.point.x
             pose.pose.position.y = node.point.y
-            
+
             # Transform to earth link.
             transform = tf_buffer.lookup_transform(data["earth_link"],
                                        pose.header.frame_id,
@@ -81,6 +148,8 @@ def voronoi_graph_callback(graph, data):
 
     data["path_publisher"].publish(path_msg)
 
+voronoi_graph_callback.planner = Planner()
+
 def main():
     global tf_buffer, tf_listener
 
@@ -95,7 +164,7 @@ def main():
     short_term_path_topic = rospy.get_param("~short_term_path_topic", "/" + statek_name + "/short_term_path")
     local_map_link = rospy.get_param("~local_map_link", statek_name + "/map/local_map_link")
     earth_link = rospy.get_param("~local_map_link", statek_name + "/earth")
-    minimum_path_length = rospy.get_param("~minimum_path_length", 1.0)
+    minimum_path_length = rospy.get_param("~minimum_path_length", 0.5)
 
     # Init subscribers and publishers.
     path_publisher = rospy.Publisher(short_term_path_topic, Path, queue_size=1)

@@ -1,7 +1,7 @@
 #include "../include/mpc.hpp"
 
 MPC::FG_eval::FG_eval(const MPC *_parent)
-    : parent(_parent){}
+    : parent(_parent) {}
 
 CppAD::AD<double> MPC::FG_eval::distancePointLine(CppAD::AD<double> x0, CppAD::AD<double> y0,
                                                   CppAD::AD<double> x1, CppAD::AD<double> y1,
@@ -35,12 +35,24 @@ std::vector<MPC::State> MPC::FG_eval::evalControl(MPC::Dvector controls, const M
     return trajectory;
 }
 
+CppAD::AD<double> MPC::FG_eval::wrapToPi(CppAD::AD<double> angle)
+{
+    if (angle > M_PI)
+        angle -= M_PI;
+    if (angle < -M_PI)
+        angle += M_PI;
+    if (angle == -M_PI)
+        angle = M_PI;
+
+    return angle;
+}
+
 void MPC::FG_eval::findCteOe(CppAD::AD<double> x, CppAD::AD<double> y, CppAD::AD<double> yaw,
                              CppAD::AD<double> &cte, CppAD::AD<double> &oe,
                              CppAD::AD<double> &endX, CppAD::AD<double> &endY) const
 {
-    ADvector currentCtes(parent->path.size());
     ADvector distancesToEnd(parent->path.size());
+    ADvector currentCtes(parent->path.size());
 
     ADvector ctes(parent->path.size() + 1);
     ADvector oes(parent->path.size() + 1);
@@ -56,17 +68,17 @@ void MPC::FG_eval::findCteOe(CppAD::AD<double> x, CppAD::AD<double> y, CppAD::AD
     {
         distancesToEnd[i] = CppAD::sqrt(CppAD::pow(x - parent->path[i].x1, 2) + CppAD::pow(y - parent->path[i].y1, 2));
 
-        // Too close to end the end of the segment
-        // so simply ignore it and find next segment.
         if (distancesToEnd[i] > parent->goalArea)
         {
             currentCtes[i] = distancePointLine(x, y, parent->path[i].x0, parent->path[i].y0, parent->path[i].x1, parent->path[i].y1);
 
             ctes[i + 1] = CppAD::CondExpLt(currentCtes[i], ctes[i], currentCtes[i], ctes[i]);
-            oes[i + 1] = CppAD::CondExpLt(currentCtes[i], ctes[i], CppAD::AD<double>(parent->path[i].angle - yaw), oes[i]);
+            oes[i + 1] = CppAD::CondExpLt(currentCtes[i], ctes[i], wrapToPi(parent->path[i].angle - yaw), oes[i]);
             endXs[i + 1] = CppAD::CondExpLt(currentCtes[i], ctes[i], CppAD::AD<double>(parent->path[i].x1), endXs[i]);
             endYs[i + 1] = CppAD::CondExpLt(currentCtes[i], ctes[i], CppAD::AD<double>(parent->path[i].y1), endYs[i]);
         }
+        // Too close to end the end of the segment
+        // so simply ignore it and find next segment.
         else
         {
             ctes[i + 1] = CppAD::numeric_limits<CppAD::AD<double>>::max();

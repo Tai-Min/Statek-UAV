@@ -1,21 +1,21 @@
-goal_area: 0.25 # Radius around goal point that will count as a goal.
-solver_options: "Integer print_level 0\nSparse true forward\nNumeric max_cpu_time 0.5\n"
+goal_area: 1 # Radius around goal point that will count as a goal.
+solver_options: "Integer print_level 0\nSparse true forward\nNumeric max_cpu_time 1.0\n"
 
 # Horizon parameters.
 # _forward will be used when orientation error is 0.
 # _rotate will be used when absolute orientation error equals to pi.
 # values in between will be interpolated.
-horizon_duration_forward: 40
-horizon_sampling_forward: 1.5
-horizon_duration_rotate: 8
-horizon_sampling_rotate: 0.25
+horizon_duration_forward: 30
+horizon_sampling_forward: 2
+horizon_duration_rotate: 3
+horizon_sampling_rotate: 0.1
 
-pose_weight: 5
+pose_weight: 1
 cte_weight: 100
-oe_weight: 30
+oe_weight: 70
 
-linear_velocity_weight: 1
-angular_velocity_weight: 1
+linear_velocity_weight: 0
+angular_velocity_weight: 0
 
-linear_velocity_delta_weight: 3
-angular_velocity_delta_weight: 3
+linear_velocity_delta_weight: 30
+angular_velocity_delta_weight: 1

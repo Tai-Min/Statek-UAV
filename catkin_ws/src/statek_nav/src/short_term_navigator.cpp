@@ -27,7 +27,7 @@ namespace
             poses.poses.push_back(pose);
         }
 
-        poses.header.frame_id = "statek/map/local_map_link";
+        poses.header.frame_id = "statek/earth";
         poses.header.stamp = ros::Time::now();
 
         return poses;
@@ -95,14 +95,18 @@ int main(int argc, char **argv)
     {
         MPC::Control control = mpc.update();
 
-        // Publish twist command.
-        geometry_msgs::Twist twistCmd;
-        twistCmd.linear.x = control.linearVelocity;
-        twistCmd.angular.z = control.angularVelocity;
-        twistPublisher.publish(twistCmd);
+        // Keep the controls in case MPC fails.
+        if (control.success)
+        {
+            // Publish twist command.
+            geometry_msgs::Twist twistCmd;
+            twistCmd.linear.x = control.linearVelocity;
+            twistCmd.angular.z = control.angularVelocity;
+            twistPublisher.publish(twistCmd);
 
-        // Publish array of predicted poses.
-        posePublisher.publish(getPoseArray(control));
+            // Publish array of predicted poses.
+            posePublisher.publish(getPoseArray(control));
+        }
 
         ros::spinOnce();
         rate.sleep();

@@ -42,7 +42,7 @@ void MPC::tfThreadFcn()
 
         // Get location of the robot on local map.
         bool ok = false;
-        geometry_msgs::TransformStamped robotTransform = getTransform("statek/map/local_map_link", "statek/base_footprint", ok);
+        geometry_msgs::TransformStamped robotTransform = getTransform("statek/earth", "statek/base_footprint", ok);
 
         if (ok)
         {
@@ -73,17 +73,12 @@ void MPC::tfThreadFcn()
 double MPC::wrapToPi(double angle)
 {
     // Whiles because fmod works strange?
-    if (angle < -1 * M_PI)
-    {
-        while (angle < -1 * M_PI)
-            angle += M_PI;
-    }
-
     if (angle > M_PI)
-    {
-        while (angle > M_PI)
-            angle -= M_PI;
-    }
+        angle -= M_PI;
+    if (angle < -M_PI)
+        angle += M_PI;
+    if (angle == -M_PI)
+        angle = M_PI;
 
     return angle;
 }
@@ -121,7 +116,7 @@ void MPC::findCteOe(State &_state, int lastIdx) const
             _state.cte = distancePointLine(_state.x, _state.y, path[bestIdx].x0, path[bestIdx].y0, path[bestIdx].x1, path[bestIdx].y1);
         }
 
-        _state.oe = path[bestIdx].angle - _state.yaw;
+        _state.oe = wrapToPi(path[bestIdx].angle - _state.yaw);
     }
 
     _state.cteIdx = bestIdx;
@@ -165,13 +160,13 @@ MPC::Control MPC::update()
 
     if (!tfReceived)
     {
-        return {0, 0, {}};
+        return {0, 0, {}, true};
     }
 
     // Empty path, nothing to follow.
     if (!path.size())
     {
-        return {0, 0, {}};
+        return {0, 0, {}, true};
     }
 
     {
@@ -231,13 +226,16 @@ MPC::Control MPC::update()
     }
     catch (...)
     {
-        return {0, 0, {}};
+        return {0, 0, {}, true};
     }
 
-    //if (solution.status != CppAD::ipopt::solve_result<Dvector>::success)
-    //    return {0, 0, {}};
+    if (solution.status != CppAD::ipopt::solve_result<Dvector>::success)
+    {
+        return {0, 0, {}, true};
+    }
 
     Control control;
+    control.success = true;
 
     // Apply first set of controls.
     control.linearVelocity = solution.x[linearVelocityStart];
@@ -254,10 +252,30 @@ MPC::Control MPC::update()
 
 void MPC::onNewPath(const nav_msgs::Path::ConstPtr &pathMsg)
 {
-    path.clear();
-
     if (!pathMsg->poses.size())
         return;
+
+    // If previous and current paths were not a straight line
+    // but a bunch of segments, then check whether it is necessary to update it.
+    // This prevents vehicle from being stuck in front of an obstacle
+    // when map changes rapidly fron one side of this obstacle to another.
+    if (path.size() > 1 && pathMsg->poses.size() > 2)
+    {
+        double distanceToGoal;
+        double distanceTravelled;
+        {
+            const std::lock_guard<std::mutex> lckOpti(stateMtx);
+            distanceToGoal = sqrt(pow(path[0].x1 - state.x, 2) + pow(path[0].y1 - state.y, 2));
+            distanceTravelled = sqrt(pow(onMapState.x - state.x, 2) + pow(onMapState.y - state.y, 2));
+        }
+
+        // Ignore path if the vehicle haven't achieved subgoal
+        // or travelled a bit or some time passed.
+        if (distanceToGoal > goalArea || distanceTravelled > 0.2)
+            return;
+    }
+
+    path.clear();
 
     // Translate path message into Path data type.
     for (int i = 0; i < pathMsg->poses.size() - 1; i++)
@@ -274,6 +292,9 @@ void MPC::onNewPath(const nav_msgs::Path::ConstPtr &pathMsg)
 
         path.push_back(segment);
     }
+
+    const std::lock_guard<std::mutex> lckOpti(stateMtx);
+    onMapState = state;
 }
 
 void MPC::onNewInputs(const geometry_msgs::TwistStamped::ConstPtr &currentInputs)

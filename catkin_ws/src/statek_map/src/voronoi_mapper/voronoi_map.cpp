@@ -240,7 +240,7 @@ double VoronoiMap::rayTrace(int y0, int x0, int y1, int x1, const mapType &grid,
                 return -1;
 
             // Stop on obstacle.
-            if (get(grid, y, x) != CellType::FREE_CELL || get(grid, y, x) != CellType::UNKNOWN_CELL)
+            if (get(grid, y, x) != CellType::FREE_CELL && get(grid, y, x) != CellType::UNKNOWN_CELL)
                 return sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
 
             // Stop if there is not enough space around this point.
@@ -276,7 +276,7 @@ double VoronoiMap::rayTrace(int y0, int x0, int y1, int x1, const mapType &grid,
                 return -1;
 
             // Stop on obstacle.
-            if (get(grid, y, x) != CellType::FREE_CELL || get(grid, y, x) != CellType::UNKNOWN_CELL)
+            if (get(grid, y, x) != CellType::FREE_CELL && get(grid, y, x) != CellType::UNKNOWN_CELL)
                 return sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
 
             // Stop if there is not enough space around this point.
