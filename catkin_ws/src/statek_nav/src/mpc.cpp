@@ -271,7 +271,7 @@ void MPC::onNewPath(const nav_msgs::Path::ConstPtr &pathMsg)
 
         // Ignore path if the vehicle haven't achieved subgoal
         // or travelled a bit or some time passed.
-        if (distanceToGoal > goalArea || distanceTravelled > 0.2)
+        if (distanceToGoal > goalArea || distanceTravelled < 0.2)
             return;
     }
 
