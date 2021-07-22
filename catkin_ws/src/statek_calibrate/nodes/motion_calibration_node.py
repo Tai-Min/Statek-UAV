@@ -225,7 +225,7 @@ def simulate_object(pi_params, *args):
 
         result = reg.read(error)
         # Punish PI saturation
-        penalty += np.abs(result["control_val"])
+        penalty += np.abs(result["saturation"])
 
         control_val = result["control_val"]
 
