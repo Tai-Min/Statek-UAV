@@ -39,6 +39,8 @@ lockfile.lck
 catkin_ws/.catkin_workspace
 catkin_ws/devel
 catkin_ws/build
+catkin_ws/install
+catkin_ws/src/statek_calibrate/data
 catkin_ws/src/CMakeLists.txt
 
 # Not needed files
@@ -65,4 +67,3 @@ tuw_geometry/
 .vscode/ipch
 dataset/
 .tf_ckpts/
-./catkin_ws/install/*
