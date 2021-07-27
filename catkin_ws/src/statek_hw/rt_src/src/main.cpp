@@ -25,7 +25,6 @@
 #include "../lib/ros_lib/tf/tf.h"
 
 bool imuReady = false;           //!< Whether IMU is ready.
-unsigned long imuUpdateRate = 0; //!< IMU's sampling time.
 
 /**
  * @brief Arduino's setup function.
@@ -65,12 +64,6 @@ void updateROS(bool publish = true);
  * @return True if ready.
  */
 bool hardwareReady();
-
-/**
- * @brief Try update IMU readings. Can fail if not enough time has passed since last update.
- * @return True if IMU managed to update.
- */
-bool tryUpdateImu();
 
 /**
  * @brief Try update all of the hardware.
@@ -284,6 +277,7 @@ Odometry odom(leftMotor, rightMotor); //!< Odometry.
 void setup()
 {
     // Init ROS stuff.
+    //nh.setSpinTimeout(1);
     nh.initNode();
     odomBroadcaster.init(nh);
 
@@ -387,32 +381,6 @@ bool hardwareReady()
     return ready;
 }
 
-bool tryUpdateImu()
-{
-    static unsigned long previousImuUpdateTime = millis();
-
-    if (!imuReady || imuUpdateRate == 0)
-        return false;
-
-    unsigned long now = millis();
-    // Handle clock overflow.
-    if ((now >= previousImuUpdateTime))
-    {
-        // Check if 200ms passed so we can update imu.
-        if (now - previousImuUpdateTime >= imuUpdateRate)
-        {
-            imu.update();
-            previousImuUpdateTime = now;
-            return true;
-        }
-    }
-    else
-    {
-        previousImuUpdateTime = now;
-    }
-    return false;
-}
-
 bool tryUpdateHardware()
 {
     if (!hardwareReady())
@@ -420,7 +388,6 @@ bool tryUpdateHardware()
 
     leftMotor.tryUpdate();
     rightMotor.tryUpdate();
-    //tryUpdateImu();
     if (imuReady)
         imu.update();
     odom.tryUpdate();
@@ -691,10 +658,14 @@ void imuCalibrationServiceCallback(const statek_hw::RunImuCalibrationRequest &re
 
     imu.calibrateAccelGyro(); // Calibrate gyro.
 
+    update(false);
+
     // Move around during mag calibration.
     forceWheelMovement(1, -1, 1500);
 
     imu.calibrateMag();
+
+    update(false);
 
     // Stop the motors again.
     forceWheelMovement(0, 0, 2000);
@@ -741,22 +712,14 @@ void setImuParamsServiceCallback(const statek_hw::SetImuParamsRequest &req, stat
 
     SAFETY_serviceInProgress = true;
 
-    imu.setAccBias(req.acc_bias[0], req.acc_bias[1], req.acc_bias[2]);
-    imu.setGyroBias(req.gyro_bias[0], req.gyro_bias[1], req.gyro_bias[2]);
-    imu.setMagBias(req.mag_bias[0], req.mag_bias[1], req.mag_bias[2]);
-    imu.setMagScale(req.mag_scale[0], req.mag_scale[1], req.mag_scale[2]);
+    //imu.setAccBias(req.acc_bias[0], req.acc_bias[1], req.acc_bias[2]);
+    //imu.setGyroBias(req.gyro_bias[0], req.gyro_bias[1], req.gyro_bias[2]);
+    //imu.setMagBias(req.mag_bias[0], req.mag_bias[1], req.mag_bias[2]);
+    //imu.setMagScale(req.mag_scale[0], req.mag_scale[1], req.mag_scale[2]);
 
-    float degree = req.mag_dec[0];
-    float minute = req.mag_dec[1];
-    float second = req.mag_dec[2];
+    imu.setMagneticDeclination(req.mag_dec);
 
-    imu.setMagneticDeclination(degree + minute / 60.0 + second / 3600.0);
-
-    imuUpdateRate = req.imu_update_rate_ms;
-    if (req.imu_update_rate_ms > 0)
-        imuReady = true;
-    else
-        imuReady = false;
+    imuReady = true;
 
     alreadySet = true;
     res.success = true;

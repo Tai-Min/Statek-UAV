@@ -293,12 +293,9 @@ right_motor_pid = tune_pid(model_order, right_model, right_motor_step_response_d
 print("Now, we'll calibrate IMU. Place the UAV on the ground and make sure that it has a bit of space around as it will spin around during magnetometer calibration.")
 raw_input("Press anything to proceed or Ctrl + C to exit.")
 
-imu_update_rate_ms = loop_rate
 imu_config = imu_calibration(statek_name, imu_calibration_service_name)
 
-magnetic_declination_degree = type_int("Type degrees of magnetic declination in your area as N,E (i.e from here https://www.magnetic-declination.com/): ")
-magnetic_declination_minute = type_int("Type minutes of magnetic declination in your area as N,E (i.e from here https://www.magnetic-declination.com/): ")
-magnetic_declination_second = type_int("Type seconds of magnetic declination in your area as N,E (i.e from here https://www.magnetic-declination.com/): ")
+magnetic_declination = type_int("Type magnetic declination in your area as N,E (i.e from here https://www.magnetic-declination.com/): ")
 
 # ODOM CONFIG
 odom_update_rate_ms = loop_rate
@@ -319,12 +316,11 @@ left_motor_pid: {left_motor_pid} # Kp, ki, kd.
 right_motor_pid: {right_motor_pid}
 
 # imu config
-imu_update_rate_ms: {imu_update_rate_ms}
 acc_bias: {acc_bias}
 gyro_bias: {gyro_bias}
 mag_bias: {mag_bias}
 mag_scale: {mag_scale}
-mag_dec: [{magnetic_declination_degree}, {magnetic_declination_minute}, {magnetic_declination_second}]
+mag_dec: {magnetic_declination}
 
 # odom config
 odom_update_rate_ms: {odom_update_rate_ms}
@@ -337,14 +333,11 @@ odom_update_rate_ms: {odom_update_rate_ms}
            smoothing_factor=smoothing_factor,
            left_motor_pid=to_squared_array_string(left_motor_pid),
            right_motor_pid=to_squared_array_string(right_motor_pid),
-           imu_update_rate_ms=imu_update_rate_ms,
            acc_bias=to_squared_array_string(imu_config["acc_bias"]),
            gyro_bias=to_squared_array_string(imu_config["gyro_bias"]),
            mag_bias=to_squared_array_string(imu_config["mag_bias"]),
            mag_scale=to_squared_array_string(imu_config["mag_scale"]),
-           magnetic_declination_degree=magnetic_declination_degree,
-           magnetic_declination_minute=magnetic_declination_minute,
-           magnetic_declination_second=magnetic_declination_second,
+           magnetic_declination=magnetic_declination,
            odom_update_rate_ms=odom_update_rate_ms)
 
 print("\nGenerated yaml file:")
