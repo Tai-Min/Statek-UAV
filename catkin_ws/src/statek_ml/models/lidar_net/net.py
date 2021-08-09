@@ -2,11 +2,11 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
+
 class PeTraNet(keras.Model):
     def __init__(self) -> None:
         super(PeTraNet, self).__init__()
 
-        # No max pool.
         self.conv_no_pool_1 = layers.Conv2D(32, 3, padding="same", activation=keras.activations.relu)
         self.conv_no_pool_2 = layers.Conv2D(32, 3, padding="same", activation=keras.activations.relu)
 
@@ -98,5 +98,3 @@ class PeTraNet(keras.Model):
     def model(self, shape):
         i = layers.Input(shape, batch_size=1)
         return keras.Model(inputs=i, outputs=self.call(i, False))
-
-        

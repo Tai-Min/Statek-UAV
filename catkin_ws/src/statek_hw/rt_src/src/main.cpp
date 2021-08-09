@@ -25,6 +25,7 @@
 #include "../lib/ros_lib/tf/tf.h"
 
 bool imuReady = false;           //!< Whether IMU is ready.
+float imuMagDecRad = 0;
 
 /**
  * @brief Arduino's setup function.
@@ -712,12 +713,13 @@ void setImuParamsServiceCallback(const statek_hw::SetImuParamsRequest &req, stat
 
     SAFETY_serviceInProgress = true;
 
-    //imu.setAccBias(req.acc_bias[0], req.acc_bias[1], req.acc_bias[2]);
-    //imu.setGyroBias(req.gyro_bias[0], req.gyro_bias[1], req.gyro_bias[2]);
-    //imu.setMagBias(req.mag_bias[0], req.mag_bias[1], req.mag_bias[2]);
-    //imu.setMagScale(req.mag_scale[0], req.mag_scale[1], req.mag_scale[2]);
+    imu.setAccBias(req.acc_bias[0], req.acc_bias[1], req.acc_bias[2]);
+    imu.setGyroBias(req.gyro_bias[0], req.gyro_bias[1], req.gyro_bias[2]);
+    imu.setMagBias(req.mag_bias[0], req.mag_bias[1], req.mag_bias[2]);
+    imu.setMagScale(req.mag_scale[0], req.mag_scale[1], req.mag_scale[2]);
 
     imu.setMagneticDeclination(req.mag_dec);
+    imuMagDecRad = req.mag_dec * M_PI / 180.0;
 
     imuReady = true;
 
@@ -836,18 +838,30 @@ void publishIMU()
     imuMsg.header.seq = seq;
     imuMsg.header.stamp = nh.now();
 
-    imuMsg.orientation.w = imu.getQuaternionW();
+    /*imuMsg.orientation.w = imu.getQuaternionW();
     imuMsg.orientation.x = imu.getQuaternionX();
     imuMsg.orientation.y = imu.getQuaternionY();
-    imuMsg.orientation.z = imu.getQuaternionZ();
+    imuMsg.orientation.z = imu.getQuaternionZ();*/
 
-    imuMsg.angular_velocity.x = imu.getGyroX() * M_PI / 180;
-    imuMsg.angular_velocity.y = imu.getGyroY() * M_PI / 180;
-    imuMsg.angular_velocity.z = imu.getGyroZ() * M_PI / 180;
+    // This library' filter act somehow strange in some cases
+    // so we'll use heading directly from magnetometer which will
+    // add some error, but not so much for this slow vehicle.
+    //float heading = atan2(imu.getMagY(), imu.getMagX()) - 0.5 * M_PI + imuMagDecRad;
+    //imuMsg.orientation = tf::createQuaternionFromYaw(heading);
 
-    imuMsg.linear_acceleration.x = imu.getLinearAccX() / 1000 * 9.8066; // From mg to m/s^2.
-    imuMsg.linear_acceleration.y = imu.getLinearAccY() / 1000 * 9.8066;
-    imuMsg.linear_acceleration.z = imu.getLinearAccZ() / 1000 * 9.8066;
+    // Use euler angle instead of quaterniom as it includes magnetic declination.
+    float heading = imu.getEulerZ() * M_PI / 180.0;
+    imuMsg.orientation = tf::createQuaternionFromYaw(heading);
+
+    // In radians.
+    imuMsg.angular_velocity.x = imu.getGyroX() * M_PI / 180.0;
+    imuMsg.angular_velocity.y = imu.getGyroY() * M_PI / 180.0;
+    imuMsg.angular_velocity.z = imu.getGyroZ() * M_PI / 180.0;
+
+    // From mg to m/s^2.
+    imuMsg.linear_acceleration.x = imu.getLinearAccX() / 1000.0 * 9.8066; 
+    imuMsg.linear_acceleration.y = imu.getLinearAccY() / 1000.0 * 9.8066;
+    imuMsg.linear_acceleration.z = imu.getLinearAccZ() / 1000.0 * 9.8066;
 
     imuPublisher.publish(&imuMsg);
 
@@ -884,7 +898,7 @@ void publishOdom()
 {
     static uint32_t seq = 0;
 
-    // Odometry message
+    // Odometry message.
     odomMsg.header.seq = seq;
     odomMsg.header.stamp = nh.now();
 
@@ -899,7 +913,7 @@ void publishOdom()
 
     odomPublisher.publish(&odomMsg);
 
-    // Tf
+    // Tf.
     odomTrans.header.seq = seq;
     odomTrans.header.stamp = nh.now();
 

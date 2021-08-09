@@ -13,32 +13,25 @@ static const char SETIMUPARAMS[] = "statek_hw/SetImuParams";
   class SetImuParamsRequest : public ros::Msg
   {
     public:
-      typedef uint32_t _imu_update_rate_ms_type;
-      _imu_update_rate_ms_type imu_update_rate_ms;
       float acc_bias[3];
       float gyro_bias[3];
       float mag_bias[3];
       float mag_scale[3];
-      int16_t mag_dec[3];
+      typedef float _mag_dec_type;
+      _mag_dec_type mag_dec;
 
     SetImuParamsRequest():
-      imu_update_rate_ms(0),
       acc_bias(),
       gyro_bias(),
       mag_bias(),
       mag_scale(),
-      mag_dec()
+      mag_dec(0)
     {
     }
 
     virtual int serialize(unsigned char *outbuffer) const override
     {
       int offset = 0;
-      *(outbuffer + offset + 0) = (this->imu_update_rate_ms >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (this->imu_update_rate_ms >> (8 * 1)) & 0xFF;
-      *(outbuffer + offset + 2) = (this->imu_update_rate_ms >> (8 * 2)) & 0xFF;
-      *(outbuffer + offset + 3) = (this->imu_update_rate_ms >> (8 * 3)) & 0xFF;
-      offset += sizeof(this->imu_update_rate_ms);
       for( uint32_t i = 0; i < 3; i++){
       union {
         float real;
@@ -87,27 +80,22 @@ static const char SETIMUPARAMS[] = "statek_hw/SetImuParams";
       *(outbuffer + offset + 3) = (u_mag_scalei.base >> (8 * 3)) & 0xFF;
       offset += sizeof(this->mag_scale[i]);
       }
-      for( uint32_t i = 0; i < 3; i++){
       union {
-        int16_t real;
-        uint16_t base;
-      } u_mag_deci;
-      u_mag_deci.real = this->mag_dec[i];
-      *(outbuffer + offset + 0) = (u_mag_deci.base >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (u_mag_deci.base >> (8 * 1)) & 0xFF;
-      offset += sizeof(this->mag_dec[i]);
-      }
+        float real;
+        uint32_t base;
+      } u_mag_dec;
+      u_mag_dec.real = this->mag_dec;
+      *(outbuffer + offset + 0) = (u_mag_dec.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_mag_dec.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_mag_dec.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_mag_dec.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->mag_dec);
       return offset;
     }
 
     virtual int deserialize(unsigned char *inbuffer) override
     {
       int offset = 0;
-      this->imu_update_rate_ms =  ((uint32_t) (*(inbuffer + offset)));
-      this->imu_update_rate_ms |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      this->imu_update_rate_ms |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
-      this->imu_update_rate_ms |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
-      offset += sizeof(this->imu_update_rate_ms);
       for( uint32_t i = 0; i < 3; i++){
       union {
         float real;
@@ -160,22 +148,22 @@ static const char SETIMUPARAMS[] = "statek_hw/SetImuParams";
       this->mag_scale[i] = u_mag_scalei.real;
       offset += sizeof(this->mag_scale[i]);
       }
-      for( uint32_t i = 0; i < 3; i++){
       union {
-        int16_t real;
-        uint16_t base;
-      } u_mag_deci;
-      u_mag_deci.base = 0;
-      u_mag_deci.base |= ((uint16_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      u_mag_deci.base |= ((uint16_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      this->mag_dec[i] = u_mag_deci.real;
-      offset += sizeof(this->mag_dec[i]);
-      }
+        float real;
+        uint32_t base;
+      } u_mag_dec;
+      u_mag_dec.base = 0;
+      u_mag_dec.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_mag_dec.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_mag_dec.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_mag_dec.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->mag_dec = u_mag_dec.real;
+      offset += sizeof(this->mag_dec);
      return offset;
     }
 
     virtual const char * getType() override { return SETIMUPARAMS; };
-    virtual const char * getMD5() override { return "847b3ce54e37ee7588c2ff61ac88af8b"; };
+    virtual const char * getMD5() override { return "5f9458da6f6ff848a4e853462dcd49fd"; };
 
   };
 

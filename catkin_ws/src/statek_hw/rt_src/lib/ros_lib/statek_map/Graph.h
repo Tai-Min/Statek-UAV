@@ -62,7 +62,7 @@ namespace statek_map
     }
 
     virtual const char * getType() override { return "statek_map/Graph"; };
-    virtual const char * getMD5() override { return "65f6c7a007b34f90ec9f440e86b283f6"; };
+    virtual const char * getMD5() override { return "8e3af9ebf6b40ee252631191c5c8967b"; };
 
   };
 
