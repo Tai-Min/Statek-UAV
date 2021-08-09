@@ -42,7 +42,6 @@ def send_imu_params(namespace, param_service, params):
 
         req = SetImuParamsRequest()
         
-        req.imu_update_rate_ms = params["imu_update_rate_ms"]
         req.acc_bias = params["acc_bias"]
         req.gyro_bias = params["gyro_bias"]
         req.mag_bias = params["mag_bias"]
@@ -115,7 +114,7 @@ imu_params = {
     "gyro_bias": rospy.get_param("~gyro_bias", [0,0,0]),
     "mag_bias": rospy.get_param("~mag_bias", [0,0,0]),
     "mag_scale": rospy.get_param("~mag_scale", [0,0,0]),
-    "mag_dec": rospy.get_param("~mag_dec", [0, 0, 0])
+    "mag_dec": rospy.get_param("~mag_dec", 0)
 }
 
 odom_params = {

@@ -295,7 +295,7 @@ raw_input("Press anything to proceed or Ctrl + C to exit.")
 
 imu_config = imu_calibration(statek_name, imu_calibration_service_name)
 
-magnetic_declination = type_int("Type magnetic declination in your area as N,E (i.e from here https://www.magnetic-declination.com/): ")
+magnetic_declination = type_float("Type magnetic declination in your area as N,E (i.e from here https://www.magnetic-declination.com/): ")
 
 # ODOM CONFIG
 odom_update_rate_ms = loop_rate

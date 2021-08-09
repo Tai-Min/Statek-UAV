@@ -1,24 +1,24 @@
 # wheel config
 wheel_radius: 0.13 # In [m].
-wheel_max_angular_velocity: 1.9 # How fast wheels can rotate in [rad/s].
+wheel_max_angular_velocity: 2.53493385315 # How fast wheels can rotate in [rad/s].
 
 # kinematic config
 distance_between_wheels: 0.615 # In [m].
-max_linear_velocity: 0.247 # How fast UAV can move forward in m/s defined as wheel_radius*wheel_max_angular_velocity.
-max_angular_velocity: 0.8033 # How fast UAV can rotate around it's center in [rad/s] defined as max_linear_velocity / (distance_between_wheels / 2).
+max_linear_velocity: 0.329541400909 # How fast UAV can move forward in m/s defined as wheel_radius*wheel_max_angular_velocity.
+max_angular_velocity: 1.07167935255 # How fast UAV can rotate around it's center in [rad/s] defined as max_linear_velocity / (distance_between_wheels / 2).
 
 # closed loop control
 loop_update_rate_ms : 30
 smoothing_factor: 0.19
-left_motor_pid: [2, 2.44140023, 0.0] # Kp, ki, kd.
-right_motor_pid: [2, 2.44140023, 0.0]
+left_motor_pid: [0.129892162046, 2.03538942106, 0.0] # Kp, ki, kd.
+right_motor_pid: [0.129892162046, 2.03538942106, 0.0]
 
 # imu config
-acc_bias: [0,0,0]
-gyro_bias: [0,0,0]
-mag_bias: [0,0,0]
-mag_scale: [0,0,0]
-mag_dec: 0
+acc_bias: [24514.3007812, 18102.5, -6376.59960938]
+gyro_bias: [-384.125, -252.449996948, -67.125]
+mag_bias: [980.723754883, 910.457458496, 896.73449707]
+mag_scale: [0.865248262882, 0.813333332539, 1.62666666508]
+mag_dec: 6.11
 
 # odom config
 odom_update_rate_ms: 30

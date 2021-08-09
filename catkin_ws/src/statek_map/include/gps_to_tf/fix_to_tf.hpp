@@ -22,8 +22,6 @@ private:
     static constexpr double b = 6356752.3142;  //!< Semi minor axis in meters.
     static constexpr double eSq = 0.00669437999; //!< Square of eccentricity.
 
-    const double northCompensation = 0; //!< Used to compensate IMU's reading so it points 0 deg to EAST and 90 deg to NORTH.
-
     sensor_msgs::NavSatFix fixFiltered; //!< Message with fix filtered by Kalman filter.
     bool isNewFixAvailable = false;     //!< Whether there is new fix since last getFilteredFixMsg().
 
@@ -135,7 +133,7 @@ public:
      * @param _mapFrame Map frame.
      * @param _earthFrame Earth frame.
      */
-    FixToTf( double originLat,  double originLon, double _northCompensation,
+    FixToTf( double originLat,  double originLon,
             double processVariance, double measurementVariance,
             std::string _mapFrame, std::string _earthFrame);
 

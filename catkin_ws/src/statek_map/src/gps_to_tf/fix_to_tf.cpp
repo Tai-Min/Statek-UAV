@@ -1,12 +1,11 @@
 #include "../../include/gps_to_tf/fix_to_tf.hpp"
 #include <tf/transform_broadcaster.h>
 
-FixToTf::FixToTf(double originLat, double originLon, double _northCompensation,
+FixToTf::FixToTf(double originLat, double originLon,
                  double processVariance, double measurementVariance,
                  std::string _mapFrame, std::string _earthFrame)
     : originPhi(originLat * M_PI / (double)180.0),
       originLambda(originLon * M_PI / (double)180.0),
-      northCompensation(_northCompensation),
       mapFrame(_mapFrame),
       earthFrame(_earthFrame),
       filter(processVariance, measurementVariance)
@@ -156,7 +155,7 @@ void FixToTf::onNewImu(const sensor_msgs::Imu::ConstPtr &imu)
     tf::quaternionMsgToTF(imu->orientation, quat);
     double temp1, temp2, theta;
     tf::Matrix3x3(quat).getRPY(temp1, temp2, theta);
-    this->latestYaw = 1.5 * M_PI + theta - this->northCompensation;
+    this->latestYaw = theta;
 
     // Use filter only after first fix to get good initial values.
     if (!fstFix)

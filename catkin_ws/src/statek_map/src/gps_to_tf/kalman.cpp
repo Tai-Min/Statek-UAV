@@ -13,25 +13,22 @@ Kalman::Estimates Kalman::update(const Inputs &inputs, const Measurements &measu
     double dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - previousUpdateTime).count() / (double)1000.0;
 
     Eigen::Vector3d u;
-    u << inputs.eastAcc, inputs.northAcc, inputs.theta;
+    u << inputs.eastAcc, inputs.northAcc;
 
     Eigen::Vector3d z;
-    z << measurements.x, measurements.y, measurements.yaw;
+    z << measurements.x, measurements.y;
 
     Eigen::Matrix3d B;
-    B << (double)0.5 * powf64(dt, 2), 0, 0,
-        0, (double)0.5 * powf64(dt, 2), 0,
-        0, 0, 1;
+    B << (double)0.5 * powf64(dt, 2), 0,
+        0, (double)0.5 * powf64(dt, 2);
 
     Eigen::Matrix3d Q;
-    Q << this->processVariance, 0, 0,
-        0, this->processVariance, 0,
-        0, 0, this->processVariance;
+    Q << this->processVariance, 0,
+        0, this->processVariance;
 
     Eigen::Matrix3d R;
-    R << this->measurementVariance, 0, 0,
-        0, this->measurementVariance, 0,
-        0, 0, this->measurementVariance;
+    R << this->measurementVariance, 0,
+        0, this->measurementVariance;
 
     if (this->fstScan)
     {
@@ -61,6 +58,5 @@ Kalman::Estimates Kalman::getEstimates() const
     Estimates e;
     e.x = this->aPosteriori_xHat(0);
     e.y = this->aPosteriori_xHat(1);
-    e.yaw = this->aPosteriori_xHat(2);
     return e;
 }

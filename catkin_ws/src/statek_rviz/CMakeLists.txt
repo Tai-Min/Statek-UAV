@@ -22,4 +22,5 @@ add_executable(map_to_markers_node src/map_to_markers_node.cpp)
 target_link_libraries(map_to_markers_node ${catkin_LIBRARIES})
 
 add_executable(graph_to_markers_node src/graph_to_markers_node.cpp)
+add_dependencies(graph_to_markers_node statek_map_gencpp)
 target_link_libraries(graph_to_markers_node ${catkin_LIBRARIES})

@@ -9,13 +9,11 @@ public:
     {
         double eastAcc;
         double northAcc;
-        double theta;
     };
 
     struct Measurements{
         double x;
         double y;
-        double yaw;
     };
 
     typedef Measurements Estimates;
