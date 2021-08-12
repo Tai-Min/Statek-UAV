@@ -66,4 +66,4 @@ tuw_geometry/
 .vscode/launch.json
 .vscode/ipch
 dataset/
-.tf_ckpts/
+logdir/

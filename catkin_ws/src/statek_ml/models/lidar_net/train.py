@@ -1,48 +1,59 @@
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow._api.v2 import train
-from tensorflow.python.keras.backend import dtype
 from net import PeTraNet
-from dataset_loader import parse_sample
-import numpy as np
-import cv2
+from dataset_processing import parse_sample, preprocess_dataset
+from show_result import show_result
+
+# Configuration.
+# Whether to generate correct dataset for this training from
+# author's train_global_labels.npy and train_global_points.npy files.
+# This may take some time D:
+# But speeds up training a lot
+# and frees a lot of memory from GPU.
+preprocess_dataset_flag = False
 
 # Training parameters.
-epochs = 50000
-train_samples_per_epoch = 100
-batch_size = 16
-init_lr = 0.1
-final_lr = 0.0001
+epochs = 5000
+train_samples_per_epoch = 64
+batch_size = 1
+lr = 0.05
 
-# Prepare dataset.
-train_inputs = np.load("./dataset/train_global_points.npy")
-train_labels = np.load("./dataset/train_global_labels.npy")
+# Preprocess dataset.
+# It must be processed as three whole arrays don't fit
+# into my GPU's memory ._.
+if preprocess_dataset_flag:
+    preprocess_dataset()
 
-train_dataset = tf.data.Dataset.from_tensor_slices(
-    (train_inputs, train_labels))
-train_dataset = train_dataset.map(parse_sample).shuffle(train_samples_per_epoch * 10).batch(
-    batch_size).prefetch(tf.data.experimental.AUTOTUNE)
+train_dataset = tf.data.Dataset.list_files("./dataset/inputs/*.npy")
 
-# Scheduled learning rate.
-train_batches_per_epoch = train_samples_per_epoch / batch_size
-lr_decay_steps = train_batches_per_epoch * epochs
-lr_decay_rate = final_lr / init_lr
-
-lr_schedule = keras.optimizers.schedules.ExponentialDecay(
-    init_lr, lr_decay_steps, lr_decay_rate)
+train_dataset = train_dataset.map(
+    lambda x: tf.py_function(
+        parse_sample, [x], (tf.float32, tf.float32, tf.float32))
+).shuffle(train_samples_per_epoch * 4).batch(batch_size)
 
 # Optimizer.
-optimizer = keras.optimizers.SGD(learning_rate=lr_schedule)
+# SGD with momentum as described in unet's paper.
+optimizer = keras.optimizers.SGD(learning_rate=lr, momentum=0.99)
 
-# Loss.
-loss_fcn = keras.losses.BinaryCrossentropy()
+# Loss function.
 
-# Metrics.
-train_loss_metric = keras.metrics.Mean()
+
+@tf.function(jit_compile=True)
+def loss_fcn(labels, preds, weights):
+    # @brief Modified function from unet's paper.
+    # Replaces softmax with sigmoid and sum with mean for stability.
+    # @param labels True labels.
+    # @param preds Predictions.
+    # @param weights Weights tensors.
+
+    loss = tf.nn.sigmoid_cross_entropy_with_logits(labels, preds)
+    loss = tf.multiply(weights, loss)
+    loss = tf.reduce_mean(loss)
+    return loss
+
 
 # Network model.
 net = PeTraNet()
-net.model((256, 256, 1)).summary()
 
 # Restore training from checkpoint if possible
 ckpt = tf.train.Checkpoint(step=tf.Variable(1), net=net, optimizer=optimizer)
@@ -56,60 +67,37 @@ else:
     print('Initializing training from scratch.')
 
 
-def result_to_cv_img(img):
-    img = tf.cast(img, tf.float32)
-    img = img.numpy()
-    img = np.round(img)
-    img = np.clip(img, 0.0, 1.0)
-    return img
+@tf.function()
+def train_step(input_imgs, real_outputs, weights):
+    # @brief Perform single training step.
+    # @param input_imgs Batch of inputs.
+    # @param real_outputs Batch of labels.
+    # @param weights Batch of weights.
+    # @return Predictions and loss function's value.
 
-
-def show_result(input_img, output_img, pred_img):
-    if show_result.first_iter:
-        cv2.namedWindow("Train progress", cv2.WINDOW_AUTOSIZE)
-
-    input_img = result_to_cv_img(input_img)
-    output_img = result_to_cv_img(output_img)
-    pred_img = result_to_cv_img(pred_img)
-
-    img = np.concatenate((input_img, output_img, pred_img), axis=1)
-
-    cv2.imshow("Train progress", img)
-    cv2.waitKey(10)
-
-
-show_result.first_iter = True
-
-
-@tf.function
-def train_step(input_imgs, real_outputs):
     with tf.GradientTape() as tape:
-        preds = net(input_imgs, True)
-        loss = loss_fcn(real_outputs, preds)
+        preds = net(input_imgs)
+        loss = loss_fcn(real_outputs, preds, weights)
 
     grads = tape.gradient(loss, net.trainable_weights)
     optimizer.apply_gradients(zip(grads, net.trainable_weights))
-    train_loss_metric(loss)
 
-    return preds
+    return preds, loss
 
-def train():
-    # Perform training.
-    for epoch in range(epochs):
-        for _ in range(int(train_batches_per_epoch)):
-            input_imgs, output_imgs = next(iter(train_dataset))
-            preds = train_step(input_imgs, output_imgs)
+train_batches_per_epoch = train_samples_per_epoch / batch_size
 
-            # Save checkpoint and show some results.
-            ckpt.step.assign_add(1)
-            if int(ckpt.step) % 20 == 0:
-                pass
-                path = manager.save()
-                print("Checkpoint saved: %s." % path)
-                show_result(input_imgs[0], output_imgs[0], preds[0])
+# Perform training.
+for _ in range(epochs):
+    for __ in range(int(train_batches_per_epoch)):
+        input_imgs, output_imgs, weights = next(iter(train_dataset))
+        preds, loss = train_step(input_imgs, output_imgs, weights)
 
-            print("Mean loss on training batch: %f." %
-                  float(train_loss_metric.result()))
-            train_loss_metric.reset_states()
+        # Save checkpoint and show some results.
+        ckpt.step.assign_add(1)
+        if int(ckpt.step) % 100 == 0:
+            path = manager.save()
+            print("Checkpoint saved: %s." % path)
 
-train()
+        show_result(input_imgs[0], output_imgs[0], preds[0], weights[0])
+
+        print("Loss function on training batch: %f." % float(loss))
