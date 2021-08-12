@@ -67,7 +67,7 @@ else:
     print('Initializing training from scratch.')
 
 
-@tf.function()
+@tf.function
 def train_step(input_imgs, real_outputs, weights):
     # @brief Perform single training step.
     # @param input_imgs Batch of inputs.
@@ -76,7 +76,7 @@ def train_step(input_imgs, real_outputs, weights):
     # @return Predictions and loss function's value.
 
     with tf.GradientTape() as tape:
-        preds = net(input_imgs)
+        preds = net(input_imgs, True)
         loss = loss_fcn(real_outputs, preds, weights)
 
     grads = tape.gradient(loss, net.trainable_weights)
@@ -91,7 +91,7 @@ for _ in range(epochs):
     for __ in range(int(train_batches_per_epoch)):
         input_imgs, output_imgs, weights = next(iter(train_dataset))
         preds, loss = train_step(input_imgs, output_imgs, weights)
-
+        print(preds.shape)
         # Save checkpoint and show some results.
         ckpt.step.assign_add(1)
         if int(ckpt.step) % 100 == 0:

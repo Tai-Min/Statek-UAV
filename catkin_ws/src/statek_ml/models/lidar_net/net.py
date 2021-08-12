@@ -276,7 +276,7 @@ class PeTraNet(keras.Model):
         return self.conv_output(res_fourth_up)
 
     @tf.function
-    def call(self, inputs):
+    def call(self, inputs, training=False):
 
         # Downsampling.
         res_no_pool, res_first_pool, res_second_pool, res_third_pool, res_fourth_pool = self.downsample(
@@ -294,5 +294,8 @@ class PeTraNet(keras.Model):
 
         res_fourth_up = self.up4(res_third_up)
         result = self.conv_up_fourth(res_no_pool, res_fourth_up)
+
+        if not training:
+            result = tf.nn.sigmoid(result)
 
         return result

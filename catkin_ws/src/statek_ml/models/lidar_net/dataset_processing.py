@@ -252,3 +252,12 @@ def parse_sample(sample):
     weights_sample = tf.transpose(weights_sample, (1, 2, 0))
 
     return (input_sample, label_sample, weights_sample)
+
+def preprocess_input_sample(sample):
+    sample = np.ndarray.astype(sample, np.float32)
+    sample = sample / 255.0
+    sample = np.round(sample)
+
+    sample = tf.transpose(sample, (1, 2, 0))
+    sample = tf.expand_dims(sample, axis=0)
+    return sample

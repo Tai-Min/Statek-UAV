@@ -19,6 +19,7 @@ def _insert_text(img, text):
 def show_result(input_img, output_img, pred_img, weight_img):
     if show_result.first_iter:
         cv2.namedWindow("Train progress", cv2.WINDOW_AUTOSIZE)
+        show_result.first_iter = False
 
     input_img = _result_to_cv_img(input_img)
     input_img = _insert_text(input_img, "Input image")
@@ -42,3 +43,21 @@ def show_result(input_img, output_img, pred_img, weight_img):
 
 
 show_result.first_iter = True
+
+def show_test(input_img, pred_img):
+    if show_test.first_iter:
+        cv2.namedWindow("Test image", cv2.WINDOW_AUTOSIZE)
+        show_test.first_iter = False
+
+    input_img = _result_to_cv_img(input_img)
+    input_img = _insert_text(input_img, "Input image")
+
+    pred_img = _result_to_cv_img(pred_img)
+    pred_img = _insert_text(pred_img, "Network's prediction")
+
+    img = np.concatenate((input_img, pred_img), axis=1)
+
+    cv2.imshow("Test image", img)
+    cv2.waitKey(10)
+
+show_test.first_iter = True
