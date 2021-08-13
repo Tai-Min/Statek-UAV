@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.python.training.checkpoint_management import latest_checkpoint
 from net import PeTraNet
 import numpy as np
 from show_result import show_test
@@ -10,9 +11,8 @@ test_set = np.load("./dataset/test.npy")
 
 net = PeTraNet()
 
-ckpt = tf.train.Checkpoint(net=net)
-manager = tf.train.CheckpointManager(ckpt, './.tf_ckpts', max_to_keep=100)
-manager.restore_or_initialize()
+ckpt = tf.train.latest_checkpoint('./.tf_ckpts')
+ckpt = tf.train.Checkpoint(net=net).restore(ckpt).expect_partial()
 
 for sample in test_set:
     sample = preprocess_input_sample(sample)

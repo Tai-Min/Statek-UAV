@@ -1,3 +1,7 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+
 import tensorflow as tf
 from tensorflow import keras
 from net import PeTraNet
@@ -16,7 +20,7 @@ preprocess_dataset_flag = False
 epochs = 5000
 train_samples_per_epoch = 64
 batch_size = 1
-lr = 0.05
+lr = 0.0005
 
 # Preprocess dataset.
 # It must be processed as three whole arrays don't fit
