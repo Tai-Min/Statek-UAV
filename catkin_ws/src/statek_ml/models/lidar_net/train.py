@@ -1,7 +1,3 @@
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-
-
 import tensorflow as tf
 from tensorflow import keras
 from net import PeTraNet
@@ -62,13 +58,13 @@ net = PeTraNet()
 # Restore training from checkpoint if possible
 ckpt = tf.train.Checkpoint(step=tf.Variable(1), net=net, optimizer=optimizer)
 
-manager = tf.train.CheckpointManager(ckpt, './.tf_ckpts', max_to_keep=100)
+manager = tf.train.CheckpointManager(ckpt, "./.tf_ckpts", max_to_keep=100)
 path = manager.restore_or_initialize()
 
 if path:
-    print('Restored checkpoint from %s' % path)
+    print("Restored checkpoint from %s" % path)
 else:
-    print('Initializing training from scratch.')
+    print("Initializing training from scratch.")
 
 
 @tf.function
@@ -95,7 +91,7 @@ for _ in range(epochs):
     for __ in range(int(train_batches_per_epoch)):
         input_imgs, output_imgs, weights = next(iter(train_dataset))
         preds, loss = train_step(input_imgs, output_imgs, weights)
-        print(preds.shape)
+
         # Save checkpoint and show some results.
         ckpt.step.assign_add(1)
         if int(ckpt.step) % 100 == 0:

@@ -9,7 +9,7 @@ test_set = np.load("./dataset/test.npy")
 
 net = PeTraNet()
 
-ckpt = tf.train.latest_checkpoint('./.tf_ckpts')
+ckpt = tf.train.latest_checkpoint("./.tf_ckpts")
 ckpt = tf.train.Checkpoint(net=net).restore(ckpt).expect_partial()
 
 for sample in test_set:

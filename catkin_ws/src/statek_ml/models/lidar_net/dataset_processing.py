@@ -261,11 +261,3 @@ def preprocess_input_sample(sample):
     sample = tf.transpose(sample, (1, 2, 0))
     sample = tf.expand_dims(sample, axis=0)
     return sample
-
-def preprocess_real_data(data):
-    sample = np.ndarray.astype(data, np.float32)
-    sample = sample / 255.0
-    sample = np.round(sample)
-
-    sample = tf.expand_dims(sample, axis=0)
-    return sample
