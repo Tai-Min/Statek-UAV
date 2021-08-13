@@ -1,11 +1,9 @@
 import tensorflow as tf
-from tensorflow.python.training.checkpoint_management import latest_checkpoint
 from net import PeTraNet
 import numpy as np
 from show_result import show_test
 from dataset_processing import preprocess_input_sample
 import time 
-from tensorflow import keras
 
 test_set = np.load("./dataset/test.npy")
 
