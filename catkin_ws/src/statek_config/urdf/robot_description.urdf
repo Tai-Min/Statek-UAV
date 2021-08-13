@@ -3,8 +3,11 @@
   xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:arg name="statek_name" default="statek"/>
 
-  <xacro:arg name="lat" default="54.3862777778"/>
-  <xacro:arg name="lon" default="18.5907777778"/>
+  <!--<xacro:arg name="lat" default="54.386278"/>
+  <xacro:arg name="lon" default="18.583333"/>-->
+
+  <xacro:arg name="lat" default="54.386279"/>
+  <xacro:arg name="lon" default="18.590767"/>
 
   <xacro:arg name="mu1" default="0.00"/>
   <xacro:arg name="mu2" default="0.00"/>
@@ -271,24 +274,25 @@
       </plugin>
     </sensor>
 
-    <!--<sensor name="imu_sensor" type="imu">
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
       <always_on>true</always_on>
-      <update_rate>20</update_rate>
-      <visualize>false</visualize>
+      <update_rate>100</update_rate>
+      <visualize>true</visualize>
       <topic>$(arg statek_name)/real_time/imu</topic>
       <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
         <topicName>$(arg statek_name)/real_time/imu</topicName>
         <bodyName>$(arg statek_name)/base_link</bodyName>
         <updateRateHZ>10.0</updateRateHZ>
-        <gaussianNoise>0.001</gaussianNoise>
+        <gaussianNoise>0.0</gaussianNoise>
         <xyzOffset>0 0 0</xyzOffset>
+        <!--<rpyOffset>0 0 1.57079632679</rpyOffset>-->
         <rpyOffset>0 0 0</rpyOffset>
         <frameName>$(arg statek_name)/imu/imu_link</frameName>
         <initialOrientationAsReference>false</initialOrientationAsReference>
       </plugin>
       <pose>0 0 0 0 0 0</pose>
-    </sensor>-->
-
+    </sensor>
   </gazebo>
 
   <gazebo reference="$(arg statek_name)/wheels/left_front_link">
@@ -324,13 +328,6 @@
   </gazebo>
 
   <gazebo>
-    <plugin name="statek_imu_sensor" filename="libhector_gazebo_ros_imu.so">
-      <updateRate>20.0</updateRate>
-      <bodyName>$(arg statek_name)/base_link</bodyName>
-      <topicName>$(arg statek_name)/real_time/imu</topicName>
-      <yawOffset>1.57079632679</yawOffset>
-    </plugin>
-
     <plugin name="libstatek_motor_control" filename="libstatek_motor_control.so">
       <left_back_joint>left_back_wheel_hinge</left_back_joint>
       <right_back_joint>right_back_wheel_hinge</right_back_joint>
@@ -358,11 +355,12 @@
       <velocityTopicName>/$(arg statek_name)/gps/fix_velocity</velocityTopicName>
       <referenceLatitude>$(arg lat)</referenceLatitude>
       <referenceLongitude>$(arg lon)</referenceLongitude>
+      <referenceAltitude>10</referenceAltitude>
       <referenceHeading>90.0</referenceHeading>
-      <drift>5.0 5.0 5.0</drift>
-      <gaussianNoise>0.1 0.1 0.1</gaussianNoise>
-      <velocityDrift>0 0 0</velocityDrift>
-      <velocityGaussianNoise>0.1 0.1 0.1</velocityGaussianNoise>
+      <drift>0.0 0.0 0.0</drift>
+      <gaussianNoise>0.05 0.05 0.05</gaussianNoise>
+      <velocityDrift>0.0 0.0 0.0</velocityDrift>
+      <velocityGaussianNoise>0.0 0.0 0.0</velocityGaussianNoise>
     </plugin>
   </gazebo>
 

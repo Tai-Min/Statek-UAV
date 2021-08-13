@@ -8,6 +8,7 @@
 #include <statek_map/GeoToEnu.h>
 #include <statek_map/EnuToGeo.h>
 #include "./kalman.hpp"
+#include <geometry_msgs/PoseStamped.h>
 
 /**
  * @brief Convert from GPS coordinates to some cartesian local tangent plane.
@@ -19,11 +20,14 @@ private:
     // https://archive.psas.pdx.edu/CoordinateSystem/Latitude_to_LocalTangent.pdf
     // Some params.
     static constexpr double a = 6378137.0;       //!< WGS-84 semi major axis in meters.
-    static constexpr double b = 6356752.3142;  //!< Semi minor axis in meters.
+    static constexpr double b = 6356752.3142;    //!< Semi minor axis in meters.
     static constexpr double eSq = 0.00669437999; //!< Square of eccentricity.
 
     sensor_msgs::NavSatFix fixFiltered; //!< Message with fix filtered by Kalman filter.
     bool isNewFixAvailable = false;     //!< Whether there is new fix since last getFilteredFixMsg().
+
+    geometry_msgs::PoseStamped shortTermGoalCartesian; //!< Message with robot's goal in cartesian coordinates in earth's frame.
+    bool isNewGoalCartesianAvailable = false;          //!< Whether there is new goal in cartesian coordinates to publish.
 
     std::string mapFrame;   //!< Local map frame link.
     std::string earthFrame; //!< Earth frame link.
@@ -31,14 +35,14 @@ private:
     bool fstFix = true; //!< Wheter it is first received GPS fix by this object. Used to initialize Kalman filter.
     Kalman filter;      //!< Kalman filter.
 
-    double originLambda = 0;   //!< Longitude of origin of tangent plane in radians.
-    double originPhi = 0;      //!< Latitude of origin of tangent plane in radians.
-     double originEcefX = 0;    //!< ECEF coordinate of tangent plane in meters.
-     double originEcefY = 0;    //!< ECEF coordinate of tangent plane in meters.
-     double originEcefZ = 0;    //!< ECEF coordinate of tangent plane in meters.
-     double latestTangentX = 0; //!< Latest position of robot in tangent plane.
-     double latestTangentY = 0; //!< Latest position of robot in tangent plane.
-     double latestTangentZ = 0; //!< Latest position of robot in tangent plane.
+    double originLambda = 0;        //!< Longitude of origin of tangent plane in radians.
+    double originPhi = 0;           //!< Latitude of origin of tangent plane in radians.
+    double originEcefX = 0;         //!< ECEF coordinate of tangent plane in meters.
+    double originEcefY = 0;         //!< ECEF coordinate of tangent plane in meters.
+    double originEcefZ = 0;         //!< ECEF coordinate of tangent plane in meters.
+    double latestTangentX = 0;      //!< Latest position of robot in tangent plane.
+    double latestTangentY = 0;      //!< Latest position of robot in tangent plane.
+    double latestTangentZ = 0;      //!< Latest position of robot in tangent plane.
     double latestYaw = 0;           //!< Latest rotation of robot in tangent plane.
     double latestAccelerationNorth; //!< Latest velocity to the north (for Kalman filter).
     double latestAccelerationEast;  //!< Latest velocity to the east (for Kalman filter).
@@ -58,7 +62,7 @@ private:
      * @param v Value to check sign of.
      * @return Sign of given value or 0 if v = 0.
      */
-    static  double sign( double v);
+    static double sign(double v);
 
     /**
      * @brief Convert latitude and longitude to ECEF x, y, z coordinates.
@@ -68,7 +72,7 @@ private:
      * @param ecefY Result ECEF y.
      * @param ecefZ Result ECEF z.
      */
-    static void geodeticToEcef( double lat,  double lon,  double &ecefX,  double &ecefY,  double &ecefZ);
+    static void geodeticToEcef(double lat, double lon, double &ecefX, double &ecefY, double &ecefZ);
 
     /**
      * @brief Convert ECEF coordinates to latitude and longitude.
@@ -78,7 +82,7 @@ private:
      * @param lat Result latitude.
      * @param lon Result longitude.
      */
-    static void EcefToGeodetic( double ecefX,  double ecefY,  double ecefZ,  double &lat,  double &lon);
+    static void EcefToGeodetic(double ecefX, double ecefY, double ecefZ, double &lat, double &lon);
 
     /**
      * @brief Convert ECEF coordinates to ENU.
@@ -89,7 +93,7 @@ private:
      * @param enuY Result ENU y.
      * @param enuZ Result ENU z.
      */
-    void EcefToEnu( double ecefX,  double ecefY,  double ecefZ,  double &enuX,  double &enuY,  double &enuZ) const;
+    void EcefToEnu(double ecefX, double ecefY, double ecefZ, double &enuX, double &enuY, double &enuZ) const;
 
     /**
      * @brief Convert ENU coordinates to ECEF.
@@ -100,7 +104,7 @@ private:
      * @param ecefY Result ECEF Y.
      * @param ecefZ Result ECEF Z.
      */
-    void EnuToEcef( double enuX,  double enuY,  double enuZ,  double &ecefX,  double &ecefY,  double &ecefZ) const;
+    void EnuToEcef(double enuX, double enuY, double enuZ, double &ecefX, double &ecefY, double &ecefZ) const;
 
     /**
      * @brief Convert GPS coordinates to ENU.
@@ -110,7 +114,7 @@ private:
      * @param enuY Result ENU y.
      * @param enuZ Result ENU z.
      */
-    void geodeticToEnu( double lat,  double lon,  double &enuX,  double &enuY,  double &enuZ) const;
+    void geodeticToEnu(double lat, double lon, double &enuX, double &enuY, double &enuZ) const;
 
     /**
      * @brief Convert ENU to GPS coordinates.
@@ -120,7 +124,7 @@ private:
      * @param lat Result latitude.
      * @param lon Result longitude.
      */
-    void enuToGeodetic( double enuX,  double enuY,  double enuZ,  double &lat,  double &lon) const;
+    void enuToGeodetic(double enuX, double enuY, double enuZ, double &lat, double &lon) const;
 
 public:
     /**
@@ -128,13 +132,16 @@ public:
      * @param originLat Latitude for the center of tangent plane.
      * @param originLon Longtitute of the center of tangent plane.
      * @param _northCompensation Angle (in radians) to compensate imu's reading to Y axis of transform will point to true north.
-     * @param processVariance GPS process variance for Kalman filter.
-     * @param measurementVariance GPS measurement variance for Kalman filter.
+     * @param processVarianceNorth GPS process variance for north direction for Kalman filter.
+     * @param processVarianceNorth GPS process variance for east direction for Kalman filter.
+     * @param measurementVarianceNorth GPS measurement variance for north direction for Kalman filter.
+     * @param measurementVarianceNorth GPS measurement variance for east direction for Kalman filter.
      * @param _mapFrame Map frame.
      * @param _earthFrame Earth frame.
      */
-    FixToTf( double originLat,  double originLon,
-            double processVariance, double measurementVariance,
+    FixToTf(double originLat, double originLon,
+            double processVarianceNorth, double processVarianceEast,
+            double measurementVarianceNorth, double measurementVarianceEast,
             std::string _mapFrame, std::string _earthFrame);
 
     /**
@@ -142,6 +149,12 @@ public:
      * @return True if new fix available.
      */
     bool newFixAvailable() const;
+
+    /**
+     * @brief Check whether new cartesian goal is available since previous getPoseCartesian().
+     * @return True if new pose available.
+     */
+    bool newGoalCartesianAvailable() const;
 
     /**
      * @brief Callback for geo_to_enu service.
@@ -180,6 +193,13 @@ public:
     void onNewFix(const sensor_msgs::NavSatFix::ConstPtr &fix);
 
     /**
+     * @brief Called on new GPS pose request.
+     * Update goal in cartesian coordinates.
+     * @param fix New pose as fix.
+     */
+    void onNewPoseGps(const sensor_msgs::NavSatFix::ConstPtr &fix);
+
+    /**
      * @brief Get transformation from earth to local map link.
      * @param gpsToMap Transformation from GPS device link to local map.
      * @return Transformation from origin of earth's tangent plane to the robot.
@@ -188,7 +208,14 @@ public:
 
     /**
      * @brief Get message with filtered GPS fix.
-     * @return Message.
+     * @return Message with filtered fix.
      */
     const sensor_msgs::NavSatFix &getFilteredFixMsg();
+
+    /**
+     * @brief Get message with robot's desired pose in cartesian coordinates.
+     * This pose is updated when onNewPoseGps callback is called.
+     * @return Message with new pose.
+     */
+    const geometry_msgs::PoseStamped &getPoseCartesian();
 };

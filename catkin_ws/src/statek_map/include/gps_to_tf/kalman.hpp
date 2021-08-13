@@ -22,14 +22,14 @@ private:
 
     timeVar previousUpdateTime = std::chrono::high_resolution_clock::now();
 
-    double processVariance;
-    double measurementVariance;
+    double processVarianceNorth, processVarianceEast;
+    double measurementVarianceNorth, measurementVarianceEast;
     bool fstScan = true;
-    Eigen::Vector3d aPosteriori_xHat;
-    Eigen::Matrix3d aPosteriori_P;
+    Eigen::Vector2d aPosteriori_xHat;
+    Eigen::Matrix2d aPosteriori_P;
 
 public:
-    Kalman(double _processVariance = 0.001, double _measurementVariance = 5);
+    Kalman(double _processVarianceNorth, double _processVarianceEast, double _measurementVarianceNorth, double _measurementVarianceEast);
     Estimates update(const Inputs &inputs, const Measurements& measurements);
     Estimates getEstimates() const;
 };

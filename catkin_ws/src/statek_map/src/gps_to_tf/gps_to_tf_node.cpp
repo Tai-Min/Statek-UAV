@@ -10,8 +10,8 @@ int main(int argc, char **argv)
     ros::NodeHandle nh("~");
 
     // Get all the params.
-    std::string statekName, gpsTopic, odomTopic, imuTopic, fixFilteredTopic, gpsFrame, mapFrame, earthFrame, geoToEnuService, enuToGeoService;
-    double originLon, originLat, processVariance, measurementVariance;
+    std::string statekName, gpsTopic, odomTopic, imuTopic, poseGpsTopic, poseCartesianTopic, fixFilteredTopic, gpsFrame, mapFrame, earthFrame, geoToEnuService, enuToGeoService;
+    double originLon, originLat, processVarianceNorth, processVarianceEast, measurementVarianceNorth, measurementVarianceEast;
 
     nh.param<std::string>("statek_name", statekName, "statek");
 
@@ -19,6 +19,8 @@ int main(int argc, char **argv)
     nh.param<std::string>("odom_topic", odomTopic, "/" + statekName + "/real_time/odom");
     nh.param<std::string>("imu_topic", imuTopic, "/" + statekName + "/real_time/imu");
     nh.param<std::string>("fix_filtered_topic", fixFilteredTopic, "/" + statekName + "/gps/fix_filtered");
+    nh.param<std::string>("pose_gps_topic", poseGpsTopic, statekName + "/short_term_goal_gps");
+    nh.param<std::string>("pose_cartesian_topic", poseCartesianTopic, statekName + "/short_term_goal");
 
     nh.param<std::string>("gps_frame", gpsFrame, statekName + "/gps/gps_link");
     nh.param<std::string>("map_frame", mapFrame, statekName + "/map/local_map_link");
@@ -30,19 +32,24 @@ int main(int argc, char **argv)
     nh.param<double>("origin_lon", originLon, 0.0);
     nh.param<double>("origin_lat", originLat, 0.0);
 
-    nh.param<double>("process_variance", processVariance, 0.001);
-    nh.param<double>("measurement_variance", measurementVariance, 15);
+    nh.param<double>("process_variance_north", processVarianceNorth, 0.001);
+    nh.param<double>("process_variance_east", processVarianceEast, 0.001);
+    nh.param<double>("measurement_variance_north", measurementVarianceNorth, 15);
+    nh.param<double>("measurement_variance_east", measurementVarianceEast, 15);
 
     // The converter.
-    FixToTf converter(originLat, originLon, processVariance, measurementVariance, mapFrame, earthFrame);
+    FixToTf converter(originLat, originLon, processVarianceNorth, processVarianceEast,
+                      measurementVarianceNorth, measurementVarianceEast, mapFrame, earthFrame);
 
     // Subscribers.
     ros::Subscriber gpsFixSub = nh.subscribe(gpsTopic, 1, &FixToTf::onNewFix, &converter);
     ros::Subscriber odomSub = nh.subscribe(odomTopic, 1, &FixToTf::onNewOdom, &converter);
     ros::Subscriber imuSub = nh.subscribe(imuTopic, 1, &FixToTf::onNewImu, &converter);
+    ros::Subscriber poseGpsSub = nh.subscribe(poseGpsTopic, 1, &FixToTf::onNewPoseGps, &converter);
 
     // Publishers.
     ros::Publisher fixFilteredPub = nh.advertise<sensor_msgs::NavSatFix>(fixFilteredTopic, 1);
+    ros::Publisher goalCartesianPub = nh.advertise<geometry_msgs::PoseStamped>(poseCartesianTopic, 1);
 
     // Services.
     ros::ServiceServer geoToEnuSrv = nh.advertiseService(geoToEnuService, &FixToTf::geodeticToEnuService, &converter);
@@ -59,13 +66,14 @@ int main(int argc, char **argv)
         bool ok;
         geometry_msgs::TransformStamped t = getTransform(gpsFrame, mapFrame, ok);
         if (ok)
-        {
-            // Send new transforms.
             transformBroadcaster.sendTransform(converter.getTransformMsg(t.transform));
-        }
-        if(converter.newFixAvailable()){
+
+        if (converter.newFixAvailable())
             fixFilteredPub.publish(converter.getFilteredFixMsg());
-        }
+
+        if (converter.newGoalCartesianAvailable())
+            goalCartesianPub.publish(converter.getPoseCartesian());
+
         ros::spinOnce();
         rate.sleep();
     }

@@ -2,15 +2,17 @@
 #include <tf/transform_broadcaster.h>
 
 FixToTf::FixToTf(double originLat, double originLon,
-                 double processVariance, double measurementVariance,
+                 double processVarianceNorth, double processVarianceEast,
+                 double measurementVarianceNorth, double measurementVarianceEast,
                  std::string _mapFrame, std::string _earthFrame)
     : originPhi(originLat * M_PI / (double)180.0),
       originLambda(originLon * M_PI / (double)180.0),
       mapFrame(_mapFrame),
       earthFrame(_earthFrame),
-      filter(processVariance, measurementVariance)
+      filter(processVarianceNorth, processVarianceEast, measurementVarianceNorth, measurementVarianceEast)
 {
     geodeticToEcef(originLat, originLon, originEcefX, originEcefY, originEcefZ);
+    shortTermGoalCartesian.header.frame_id = earthFrame;
 }
 
 double FixToTf::sign(double v)
@@ -96,6 +98,11 @@ bool FixToTf::newFixAvailable() const
     return isNewFixAvailable;
 }
 
+bool FixToTf::newGoalCartesianAvailable() const
+{
+    return isNewGoalCartesianAvailable;
+}
+
 bool FixToTf::geodeticToEnuService(statek_map::GeoToEnu::Request &req,
                                    statek_map::GeoToEnu::Response &res)
 {
@@ -133,7 +140,6 @@ void FixToTf::onNewOdom(const nav_msgs::Odometry::ConstPtr &odom)
     // Update odom offsets by travelled distance.
     this->odomOffsetX += travelledDistanceX;
     this->odomOffsetY += travelledDistanceY;
-    this->odomOffsetTheta += rotation;
 
     // Save stuff.
     this->latestOdomX = odom->pose.pose.position.x;
@@ -156,54 +162,52 @@ void FixToTf::onNewImu(const sensor_msgs::Imu::ConstPtr &imu)
     double temp1, temp2, theta;
     tf::Matrix3x3(quat).getRPY(temp1, temp2, theta);
     this->latestYaw = theta;
-
-    // Use filter only after first fix to get good initial values.
-    if (!fstFix)
-    {
-        Kalman::Estimates estimates = this->filter.update({(double)this->latestAccelerationEast, (double)this->latestAccelerationNorth, (double)this->odomOffsetTheta},
-                                                          {(double)this->latestTangentX, (double)this->latestTangentY, (double)this->latestYaw});
-        //this->latestYaw = estimates.yaw;
-
-        // IMU updated so reset offset.
-        this->odomOffsetTheta = 0;
-    }
 }
 
 void FixToTf::onNewFix(const sensor_msgs::NavSatFix::ConstPtr &fix)
 {
-    this->fstFix = false;
-
-    fixFiltered.header = fix->header;
-    fixFiltered.status = fix->status;
-    fixFiltered.latitude = fix->latitude;
-    fixFiltered.longitude = fix->longitude;
-    isNewFixAvailable = true;
-
     if (isnan(fix->latitude) || isnan(fix->longitude))
         return;
 
     geodeticToEnu(fix->latitude, fix->longitude, this->latestTangentX, this->latestTangentY, this->latestTangentZ);
 
-    Kalman::Estimates estimates = this->filter.update({(double)this->latestAccelerationEast, (double)this->latestAccelerationNorth, (double)this->odomOffsetTheta},
-                                                      {(double)this->latestTangentX, (double)this->latestTangentY, (double)this->latestYaw});
+    Kalman::Estimates estimates = this->filter.update({this->latestAccelerationEast, this->latestAccelerationNorth},
+                                                      {this->latestTangentX, this->latestTangentY});
     this->latestTangentX = estimates.x;
     this->latestTangentY = estimates.y;
 
+    // Convert filtered tangents back into fix.
     double tempLat, tempLon;
     enuToGeodetic(this->latestTangentX, this->latestTangentY, this->latestTangentZ, tempLat, tempLon);
 
-    fixFiltered.latitude = fix->latitude;
-    fixFiltered.longitude = fix->longitude;
+    fixFiltered.latitude = tempLat;
+    fixFiltered.longitude = tempLon;
+
+    fixFiltered.header = fix->header;
+    fixFiltered.status = fix->status;
+    isNewFixAvailable = true;
 
     // Fix updated so reset offsets.
     this->odomOffsetX = 0;
     this->odomOffsetY = 0;
 }
 
+void FixToTf::onNewPoseGps(const sensor_msgs::NavSatFix::ConstPtr &fix)
+{
+    if (isnan(fix->latitude) || isnan(fix->longitude))
+        return;
+
+    double tangentX, tangentY, tangentZ;
+    geodeticToEnu(fix->latitude, fix->longitude, tangentX, tangentY, tangentZ);
+
+    shortTermGoalCartesian.pose.position.x = tangentX;
+    shortTermGoalCartesian.pose.position.y = tangentY;
+
+    isNewGoalCartesianAvailable = true;
+}
+
 geometry_msgs::TransformStamped FixToTf::getTransformMsg(const geometry_msgs::Transform &gpsToMap) const
 {
-    ROS_WARN("Origin lat: %f, origin lon: %f, X: %f, Y: %f, Z: %f",
-             originPhi * 180.0 / M_PI, originLambda * 180.0 / M_PI, latestTangentX, latestTangentY, latestTangentZ);
     // Get transform from tangent plane to gps link.
     geometry_msgs::Transform tfTransformTangentMsg;
     tfTransformTangentMsg.translation.x = this->latestTangentX;
@@ -252,4 +256,11 @@ const sensor_msgs::NavSatFix &FixToTf::getFilteredFixMsg()
     isNewFixAvailable = false;
     fixFiltered.header.stamp = ros::Time::now();
     return fixFiltered;
+}
+
+const geometry_msgs::PoseStamped &FixToTf::getPoseCartesian()
+{
+    isNewGoalCartesianAvailable = false;
+    shortTermGoalCartesian.header.stamp = ros::Time::now();
+    return shortTermGoalCartesian;
 }

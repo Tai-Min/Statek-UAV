@@ -12,10 +12,10 @@
             <param name="laser_img_topic" type="string" value="/$(arg statek_name)/laser/scan_img" />
             <param name="laser_img_info_topic" type="string" value="/$(arg statek_name)/laser/camera_info" />
 
-            <param name="width_meters" value="6" />
-            <param name="height_meters" value="6" />
-            <param name="width" value="256" />
-            <param name="height" value="256" />
+            <param name="width_meters" value="10.0" />
+            <param name="height_meters" value="10.0" />
+            <param name="width" value="512" />
+            <param name="height" value="512" />
             
             <param name="fps" value="15" />
         </node>
