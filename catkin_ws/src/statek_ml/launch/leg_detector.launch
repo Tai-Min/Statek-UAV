@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="statek_name" default="$(eval open(find('statek_config') + '/name').read())"/>
+
+    <node name="leg_detector" pkg="statek_ml" type="leg_detector.py">
+        <param name="statek_name" type="string" value="$(arg statek_name)" />
+        <rosparam command="load" file="$(find statek_config)/yaml/lidar_img_config.yaml"/>
+    </node>
+
+</launch>

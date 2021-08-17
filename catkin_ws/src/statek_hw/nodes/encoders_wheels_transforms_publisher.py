@@ -70,7 +70,7 @@ right_side_tf = {
     "front_wheel_link": statek_name + "/wheels/right_front_link"
 }
 
-rospy.Subscriber("/" + statek_name + left_encoder_topic, Encoder, encoder_callback, (statek_name, left_side_tf))
-rospy.Subscriber("/" + statek_name + right_encoder_topic, Encoder, encoder_callback, (statek_name, right_side_tf))
+rospy.Subscriber("/" + statek_name + left_encoder_topic, Encoder, encoder_callback, (statek_name, left_side_tf), queue_size=1)
+rospy.Subscriber("/" + statek_name + right_encoder_topic, Encoder, encoder_callback, (statek_name, right_side_tf), queue_size=1)
 
 rospy.spin()

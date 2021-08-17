@@ -85,7 +85,7 @@ if __name__ == "__main__":
 
     # Init lidar image subscriber.
     rospy.Subscriber("/" + statek_name + "/laser/scan_img",
-                     Image, on_new_image)
+                     Image, on_new_image, queue_size=1)
 
     # Create folders for dataset if necessary.
     try:

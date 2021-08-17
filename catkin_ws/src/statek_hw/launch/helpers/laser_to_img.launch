@@ -12,12 +12,8 @@
             <param name="laser_img_topic" type="string" value="/$(arg statek_name)/laser/scan_img" />
             <param name="laser_img_info_topic" type="string" value="/$(arg statek_name)/laser/camera_info" />
 
-            <param name="width_meters" value="10.0" />
-            <param name="height_meters" value="10.0" />
-            <param name="width" value="512" />
-            <param name="height" value="512" />
-            
-            <param name="fps" value="15" />
+            <rosparam command="load" file="$(find statek_config)/yaml/lidar_img_config.yaml"/>
+        
         </node>
     </group>
 

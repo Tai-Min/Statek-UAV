@@ -158,16 +158,8 @@ MPC::Control MPC::update()
 {
     auto startFcn = chrono::steady_clock::now();
 
-    if (!tfReceived)
-    {
+    if (!tfReceived || !path.size())
         return {0, 0, {}, true};
-    }
-
-    // Empty path, nothing to follow.
-    if (!path.size())
-    {
-        return {0, 0, {}, true};
-    }
 
     {
         const std::lock_guard<std::mutex> lckOe(stateMtx);
@@ -188,10 +180,6 @@ MPC::Control MPC::update()
     {
         vars[i] = 0;
     }
-
-    // First actuations must be set to current actuations from twist callback.
-    vars[linearVelocityStart] = inputs.linearVelocity;
-    vars[angularVelocityStart] = inputs.angularVelocity;
 
     // Constraints for variables.
     Dvector varsLowerConstraints(numVars);

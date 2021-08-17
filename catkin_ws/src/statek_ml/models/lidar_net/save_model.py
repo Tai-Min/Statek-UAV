@@ -1,16 +1,26 @@
+#!/usr/bin/env python3
 import tensorflow as tf
 from net import PeTraNet
+
+tf.keras.backend.set_learning_phase(0)
+
+gpu_devices = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(gpu_devices[0], True)
+tf.config.experimental.set_virtual_device_configuration(
+            gpu_devices[0],
+            [tf.config.experimental.VirtualDeviceConfiguration(
+               memory_limit=1 * 1024)])
 
 net = PeTraNet()
 
 ckpt = tf.train.latest_checkpoint('./.tf_ckpts')
-ckpt = tf.train.Checkpoint(net=net).restore(ckpt).expect_partial()
+tf.train.Checkpoint(net=net).restore(ckpt).expect_partial()
 
-net.predict(tf.zeros((1, 512, 512, 1)))
+net.predict(tf.zeros((1, 256, 256, 1)))
 net.save("./trained_model")
 
 conversion_params = tf.experimental.tensorrt.ConversionParams(
-    precision_mode="FP16")
+    precision_mode="FP16", max_workspace_size_bytes=int(0.5 * 1024 * 1024))
 
 converter = tf.experimental.tensorrt.Converter(
     input_saved_model_dir="./trained_model",
@@ -18,4 +28,4 @@ converter = tf.experimental.tensorrt.Converter(
 
 converter.convert()
 
-converter.save("./trained_model")
+converter.save("./trained_model_optimized")
