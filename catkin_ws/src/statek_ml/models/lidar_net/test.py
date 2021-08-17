@@ -1,5 +1,5 @@
 import tensorflow as tf
-from net import PeTraNet
+from tensorflow.python.saved_model import tag_constants
 import numpy as np
 from show_result import show_test
 from dataset_processing import preprocess_input_sample
@@ -7,10 +7,7 @@ import time
 
 test_set = np.load("./dataset/test.npy")
 
-net = PeTraNet()
-
-ckpt = tf.train.latest_checkpoint("./.tf_ckpts")
-ckpt = tf.train.Checkpoint(net=net).restore(ckpt).expect_partial()
+net = tf.saved_model.load("./trained_model", tags=[tag_constants.SERVING])
 
 for sample in test_set:
     sample = preprocess_input_sample(sample)
