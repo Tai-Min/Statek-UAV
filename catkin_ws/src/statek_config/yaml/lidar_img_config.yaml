@@ -3,5 +3,5 @@ height_meters: 5.12
 width: 256
 height: 256
 fps: 15
-bresenham_max_pixels: 25 # If distance between two pixels at one of the image's corners is less or equal than that
+bresenham_max_pixels: 15 # If distance between two pixels at one of the image's corners is less or equal than that
                           # then fill space between these two points with white pixels. 
