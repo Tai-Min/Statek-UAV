@@ -5,7 +5,9 @@ import imutils
 import math
 import os
 import shutil
+import random
 
+from tensorflow.python.ops.gen_array_ops import fill
 
 def _get_legs(label):
     # @brief Extract legs from given binary label.
@@ -246,6 +248,21 @@ def parse_sample(sample):
     input_sample = np.ndarray.astype(input_sample, np.float32)
     label_sample = np.ndarray.astype(label_sample, np.float32)
     weights_sample = np.ndarray.astype(weights_sample, np.float32)
+
+    # Apply data augumentation.
+    rotation = random.uniform(0, 6.28) 
+    shift_x = random.uniform(-0.2, 0.2) * input_sample.shape[1]
+    shift_y = random.uniform(-0.2, 0.2) * input_sample.shape[0]
+    shear = random.uniform(-3, 3)
+    zoom_x = random.uniform(0.7, 1.3)
+    zoom_y = random.uniform(0.7, 1.3)
+
+    input_sample = tf.keras.preprocessing.image.apply_affine_transform(input_sample, rotation,
+    shift_x, shift_y, shear, zoom_x, zoom_y, fill_mode='constant', cval=0, row_axis=1, col_axis=2, channel_axis=0)
+    label_sample = tf.keras.preprocessing.image.apply_affine_transform(label_sample, rotation,
+    shift_x, shift_y, shear, zoom_x, zoom_y, fill_mode='constant', cval=0, row_axis=1, col_axis=2, channel_axis=0)
+    weights_sample = tf.keras.preprocessing.image.apply_affine_transform(weights_sample, rotation,
+    shift_x, shift_y, shear, zoom_x, zoom_y, fill_mode='nearest', row_axis=1, col_axis=2, channel_axis=0)
 
     input_sample = tf.transpose(input_sample, (1, 2, 0))
     label_sample = tf.transpose(label_sample, (1, 2, 0))

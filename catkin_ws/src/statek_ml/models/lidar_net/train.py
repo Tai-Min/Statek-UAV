@@ -16,7 +16,7 @@ preprocess_dataset_flag = False
 epochs = 5000
 train_samples_per_epoch = 64
 batch_size = 1
-lr = 0.0005
+lr = 0.001
 
 # Preprocess dataset.
 # It must be processed as three whole arrays don't fit
@@ -24,12 +24,12 @@ lr = 0.0005
 if preprocess_dataset_flag:
     preprocess_dataset()
 
-train_dataset = tf.data.Dataset.list_files("./dataset/inputs/*.npy")
+train_dataset = tf.data.Dataset.list_files("./dataset/inputs/*.npy", shuffle=True)
 
 train_dataset = train_dataset.map(
     lambda x: tf.py_function(
         parse_sample, [x], (tf.float32, tf.float32, tf.float32))
-).shuffle(train_samples_per_epoch * 4).batch(batch_size)
+).batch(batch_size)
 
 # Optimizer.
 # SGD with momentum as described in unet's paper.
