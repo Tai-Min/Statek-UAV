@@ -16,7 +16,7 @@ preprocess_dataset_flag = False
 epochs = 5000
 train_samples_per_epoch = 64
 batch_size = 1
-lr = 0.001
+lr = 0.05
 
 # Preprocess dataset.
 # It must be processed as three whole arrays don't fit

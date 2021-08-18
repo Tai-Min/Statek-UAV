@@ -253,9 +253,9 @@ def parse_sample(sample):
     rotation = random.uniform(0, 6.28) 
     shift_x = random.uniform(-0.2, 0.2) * input_sample.shape[1]
     shift_y = random.uniform(-0.2, 0.2) * input_sample.shape[0]
-    shear = random.uniform(-3, 3)
-    zoom_x = random.uniform(0.7, 1.3)
-    zoom_y = random.uniform(0.7, 1.3)
+    shear = random.uniform(-0.1, 0.1)
+    zoom_x = random.uniform(0.9, 1.1)
+    zoom_y = random.uniform(0.9, 1.1)
 
     input_sample = tf.keras.preprocessing.image.apply_affine_transform(input_sample, rotation,
     shift_x, shift_y, shear, zoom_x, zoom_y, fill_mode='constant', cval=0, row_axis=1, col_axis=2, channel_axis=0)

@@ -3,16 +3,11 @@ import cv2
 import numpy as np
 
 
-def _result_to_cv_img(img, is_prediction=False, is_weight=False):
+def _result_to_cv_img(img, is_prediction=False):
     if is_prediction:
         img = tf.nn.sigmoid(img)
 
-    img = img.numpy()
-
-    if not is_weight:
-        img = img > 0.7
-
-    img = img * 255.0
+    img = img.numpy() * 255
     img = img.astype(np.uint8)
     return cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
@@ -35,7 +30,7 @@ def show_result(input_img, output_img, pred_img, weight_img):
     pred_img = _result_to_cv_img(pred_img, True)
     pred_img = _insert_text(pred_img, "Network's prediction")
 
-    weight_img = _result_to_cv_img(weight_img, True, True)
+    weight_img = _result_to_cv_img(weight_img, True)
     weight_img_map = cv2.applyColorMap(weight_img, cv2.COLORMAP_JET)
     weight_img_map = _insert_text(weight_img_map, "Weight heatmap")
 
