@@ -179,9 +179,13 @@ def load_network():
     model_path += "/models/lidar_net"
     sys.path.insert(1, model_path)
 
+    rospy.logwarn("Loading model...")
     net = tf.saved_model.load(model_path + "/trained_model_optimized", tags=[tag_constants.SERVING])
+    rospy.logwarn("Getting signatures...")
     net = net.signatures[tf.compat.v1.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY]
+    rospy.logwarn("Converting to constants...")
     net = convert_variables_to_constants_v2(net)
+    rospy.logwarn("Done!")
 
     preprocessor = __import__("dataset_processing")
     preprocessor = preprocessor.preprocess_input_sample
@@ -254,7 +258,7 @@ def get_marker(position, id):
     return marker
 
 def scan_callback(new_msg):
-    global msg, msg_lock
+    global msg, msg_lock, msg_arrived
     with msg_lock:
         msg = new_msg
         msg_arrived = True
@@ -294,8 +298,13 @@ rospy.Subscriber("/" + statek_name + "/laser/scan_img", Image, scan_callback, qu
 
 rate = rospy.Rate(fps)
 while not rospy.is_shutdown():
-    if msg_arrived == False:
-        continue
+    with msg_lock:
+        if msg_arrived == False:
+            rospy.logwarn("Ignored :(")
+            rate.sleep()
+            continue
+
+    rospy.logwarn("Arrived!")
 
     # Preprocess data.
     with msg_lock:
@@ -311,7 +320,7 @@ while not rospy.is_shutdown():
     leg_candidates = get_legs(prediction)
     #leg_candidates = [[20,10],[100,120], [25,33]]
     if len(leg_candidates) == 0:
-        continue
+        rate.sleep()
 
     leg_candidates = to_meters_arr(leg_candidates,
                                     height_pixels,width_pixels,
