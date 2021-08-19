@@ -10,7 +10,7 @@ tf.config.experimental.set_memory_growth(gpu_devices[0], True)
 tf.config.experimental.set_virtual_device_configuration(
             gpu_devices[0],
             [tf.config.experimental.VirtualDeviceConfiguration(
-               memory_limit=1 * 1024)])
+               memory_limit=2 * 1024)])
 
 net = PeTraNet()
 
@@ -21,7 +21,7 @@ net.predict(tf.zeros((1, 256, 256, 1)))
 net.save("./trained_model")
 
 conversion_params = tf.experimental.tensorrt.ConversionParams(
-    precision_mode="FP16", max_workspace_size_bytes=int(0.5 * 1024 * 1024))
+    precision_mode="FP16", max_workspace_size_bytes=int(1 * 1024 * 1024))
 
 converter = tf.experimental.tensorrt.Converter(
     input_saved_model_dir="./trained_model",

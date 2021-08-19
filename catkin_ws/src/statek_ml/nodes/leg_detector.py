@@ -269,7 +269,7 @@ tf.config.experimental.set_memory_growth(gpu_devices[0], True)
 tf.config.experimental.set_virtual_device_configuration(
             gpu_devices[0],
             [tf.config.experimental.VirtualDeviceConfiguration(
-               memory_limit=512)])
+               memory_limit=1024)])
 
 # Init ROS.
 rospy.init_node('lidar_fconv_dataset_collector')
