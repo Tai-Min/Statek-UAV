@@ -249,24 +249,31 @@ def parse_sample(sample):
     label_sample = np.ndarray.astype(label_sample, np.float32)
     weights_sample = np.ndarray.astype(weights_sample, np.float32)
 
+    input_sample = np.transpose(input_sample, (1, 2, 0))
+    label_sample = np.transpose(label_sample, (1, 2, 0))
+    weights_sample = np.transpose(weights_sample, (1, 2, 0))
+
     # Apply data augumentation.
     rotation = random.uniform(0, 6.28) 
     shift_x = random.uniform(-0.2, 0.2) * input_sample.shape[1]
     shift_y = random.uniform(-0.2, 0.2) * input_sample.shape[0]
     shear = random.uniform(-0.1, 0.1)
-    zoom_x = random.uniform(0.9, 1.1)
-    zoom_y = random.uniform(0.9, 1.1)
+    zoom_x = 0.75#random.uniform(0.5, 1.2)
+    zoom_y = 0.75#random.uniform(0.5, 1.2)
 
     input_sample = tf.keras.preprocessing.image.apply_affine_transform(input_sample, rotation,
-    shift_x, shift_y, shear, zoom_x, zoom_y, fill_mode='constant', cval=0, row_axis=1, col_axis=2, channel_axis=0)
+    shift_x, shift_y, shear, zoom_x, zoom_y, fill_mode="constant", cval=0, row_axis=0, col_axis=1, channel_axis=2)
     label_sample = tf.keras.preprocessing.image.apply_affine_transform(label_sample, rotation,
-    shift_x, shift_y, shear, zoom_x, zoom_y, fill_mode='constant', cval=0, row_axis=1, col_axis=2, channel_axis=0)
+    shift_x, shift_y, shear, zoom_x, zoom_y, fill_mode="constant", cval=0, row_axis=0, col_axis=1, channel_axis=2)
     weights_sample = tf.keras.preprocessing.image.apply_affine_transform(weights_sample, rotation,
-    shift_x, shift_y, shear, zoom_x, zoom_y, fill_mode='nearest', row_axis=1, col_axis=2, channel_axis=0)
+    shift_x, shift_y, shear, zoom_x, zoom_y, fill_mode="nearest", row_axis=0, col_axis=1, channel_axis=2)
 
-    input_sample = tf.transpose(input_sample, (1, 2, 0))
-    label_sample = tf.transpose(label_sample, (1, 2, 0))
-    weights_sample = tf.transpose(weights_sample, (1, 2, 0))
+    #input_sample = tf.keras.preprocessing.image.smart_resize(input_sample, (256, 256), interpolation="bilinear")
+    #label_sample = tf.keras.preprocessing.image.smart_resize(label_sample, (256, 256), interpolation="bilinear")
+    #weights_sample = tf.keras.preprocessing.image.smart_resize(weights_sample, (256, 256), interpolation="bilinear")
+
+    input_sample = np.round(input_sample)
+    label_sample = np.round(label_sample)
 
     return (input_sample, label_sample, weights_sample)
 

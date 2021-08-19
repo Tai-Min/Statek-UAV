@@ -285,10 +285,11 @@ class PeTraNet(keras.Model):
             inputs)
 
         # Upsampling.
-        res_first_up = self.up1(res_fourth_pool)
-        res_first_up = self.conv_up_first(res_third_pool, res_first_up)
+        #res_first_up = self.up1(res_fourth_pool)
+        #res_first_up = self.conv_up_first(res_third_pool, res_first_up)
 
-        res_second_up = self.up2(res_first_up)
+        res_second_up = self.up2(res_third_pool)
+        #res_second_up = self.up2(res_first_up)
         res_second_up = self.conv_up_second(res_second_pool, res_second_up)
 
         res_third_up = self.up3(res_second_up)

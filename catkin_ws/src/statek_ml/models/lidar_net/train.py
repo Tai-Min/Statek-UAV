@@ -29,7 +29,7 @@ train_dataset = tf.data.Dataset.list_files("./dataset/inputs/*.npy", shuffle=Tru
 train_dataset = train_dataset.map(
     lambda x: tf.py_function(
         parse_sample, [x], (tf.float32, tf.float32, tf.float32))
-).batch(batch_size)
+).batch(batch_size).prefetch(tf.data.AUTOTUNE)
 
 # Optimizer.
 # SGD with momentum as described in unet's paper.
