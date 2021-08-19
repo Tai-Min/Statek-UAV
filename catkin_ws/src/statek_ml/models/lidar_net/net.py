@@ -14,7 +14,7 @@ class PeTraNet(keras.Model):
         # See unet's paper for details.
         N = 1
 
-        channels_divider = 1
+        channels_divider = 2
 
         # Downsampling part.
         self.conv_no_pool_1 = layers.Conv2D(
@@ -229,23 +229,23 @@ class PeTraNet(keras.Model):
     @tf.function(jit_compile=True)
     def downsample(self, inputs):
         res_no_pool = self.conv_no_pool_1(inputs)
-        res_no_pool = self.conv_no_pool_2(res_no_pool)
+        #res_no_pool = self.conv_no_pool_2(res_no_pool)
 
         res_first_pool = self.pool1(res_no_pool)
         res_first_pool = self.conv_first_pool_1(res_first_pool)
-        res_first_pool = self.conv_first_pool_2(res_first_pool)
+        #res_first_pool = self.conv_first_pool_2(res_first_pool)
 
         res_second_pool = self.pool2(res_first_pool)
         res_second_pool = self.conv_second_pool_1(res_second_pool)
-        res_second_pool = self.conv_second_pool_2(res_second_pool)
+        #res_second_pool = self.conv_second_pool_2(res_second_pool)
 
         res_third_pool = self.pool3(res_second_pool)
         res_third_pool = self.conv_third_pool_1(res_third_pool)
-        res_third_pool = self.conv_third_pool_2(res_third_pool)
+        #res_third_pool = self.conv_third_pool_2(res_third_pool)
 
         res_fourth_pool = self.pool4(res_third_pool)
         res_fourth_pool = self.conv_fourth_pool_1(res_fourth_pool)
-        res_fourth_pool = self.conv_fourth_pool_2(res_fourth_pool)
+        #res_fourth_pool = self.conv_fourth_pool_2(res_fourth_pool)
 
         return res_no_pool, res_first_pool, res_second_pool, res_third_pool, res_fourth_pool
 
@@ -253,28 +253,28 @@ class PeTraNet(keras.Model):
     def conv_up_first(self, res_third_pool, res_first_up):
         res_first_up = self.concat1([res_third_pool, res_first_up])
         res_first_up = self.conv_first_up_1(res_first_up)
-        res_first_up = self.conv_first_up_2(res_first_up)
+        #res_first_up = self.conv_first_up_2(res_first_up)
         return res_first_up
 
     @tf.function(jit_compile=True)
     def conv_up_second(self, res_second_pool, res_second_up):
         res_second_up = self.concat2([res_second_pool, res_second_up])
         res_second_up = self.conv_second_up_1(res_second_up)
-        res_second_up = self.conv_second_up_2(res_second_up)
+        #res_second_up = self.conv_second_up_2(res_second_up)
         return res_second_up
 
     @tf.function(jit_compile=True)
     def conv_up_third(self, res_first_pool, res_third_up):
         res_third_up = self.concat3([res_first_pool, res_third_up])
         res_third_up = self.conv_third_up_1(res_third_up)
-        res_third_up = self.conv_third_up_2(res_third_up)
+        #res_third_up = self.conv_third_up_2(res_third_up)
         return res_third_up
 
     @tf.function(jit_compile=True)
     def conv_up_fourth(self, res_no_pool, res_fourth_up):
         res_fourth_up = self.concat4([res_no_pool, res_fourth_up])
         res_fourth_up = self.conv_fourth_up_1(res_fourth_up)
-        res_fourth_up = self.conv_fourth_up_2(res_fourth_up)
+        #res_fourth_up = self.conv_fourth_up_2(res_fourth_up)
         return self.conv_output(res_fourth_up)
 
     @tf.function
