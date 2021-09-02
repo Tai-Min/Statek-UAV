@@ -4,6 +4,13 @@ from net import PeTraNet
 from dataset_processing import parse_sample, preprocess_dataset
 from show_result import show_result
 
+gpu_devices = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(gpu_devices[0], True)
+tf.config.experimental.set_virtual_device_configuration(
+            gpu_devices[0],
+            [tf.config.experimental.VirtualDeviceConfiguration(
+               memory_limit=1 * 1024)])
+
 # Configuration.
 # Whether to generate correct dataset for this training from
 # author's train_global_labels.npy and train_global_points.npy files.
@@ -16,7 +23,8 @@ preprocess_dataset_flag = False
 epochs = 5000
 train_samples_per_epoch = 64
 batch_size = 1
-lr = 0.05
+#lr = 0.1
+lr = tf.keras.optimizers.schedules.PolynomialDecay(0.05, 30000)
 
 # Preprocess dataset.
 # It must be processed as three whole arrays don't fit
@@ -65,7 +73,6 @@ if path:
     print("Restored checkpoint from %s" % path)
 else:
     print("Initializing training from scratch.")
-
 
 @tf.function
 def train_step(input_imgs, real_outputs, weights):
