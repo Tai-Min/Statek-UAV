@@ -120,20 +120,23 @@ class Leg():
         # @param dt Time passed since last call to update()
         # @return True on success.
 
+        passed = time.time() - self.last_update
+        if passed == 0:
+            return leg_candidates
+
         if len(leg_candidates) == 0:
             return leg_candidates
 
         # Check whether any candidate is in range.
+        candidate_used = False
         candidate_distance, candidate_index = self._find_candidate(leg_candidates)
-        if candidate_distance > self.max_distance:
-            return leg_candidates
-
-        measured_position = tuple(leg_candidates[candidate_index])
-
-        # A priori velocity.
-        passed = time.time() - self.last_update
-        if passed == 0:
-            return leg_candidates
+        if candidate_distance <= self.max_distance:
+            # Use position from network.
+            measured_position = tuple(leg_candidates[candidate_index])
+            candidate_used = True
+        else:
+            # Estimate position based on previous velocity.
+            measured_position = self.estimated_position + passed * self.estimated_velocity
 
         measured_velocity_y = (measured_position[0] - self.estimated_position[0]) / passed
         measured_velocity_x = (measured_position[1] - self.estimated_position[1]) / passed
@@ -148,8 +151,9 @@ class Leg():
         estimated_velocity_x = (self.estimated_position[1] - previous_position_estimate[1]) / passed
         self.estimated_velocity = (estimated_velocity_y, estimated_velocity_x)
 
-        del leg_candidates[candidate_index]
-        self.last_update = time.time()
+        if candidate_used:
+            del leg_candidates[candidate_index]
+            self.last_update = time.time()
 
         return leg_candidates
 

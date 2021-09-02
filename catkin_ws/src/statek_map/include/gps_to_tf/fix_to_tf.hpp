@@ -140,8 +140,7 @@ public:
      * @param _earthFrame Earth frame.
      */
     FixToTf(double originLat, double originLon,
-            double processVarianceNorth, double processVarianceEast,
-            double measurementVarianceNorth, double measurementVarianceEast,
+            const std::vector<double> &processVariance, const std::vector<double> &measurementVariance,
             std::string _mapFrame, std::string _earthFrame);
 
     /**

@@ -1,11 +1,9 @@
 #include "../../include/gps_to_tf/kalman.hpp"
 #include <iostream>
 
-Kalman::Kalman(double _processVarianceNorth, double _processVarianceEast, double _measurementVarianceNorth, double _measurementVarianceEast)
-    : processVarianceNorth(_processVarianceNorth),
-      processVarianceEast(_processVarianceEast),
-      measurementVarianceNorth(_measurementVarianceNorth),
-      measurementVarianceEast(_measurementVarianceEast)
+Kalman::Kalman(const std::vector<double> &_processVariance, const std::vector<double> &_measurementVariance)
+    : processVariance(_processVariance),
+      measurementVariance(_measurementVariance)
 {
 }
 
@@ -25,12 +23,12 @@ Kalman::Estimates Kalman::update(const Inputs &inputs, const Measurements &measu
         0, (double)0.5 * powf64(dt, 2);
 
     Eigen::Matrix2d Q;
-    Q << this->processVarianceEast, 0,
-        0, this->processVarianceNorth;
+    Q << this->processVariance[0], this->processVariance[1],
+        this->processVariance[2], this->processVariance[3];
 
     Eigen::Matrix2d R;
-    R << this->measurementVarianceEast, 0,
-        0, this->measurementVarianceNorth;
+    R << this->measurementVariance[0], this->measurementVariance[1],
+        this->measurementVariance[2], this->measurementVariance[3];
 
     if (this->fstScan)
     {

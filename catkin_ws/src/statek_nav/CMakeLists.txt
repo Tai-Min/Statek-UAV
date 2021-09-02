@@ -9,8 +9,20 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf2
   tf2_ros
+  message_generation
 )
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+
+add_message_files(
+   FILES
+   LongTermPath.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  sensor_msgs
+)
 
 catkin_package()
 

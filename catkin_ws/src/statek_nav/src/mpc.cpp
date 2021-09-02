@@ -217,10 +217,10 @@ MPC::Control MPC::update()
         return {0, 0, {}, true};
     }
 
-    if (solution.status != CppAD::ipopt::solve_result<Dvector>::success)
+    /*if (solution.status != CppAD::ipopt::solve_result<Dvector>::success)
     {
         return {0, 0, {}, true};
-    }
+    }*/
 
     Control control;
     control.success = true;
@@ -233,7 +233,7 @@ MPC::Control MPC::update()
     control.stateTrajectory = evalFcn.evalControl(solution.x, state);
 
     auto endFcn = chrono::steady_clock::now();
-    ROS_WARN("MPC update elapsed time in milliseconds: %ldms.\n---", chrono::duration_cast<chrono::milliseconds>(endFcn - startFcn).count());
+    //ROS_WARN("MPC update elapsed time in milliseconds: %ldms.\n---", chrono::duration_cast<chrono::milliseconds>(endFcn - startFcn).count());
 
     return control;
 }

@@ -2,14 +2,13 @@
 #include <tf/transform_broadcaster.h>
 
 FixToTf::FixToTf(double originLat, double originLon,
-                 double processVarianceNorth, double processVarianceEast,
-                 double measurementVarianceNorth, double measurementVarianceEast,
+                 const std::vector<double> &processVariance, const std::vector<double> &measurementVariance,
                  std::string _mapFrame, std::string _earthFrame)
     : originPhi(originLat * M_PI / (double)180.0),
       originLambda(originLon * M_PI / (double)180.0),
       mapFrame(_mapFrame),
       earthFrame(_earthFrame),
-      filter(processVarianceNorth, processVarianceEast, measurementVarianceNorth, measurementVarianceEast)
+      filter(processVariance, measurementVariance)
 {
     geodeticToEcef(originLat, originLon, originEcefX, originEcefY, originEcefZ);
     shortTermGoalCartesian.header.frame_id = earthFrame;
