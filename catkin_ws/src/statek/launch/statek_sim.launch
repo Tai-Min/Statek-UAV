@@ -22,7 +22,7 @@
     </include>
 
     <!-- Launch navigation stack -->
-    <include file="$(find statek_nav)/launch/short_term_nav.launch">
+    <include file="$(find statek_nav)/launch/nav.launch">
         <arg name="statek_name" value="$(arg statek_name)"/>
     </include>
 

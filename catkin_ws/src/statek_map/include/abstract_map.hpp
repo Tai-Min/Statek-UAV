@@ -42,6 +42,24 @@ protected:
     static MapParams params; //!< Shared parameters for all object inheriting this class.
 
     /**
+     * @brief Modified version of Bresenham's line drawing algorithm.
+     * 
+     * This function will draw a line from start to finish
+     * filling all of the pixels with given cellType but also will stop
+     * if there is CellType::OBSTACLE_CELL on the way.
+     * 
+     * @param y0 Start y.
+     * @param x0 Start x.
+     * @param y1 End y.
+     * @param x1 End x.
+     * @param cellType Cell type to raycast.
+     * @param bold Whether the line should be bold.
+     * @param stopOnFilled Whether the algorithm should also stop on CellType::FILLED_GAP.
+     * @return True if whole line was drawn. False if stopped on edge of the map, CellType::OBSTACLE_CELL or CellType::FILLED_GAP when stopOnFilled = true.
+     */
+    bool rayTrace(int y0, int x0, int y1, int x1, int8_t cellType, bool bold = false, bool stopOnFilled = false);
+
+    /**
      * @brief Check whether given coordinates are on map.
      * @param y Y.
      * @param x X.
@@ -70,11 +88,33 @@ protected:
     virtual mapType::const_iterator end() const;
 
     /**
+     * @brief Get size of internal vector that stores the map.
+     * @return size_type.
+     */
+    virtual mapType::size_type size() const;
+
+    /**
      * @brief Get element of internal vector that stores the map.
      * @param index Index.
      * @return Value of requested element.
      */
     virtual int8_t operator[](const unsigned int index) const;
+
+    /**
+     * @brief Set map's cell to given value.
+     * @param y Row of map.
+     * @param x Column of map.
+     * @param val Value to set.
+     */
+    static void set(mapType &map, unsigned int y, unsigned int x, int8_t val);
+
+        /**
+     * @brief Get value from given cell of given map.
+     * @param y Row of map.
+     * @param x Column of map.
+     * @return Value of cell.
+     */
+    static int8_t get(const mapType &map, unsigned int y, unsigned int x);
 
     /**
      * @brief Set sensor's map cell to given value.

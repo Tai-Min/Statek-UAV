@@ -44,8 +44,6 @@ private:
     double latestTangentY = 0;      //!< Latest position of robot in tangent plane.
     double latestTangentZ = 0;      //!< Latest position of robot in tangent plane.
     double latestYaw = 0;           //!< Latest rotation of robot in tangent plane.
-    double latestAccelerationNorth; //!< Latest velocity to the north (for Kalman filter).
-    double latestAccelerationEast;  //!< Latest velocity to the east (for Kalman filter).
 
     // Odometry memory for compensation.
     double latestOdomX = 0;     //!< Latest odometry reading. Required to compute travelled distance since previous odom.
@@ -56,6 +54,10 @@ private:
     double odomOffsetX = 0;     //!< Accomodate movement in x direction between GPS updates.
     double odomOffsetY = 0;     //!< Accomodate movement in y direction between GPS updates.
     double odomOffsetTheta = 0; //!< Accomodate rotation around z axis between IMU updates.
+
+    unsigned int avgCntr = 1;  //!< Counter for cumulative average for IMU accelerations.
+    double avgAccNorth = 0; //!< Average acceleration in north direction between GPS updates.
+    double avgAccEast = 0;  //!< Average acceleration in east direction between GPS updates.
 
     /**
      * @brief Sign function.

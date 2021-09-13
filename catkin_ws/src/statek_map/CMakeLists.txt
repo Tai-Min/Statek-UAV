@@ -58,6 +58,7 @@ add_executable(local_mapper_node
   src/local_mapper/local_mapper_node.cpp 
   src/local_mapper/map_fuser.cpp
   src/local_mapper/laser_scan_map.cpp
+  src/local_mapper/dynamic_leg_map.cpp
   src/common.cpp
 )
 target_link_libraries(local_mapper_node ${catkin_LIBRARIES})

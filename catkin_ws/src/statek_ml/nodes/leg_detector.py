@@ -5,6 +5,8 @@ import rospy
 import rospkg
 from visualization_msgs.msg import Marker, MarkerArray
 from sensor_msgs.msg import Image
+from statek_ml.msg import DynamicDetectionArray
+from statek_ml.msg import DynamicDetection
 import tensorflow as tf
 import sys
 import numpy as np
@@ -21,6 +23,17 @@ get_legs = __import__("dataset_processing")
 get_legs = get_legs._get_legs
 
 data_path = r.get_path("statek_ml") + "/data"
+
+class Filter():
+    def __init__(self, velocities, alpha):
+        self.alpha = alpha
+        self.velocities = np.array(velocities)
+
+    def update(self, velocities):
+        velocities = np.array(velocities)
+        self.velocities = self.velocities + self.alpha * (velocities - self.velocities)
+        return tuple(self.velocities.tolist())
+
 
 class LegKalman():
     def __init__(self, leg_position, process_variance, measurement_variance):
@@ -74,7 +87,7 @@ class LegKalman():
 
 class Leg():
     
-    def __init__(self, leg, forget_time, max_distance, process_variance, measurement_variance):
+    def __init__(self, leg, forget_time, max_distance, process_variance, measurement_variance, filter_alpha):
         # @brief Class constructor.
         # @param leg Initial coordinates of the leg in meters [y, x].
         # @param forget_time Period of time in seconds in which update() should success at least once. 
@@ -90,6 +103,7 @@ class Leg():
         self.max_distance = max_distance
 
         # First update.
+        self.vel_filter = Filter((0,0), filter_alpha)
         self.filter = LegKalman(leg, process_variance, measurement_variance)
         self.last_update = time.time()
         self.estimated_velocity = (0,0)
@@ -136,7 +150,7 @@ class Leg():
             candidate_used = True
         else:
             # Estimate position based on previous velocity.
-            measured_position = self.estimated_position + passed * self.estimated_velocity
+            measured_position = tuple((np.asarray(self.estimated_position) + passed * np.asarray(self.estimated_velocity)).tolist())
 
         measured_velocity_y = (measured_position[0] - self.estimated_position[0]) / passed
         measured_velocity_x = (measured_position[1] - self.estimated_position[1]) / passed
@@ -149,7 +163,7 @@ class Leg():
         # A posteriori velocity.
         estimated_velocity_y = (self.estimated_position[0] - previous_position_estimate[0]) / passed
         estimated_velocity_x = (self.estimated_position[1] - previous_position_estimate[1]) / passed
-        self.estimated_velocity = (estimated_velocity_y, estimated_velocity_x)
+        self.estimated_velocity = self.vel_filter.update((estimated_velocity_y, estimated_velocity_x))
 
         if candidate_used:
             del leg_candidates[candidate_index]
@@ -160,7 +174,6 @@ class Leg():
     def alive(self):
         # @brief Whether this object should be destroyed.
         # @return True if leg is still alive.
-
         return (time.time() - self.last_update) < self.forget_time
 
     def position(self):
@@ -240,7 +253,7 @@ def to_meters(leg, height_pixels, width_pixels, height, width):
 def to_meters_arr(legs, height_pixels, width_pixels, height, width):
     return [to_meters(leg, height_pixels, width_pixels, height, width) for leg in legs]
 
-def get_marker(position, id):
+def get_rviz_marker(position, id):
     marker = Marker()
     marker.header.frame_id = "statek/laser/laser_link"
     marker.header.stamp = rospy.Time.now()
@@ -259,6 +272,19 @@ def get_marker(position, id):
     marker.color.r = 1
     marker.color.b = 0
     marker.color.g = 1
+    return marker
+
+def get_leg_marker(leg):
+    marker = DynamicDetection()
+    marker.type = DynamicDetection.LEG
+    p = leg.position()
+    v = leg.velocity()
+    marker.position[0] = p[0]
+    marker.position[1] = p[1]
+    marker.position[2] = 0.15
+    marker.velocity[0] = v[0]
+    marker.velocity[1] = v[1]
+    marker.velocity[2] = 0
     return marker
 
 def scan_callback(new_msg):
@@ -280,8 +306,9 @@ rospy.init_node('lidar_fconv_dataset_collector')
 statek_name = rospy.get_param("~statek_name", "statek")
 
 
-# Stuff for .
-publisher = rospy.Publisher("/" + statek_name + "/laser/hoomans", MarkerArray, queue_size=1)
+rviz_publisher = rospy.Publisher("/" + statek_name + "/laser/hoomans", MarkerArray, queue_size=1)
+marker_publisher = rospy.Publisher("/" + statek_name + "/laser/dynamic_detections", DynamicDetectionArray, queue_size=1)
+
 msg = None
 msg_lock = threading.Lock()
 msg_arrived = False
@@ -291,8 +318,10 @@ height_meters = rospy.get_param("~height_meters", 5.12)
 width_pixels = rospy.get_param("~width_pixels", 256)
 height_pixels = rospy.get_param("~height_pixels", 256)
 fps = rospy.get_param("~fps", 15)
-forget_time = rospy.get_param("~leg_forget_time", 2)
-max_distance = rospy.get_param("~candidate_max_distance", 1.0)
+filter_alpha = rospy.get_param("~filter_alpha", 0.09)
+forget_time = rospy.get_param("~leg_forget_time", 0.3)
+leg_hysteresis = rospy.get_param("~leg_hysteresis", 0.4)
+max_distance = rospy.get_param("~candidate_max_distance", 0.75)
 process_variance = rospy.get_param("~leg_process_variance", 0.01)
 measurement_variance = rospy.get_param("~leg_measurement_variance", 0.01)
 net, preprocessor = load_network()
@@ -304,11 +333,8 @@ rate = rospy.Rate(fps)
 while not rospy.is_shutdown():
     with msg_lock:
         if msg_arrived == False:
-            rospy.logwarn("Ignored :(")
             rate.sleep()
             continue
-
-    rospy.logwarn("Arrived!")
 
     # Preprocess data.
     with msg_lock:
@@ -322,7 +348,7 @@ while not rospy.is_shutdown():
 
     # Extract legs.
     leg_candidates = get_legs(prediction)
-    #leg_candidates = [[20,10],[100,120], [25,33]]
+
     if len(leg_candidates) == 0:
         rate.sleep()
 
@@ -332,14 +358,21 @@ while not rospy.is_shutdown():
 
     # Update legs.
     cntr = 0
-    markers = MarkerArray()
+    rviz_markers = MarkerArray()
+    leg_markers = DynamicDetectionArray()
+    leg_markers.header.frame_id = "statek/laser/laser_link"
+
     for leg in legs:
         leg_candidates = leg.update(leg_candidates)
-        markers.markers.append(get_marker(leg.position(), cntr))
+
+        if math.hypot(leg.velocity()[0], leg.velocity()[1]) > leg_hysteresis:
+            leg_markers.detections.append(get_leg_marker(leg))
+
+        rviz_markers.markers.append(get_rviz_marker(leg.position(), cntr))
         cntr+=1
-        
-    publisher.publish(markers)
-    rospy.logwarn("pub!")
+    
+    rviz_publisher.publish(rviz_markers)
+    marker_publisher.publish(leg_markers)
 
     # Remove dead legs.
     legs = [leg for leg in legs if leg.alive()]
@@ -348,6 +381,6 @@ while not rospy.is_shutdown():
     # existing legs.
     for candidate in leg_candidates:
         legs.append(Leg(candidate, forget_time, max_distance,
-        process_variance, measurement_variance))
+        process_variance, measurement_variance, filter_alpha))
 
     rate.sleep()

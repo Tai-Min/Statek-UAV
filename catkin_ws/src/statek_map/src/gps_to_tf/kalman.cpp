@@ -19,8 +19,8 @@ Kalman::Estimates Kalman::update(const Inputs &inputs, const Measurements &measu
     z << measurements.x, measurements.y;
 
     Eigen::Matrix2d B;
-    B << (double)0.5 * powf64(dt, 2), 0,
-        0, (double)0.5 * powf64(dt, 2);
+    B << (double)0.5 * pow(dt, 2), 0,
+        0, (double)0.5 * pow(dt, 2);
 
     Eigen::Matrix2d Q;
     Q << this->processVariance[0], this->processVariance[1],

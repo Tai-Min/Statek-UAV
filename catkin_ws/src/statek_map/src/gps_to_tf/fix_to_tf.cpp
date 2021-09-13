@@ -152,8 +152,12 @@ void FixToTf::onNewImu(const sensor_msgs::Imu::ConstPtr &imu)
     // to north / east directions.
     // In this robot the -Y points forward.
     double linAcc = -imu->linear_acceleration.y;
-    this->latestAccelerationNorth = linAcc * sin(this->latestYaw);
-    this->latestAccelerationEast = linAcc * cos(this->latestYaw);
+    double latestAccelerationNorth = linAcc * sin(this->latestYaw);
+    double latestAccelerationEast = linAcc * cos(this->latestYaw);
+
+    avgAccNorth = (avgCntr - 1) / double(avgCntr) * avgAccNorth + 1 / double(avgCntr) * latestAccelerationNorth;
+    avgAccEast = (avgCntr - 1) / double(avgCntr) * avgAccEast + 1 / double(avgCntr) * latestAccelerationEast;
+    avgCntr++;
 
     // Save angular difference from true north.
     tf::Quaternion quat;
@@ -170,10 +174,17 @@ void FixToTf::onNewFix(const sensor_msgs::NavSatFix::ConstPtr &fix)
 
     geodeticToEnu(fix->latitude, fix->longitude, this->latestTangentX, this->latestTangentY, this->latestTangentZ);
 
-    Kalman::Estimates estimates = this->filter.update({this->latestAccelerationEast, this->latestAccelerationNorth},
+    Kalman::Estimates estimates = this->filter.update({avgAccEast, avgAccNorth},
                                                       {this->latestTangentX, this->latestTangentY});
     this->latestTangentX = estimates.x;
     this->latestTangentY = estimates.y;
+
+    // Reset imu's average acceleration.
+    ROS_WARN("%f", avgAccNorth);
+    ROS_WARN("%f", avgAccEast);
+    avgAccNorth = 0;
+    avgAccEast = 0;
+    avgCntr = 1;
 
     // Convert filtered tangents back into fix.
     double tempLat, tempLon;

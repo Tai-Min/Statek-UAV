@@ -92,10 +92,9 @@ while not rospy.is_shutdown():
 
         with goal_callback_lock:
             dist = math.hypot(trans_footprint[x] - goal.x, trans_footprint[y] - goal.y)
-        rospy.logwarn(dist)
 
         # Platform is close enough to current goal.
-        if dist < 1.0:
+        if dist < 1.5:
 
             rospy.logwarn("Checkpoint achieved.")
             path_counter += 1

@@ -418,11 +418,6 @@ void VoronoiMap::generateMessage(const std::vector<cv::Point> &voronoi, const ma
     }
 }
 
-int8_t VoronoiMap::get(const mapType &v, unsigned int y, unsigned int x)
-{
-    return v[y * params.numCellsPerRowCol + x];
-}
-
 void VoronoiMap::onNewLocalMap(const nav_msgs::OccupancyGrid::ConstPtr &map)
 {
     this->voronoiGraph.header.frame_id = map->header.frame_id;

@@ -108,15 +108,6 @@ private:
      */
     void generateMessage(const std::vector<cv::Point> &voronoi, const mapType &grid, int numAnchors);
 
-    /**
-     * @brief Get element from some vector while treating it as matrix.
-     * Width and height of this matrix is set using AbstractMap::setParams.
-     * @param v Vector to get value from.
-     * @param y Row.
-     * @param x Column.
-     */
-    static int8_t get(const mapType &v, unsigned int y, unsigned int x);
-
 public:
     /**
      * @brief Class constructor.

@@ -19,135 +19,15 @@ MapFuser::MapFuser(const std::string &odomFrame, const std::string &mapFrame,
 
 void MapFuser::fuseMaps()
 {
-    std::copy(maps[0].get().begin(), maps[0].get().end(), mapMsg.data.begin());
-}
+    if (!maps.size())
+        return;
 
-bool MapFuser::rayTrace(int y0, int x0, int y1, int x1, int8_t cellType, bool bold, bool stopOnFilled)
-{
-    int d, dx, dy, ai, bi, xi, yi;
-    int x = x0, y = y0;
-    if (x0 < x1)
+    for (int i = 0; i < maps[0].get().size(); i++)
     {
-        xi = 1;
-        dx = x1 - x0;
+        mapMsg.data[i] = maps[0].get()[i];
+        for (int j = 1; j < maps.size(); j++)
+            mapMsg.data[i] = (maps[j].get()[i] > 0) ? CellType::OBSTACLE_CELL : mapMsg.data[i];
     }
-    else
-    {
-        xi = -1;
-        dx = x0 - x1;
-    }
-    if (y0 < y1)
-    {
-        yi = 1;
-        dy = y1 - y0;
-    }
-    else
-    {
-        yi = -1;
-        dy = y0 - y1;
-    }
-
-    // First free cell should be drawn.
-    if (cellType == FREE_CELL)
-    {
-        this->set(y, x, cellType);
-    }
-
-    if (dx > dy)
-    {
-        ai = (dy - dx) * 2;
-        bi = dy * 2;
-        d = bi - dx;
-
-        while (x != x1)
-        {
-            bool makeBold = false;
-            if (d >= 0)
-            {
-                x += xi;
-                y += yi;
-                d += ai;
-                makeBold = true;
-            }
-            else
-            {
-                d += bi;
-                x += xi;
-            }
-
-            // Draw additional pixels to make line bolder if requested.
-            if (bold && makeBold)
-            {
-                int boldX = x;
-                int boldY = y - yi;
-                if (isValidPoint(boldY, boldX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
-                    this->set(boldY, boldX, cellType);
-
-                boldX = x - xi;
-                boldY = y;
-                if (isValidPoint(boldY, boldX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
-                    this->set(boldY, boldX, cellType);
-            }
-
-            // Stop on obstacle.
-            if (this->get(y, x) == CellType::OBSTACLE_CELL)
-                return false;
-
-            // Stop on filled gap if requested.
-            if (this->get(y, x) == CellType::FILLED_GAP && stopOnFilled)
-                return false;
-
-            this->set(y, x, cellType);
-        }
-    }
-    else
-    {
-        ai = (dx - dy) * 2;
-        bi = dx * 2;
-        d = bi - dy;
-
-        while (y != y1)
-        {
-            bool makeBold = false;
-            if (d >= 0)
-            {
-                x += xi;
-                y += yi;
-                d += ai;
-                makeBold = true;
-            }
-            else
-            {
-                d += bi;
-                y += yi;
-            }
-
-            // Draw additional pixels to make line bolder if requested.
-            if (bold && makeBold)
-            {
-                int boldX = x;
-                int boldY = y - yi;
-                if (isValidPoint(boldY, boldX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
-                    this->set(boldY, boldX, cellType);
-
-                boldX = x - xi;
-                boldY = y;
-                if (isValidPoint(boldY, boldX) && this->get(boldY, boldX) == CellType::UNKNOWN_CELL)
-                    this->set(boldY, boldX, cellType);
-            }
-
-            // Stop on obstacle.
-            if (this->get(y, x) == CellType::OBSTACLE_CELL)
-                return false;
-
-            // Stop on filled gap if requested.
-            if (this->get(y, x) == CellType::FILLED_GAP && stopOnFilled)
-                return false;
-
-            this->set(y, x, cellType);
-        }
-    }
-    return true;
 }
 
 bool MapFuser::isSmallGap(int y0, int x0, int y1, int x1) const
