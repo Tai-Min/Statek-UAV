@@ -5542,7 +5542,7 @@
       </link>
       <pose frame=''>16.5976 13.6225 0.380927 0 -0 0.209997</pose>
     </model>
-    <!--<actor name='mr_walker'>
+    <actor name='mr_walker'>
       <skin>
         <filename>walk.dae</filename>
       </skin>
@@ -9133,6 +9133,6 @@
         </visual>
         <enable_wind>0</enable_wind>
       </link>
-    </actor>-->
+    </actor>
   </world>
 </sdf>
