@@ -1,0 +1,11 @@
+figure(1)
+plot(out.left.Time, out.left.Data)
+title("Odpowiedź lewego silnika w czasie")
+xlabel("Czas [s]")
+ylabel("Prędkość obrotowa koła [rad/s]")
+
+figure(2)
+plot(out.right.Time, out.right.Data)
+title("Odpowiedź prawego silnika w czasie")
+xlabel("Czas [s]")
+ylabel("Prędkość obrotowa koła [rad/s]")
