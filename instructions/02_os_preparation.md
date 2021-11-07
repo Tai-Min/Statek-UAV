@@ -41,26 +41,6 @@ sudo dhclient <your wifi card/dongle>
 ```
 Now, you should be able to connect to the UAV and control it without wired connection.
 
-## Configure access point
-Install [create_ap](https://github.com/oblique/create_ap) and configure it:
-```
-sudo /usr/bin/create_ap wlan0_ap wlan0_sta <SSID> <PASSWORD> --mkconfig /etc/create_ap.conf
-```
-Edit /usr/lib/systemd/system/create_ap.service
-and above ExecStart add:
-```
-ExecStartPre=/bin/sleep 10s
-ExecStartPre=/etc/init.d/network-manager restart
-ExecStartPre=/sbin/iw dev wlan0 interface add wlan0_sta type managed
-ExecStartPre=/sbin/iw dev wlan0 interface add wlan0_ap type managed
-ExecStartPre=/sbin/ip link set down wlan0
-```
-and run:
-```
-systemctl start create_ap
-systemctl enable create_ap
-```
-Now you can set ROS_MASTER_URI in your remote device to AP's gateway and connect directly to robot without access to WiFi.
 ## Configure serial devices
 Make sure that all serial devices are connected.
 
