@@ -5,7 +5,7 @@ This repository consists of CAD files for the chassis, CAD files for electronic 
 
 The core part of this project is the real, 3D printed vehicle along with all the hardware attached to it (Jetson Nano B01 for main controller and STM32f103RBT6 for real time core). 
 
-The software part of this project can be split into real time (closed loop wheel control), short term navigation (movement between two GPS waypoints) and long term navigation (navigation between series of GPS waypoints).
+The software part of this project can be split into real time (closed loop wheel control), short term navigation (movement between two GPS waypoints) and long term navigation (navigation through series of GPS waypoints).
 During the project's development, my main focus was on short term navigation, which is also the biggest and most complicated part of the project. Short term navigation stack
 consists of static local map generator, dynamic local map generator (human leg detector mostly based on U-Net fully convolutional neural network), Voronoi graph generator, A* path planner and non linear model predictive controller for navigation.
 
