@@ -16,7 +16,7 @@ and software that I don't intent to fix in this iteration of the project as code
 Most of the files in the "instructions" folder consists of the steps I've did to setup my hardware and Ipopt solver. Those might not work for you/could be dangerous (I might've abused sudo a bit) so use them at your own risk. The code quality depends on the time I had untill the deadline to hand over my thesis. In my opinion it should be fine for the most part, well documented and easy to follow but judge for yourself.
 
 **Disclaimer:** I've tried to credit all authors of 3D files used in the project. All of the models had permissive license allowing me to use them.
-If you see your work here without being listed as the author or you just don't want to have your files used here - open an issue on this project and I'll fix any problems.
+If you see your work here without being credited or you just don't want to have your files used here - open an issue on this project and I'll fix any problems.
 
 The files in this folder have the following structure:
 * CAD
